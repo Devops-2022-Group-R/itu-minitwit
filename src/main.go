@@ -42,6 +42,7 @@ func main() {
 	r.Use(sessions.Sessions("mysession", store))
 
 	r.Use(beforeRequest)
+	r.Use(useLogger)
 	r.Static("/static", "./src/static")
 
 	r.GET(timeLineUrl, timeline)
@@ -57,6 +58,12 @@ func main() {
 	r.GET("/logout", logout)
 
 	r.Run()
+}
+
+func useLogger(c *gin.Context) {
+	session := sessions.Default(c)
+	log.Printf("User: %v", session.Get("user_id"))
+	c.Next()
 }
 
 func connectDb() *sql.DB {
@@ -138,8 +145,19 @@ func getUserId(username string, db *sql.DB) *int64 {
 	return &userId
 }
 
-func getUser(username string, db *sql.DB) *User {
+func getUserFromUsername(username string, db *sql.DB) *User {
 	rows := queryDb(db, "select * from user where username = ?", username)
+
+	return parseUser(rows)
+}
+
+func getUserFromId(id int64, db *sql.DB) *User {
+	rows := queryDb(db, "select * from user where user_id = ?", id)
+
+	return parseUser(rows)
+}
+
+func parseUser(rows []map[string]interface{}) *User {
 	if len(rows) == 0 {
 		return nil
 	}
@@ -195,7 +213,7 @@ func timeline(c *gin.Context) {
 	defer db.Close()
 
 	if _, isLoggedIn := c.Get("user"); !isLoggedIn {
-		c.Redirect(307, publicTimelineUrl)
+		c.Redirect(302, publicTimelineUrl)
 		return
 	}
 
@@ -255,7 +273,15 @@ func publicTimeline(c *gin.Context) {
 		messages = append(messages, message)
 	}
 
+	var user User
+	if u, ok := c.Get("user"); ok {
+		user = *getUserFromId(u.(map[string]interface{})["user_id"].(int64), db)
+	}
+
 	renderTemplate(c, "timeline.html", TimelineData{
+		LayoutData: LayoutData{
+			User: user,
+		},
 		IsPublicTimeline: true,
 		IsMyTimeline:     false,
 		IsFollowed:       true,
@@ -270,9 +296,11 @@ func userTimeline(c *gin.Context) {
 	defer db.Close()
 
 	username := c.Param("username")
-	profileUser := getUser(username, db)
+
+	profileUser := getUserFromUsername(username, db)
 	if profileUser == nil {
 		c.JSON(404, nil) // abort(404)
+		return
 	}
 
 	followed := false
@@ -295,7 +323,7 @@ func userTimeline(c *gin.Context) {
 		`
 			select message.*, user.* from message, 
 			user where user.user_id = message.author_id and user.user_id = ?
-			order by message.pub_date desc limit
+			order by message.pub_date desc limit ?
 		`
 	results := queryDb(db, messageQuery, profileUser.UserId, perPage)
 	messages := createTweetsFromQuery(results)
@@ -364,7 +392,7 @@ func followUser(c *gin.Context) {
 
 	// TODO: flash('You are now following "%s"' % username)
 
-	c.Redirect(307, timeLineUrl)
+	c.Redirect(302, timeLineUrl)
 }
 
 // Removes the current user as follower of the given user.
@@ -387,7 +415,7 @@ func unfollowUser(c *gin.Context) {
 
 	// TODO: flash('You are no longer following "%s"' % username)
 
-	c.Redirect(307, timeLineUrl)
+	c.Redirect(302, timeLineUrl)
 }
 
 // Registers a new message for the user.
@@ -420,7 +448,7 @@ func addMessage(c *gin.Context) {
 
 func loginGet(c *gin.Context) {
 	if _, userIsInSession := c.Get("user"); userIsInSession {
-		c.Redirect(307, timeLineUrl)
+		c.Redirect(302, timeLineUrl)
 		return
 	}
 
@@ -430,7 +458,7 @@ func loginGet(c *gin.Context) {
 // Logs the user in.
 func loginPost(c *gin.Context) {
 	if _, userIsInSession := c.Get("user"); userIsInSession {
-		c.Redirect(307, timeLineUrl)
+		c.Redirect(302, timeLineUrl)
 		return
 	}
 
@@ -453,7 +481,7 @@ func loginPost(c *gin.Context) {
 	} else {
 		session.Set("user_id", users[0]["user_id"])
 		// TODO: Translate this from Python - flash('You were logged in')
-		c.Redirect(307, timeLineUrl)
+		c.Redirect(302, timeLineUrl)
 		return
 	}
 
@@ -466,7 +494,7 @@ func loginPost(c *gin.Context) {
 // Shows the page for registering the user.
 func registerGet(c *gin.Context) {
 	if _, userIsInSession := c.Get("user"); userIsInSession {
-		c.Redirect(307, timeLineUrl)
+		c.Redirect(302, timeLineUrl)
 		return
 	}
 
@@ -476,7 +504,8 @@ func registerGet(c *gin.Context) {
 // Registers the user.
 func registerPost(c *gin.Context) {
 	if _, userIsInSession := c.Get("user"); userIsInSession {
-		c.Redirect(307, timeLineUrl)
+		// c.Writer.WriteHeader(http.StatusNoContent)
+		c.Redirect(302, timeLineUrl)
 		return
 	}
 
@@ -492,9 +521,9 @@ func registerPost(c *gin.Context) {
 		errMsg = "You have to enter a username"
 	} else if form.Get("email") == "" || !strings.Contains(form.Get("email"), "@") {
 		errMsg = "You have to enter a valid email address"
-	} else if form.Get("pasword") == "" {
+	} else if form.Get("password") == "" {
 		errMsg = "You have to enter a password"
-	} else if form.Get("pasword") != form.Get("pasword2") {
+	} else if form.Get("password") != form.Get("password2") {
 		errMsg = "The two passwords do not match"
 	} else if getUserId(form.Get("username"), db) != nil {
 		errMsg = "The username is already taken"
@@ -510,7 +539,8 @@ func registerPost(c *gin.Context) {
 			log.Fatal(err)
 		}
 
-		c.Redirect(307, loginUrl)
+		c.Redirect(302, loginUrl)
+		return
 	}
 
 	renderTemplate(c, "register.html", RegisterData{
@@ -525,7 +555,7 @@ func logout(c *gin.Context) {
 	// TODO: Translate this from Python - flash('You were logged out')
 	session := sessions.Default(c)
 	session.Delete("user_id")
-	c.Redirect(307, publicTimelineUrl)
+	c.Redirect(302, publicTimelineUrl)
 }
 
 func renderTemplate(c *gin.Context, templateSubPath string, templateData interface{}) {

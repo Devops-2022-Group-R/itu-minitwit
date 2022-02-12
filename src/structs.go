@@ -32,11 +32,15 @@ type TimelineData struct {
 }
 
 type LoginData struct {
+	LayoutData
+
 	Username string
 	ErrorMsg string
 }
 
 type RegisterData struct {
+	LayoutData
+
 	Username string
 	Email    string
 	ErrorMsg string
