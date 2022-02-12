@@ -259,12 +259,9 @@ func publicTimeline(c *gin.Context) {
 // Display's a users tweets.
 func userTimeline(c *gin.Context) {
 	db := c.MustGet("db").(*sql.DB)
-	user := c.Get("user").(Row)
-	username := c.Param("username")
-	userId := session.Get("user_id").(int)
-
 	defer db.Close()
 
+	username := c.Param("username")
 	queryUserProfile := "select * from user where username = ?"
 	profileUser := queryDb(db, queryUserProfile, username)
 
@@ -273,34 +270,43 @@ func userTimeline(c *gin.Context) {
 	}
 	followed := false
 
-	if user != nil { // if user is logged in - sessin g.user
+	if _, userExists := c.Get("user"); userExists{ // if g.user from .py
 		query :=
 			`
 				"select 1 
 				from follower 
 				where follower.who_id = ? and follower.whom_id = ?"
 				`
+		session := sessions.Default(c)
+		userId := session.Get("user_id").(int)
 		isFollowing := queryDb(db, query, userId, profileUser[0]["user_id"]) // [session['user_id'], profile_user['user_id']], one=True) is not None
-		if len(isFollowing[0]) > 0 {
+		if len(isFollowing[0]) > 0 {                                         // this condition is trying to check -> "is not none" - is this correct?
 			followed = true
 		}
 	}
 
-	htmlQuery :=
+	messageQuery :=
 		`
 			select message.*, user.* from message, 
 			user where user.user_id = message.author_id and user.user_id = ?
 			order by message.pub_date desc limit
 		`
-	results := queryDb(db, htmlQuery, profileUser[0]["user_id"], perPage)
+	results := queryDb(db, messageQuery, profileUser[0]["user_id"], perPage)
 
 	messages := make([]Message, 0)
+	users := make([]User, 0)
+
 
 	timelineData := TimelineData{
 		IsPublicTimeline: false,
+		IsMyTimeline: ,
 		IsFollowed:       followed,
+		HasMessages: len(messages) > 0,
+		User: ,
+		Messages: messages,
 	}
-	renderTemplate(c, "timeline.html")
+
+	renderTemplate(c, "timeline.html",timelineData)
 }
 
 // Adds the current user as follower of the given user.
