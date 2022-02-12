@@ -189,11 +189,9 @@ func beforeRequest(c *gin.Context) {
 	c.Set("db", db)
 
 	session := sessions.Default(c)
-	if session.Get("user_id") != nil {
-		users := queryDb(db, "select * from user where user_id = ?", session.Get("user_id"))
-		c.Set("user", users[0])
-		user := *getUserFromId(users[0]["user_id"].(int64), db)
-		c.Set("userx", user)
+	if userId := session.Get("user_id"); userId != nil {
+		user := *getUserFromId(userId.(int64), db)
+		c.Set("user", user)
 	}
 
 	c.Next()
@@ -207,7 +205,7 @@ func timeline(c *gin.Context) {
 	defer db.Close()
 
 	var user User
-	if u, isLoggedIn := c.Get("userx"); isLoggedIn {
+	if u, isLoggedIn := c.Get("user"); isLoggedIn {
 		user = u.(User)
 	} else {
 		c.Redirect(302, publicTimelineUrl)
@@ -277,7 +275,7 @@ func publicTimeline(c *gin.Context) {
 
 	var user User
 	if u, ok := c.Get("user"); ok {
-		user = *getUserFromId(u.(map[string]interface{})["user_id"].(int64), db)
+		user = u.(User)
 	}
 
 	renderTemplate(c, "timeline.html", TimelineData{
@@ -306,7 +304,13 @@ func userTimeline(c *gin.Context) {
 	}
 
 	followed := false
-	if _, userExists := c.Get("user"); userExists { // if g.user from .py
+	u, userLoggedIn := c.Get("user")
+	user := User{
+		Username: "",
+	}
+
+	if userLoggedIn { // if g.user from .py
+		user = u.(User)
 		query :=
 			`
 				select 1 
@@ -329,14 +333,6 @@ func userTimeline(c *gin.Context) {
 		`
 	results := queryDb(db, messageQuery, profileUser.UserId, perPage)
 	messages := createTweetsFromQuery(results)
-
-	user := User{
-		Username: "",
-	}
-
-	if u, userLoggedIn := c.Get("user"); userLoggedIn {
-		user.Username = (u.(map[string]interface{}))["username"].(string)
-	}
 
 	timelineData := TimelineData{
 		LayoutData: LayoutData{
@@ -376,17 +372,17 @@ func createTweetsFromQuery(results []map[string]interface{}) []Message {
 // Adds the current user as follower of the given user.
 func followUser(c *gin.Context) {
 	username := c.Param("username")
-
 	db := c.MustGet("db").(*sql.DB)
-	user := c.MustGet("user").(Row)
 	whomID := getUserId(username, db)
 	session := sessions.Default(c)
 
-	if user == nil {
+	if _, isLoggedIn := c.Get("user"); !isLoggedIn {
 		c.JSON(401, nil)
+		return
 	}
 	if whomID == nil {
 		c.JSON(404, nil)
+		return
 	}
 
 	queryDb(db, "insert into follower (who_id, whom_id) values (?, ?)",
@@ -401,15 +397,16 @@ func followUser(c *gin.Context) {
 func unfollowUser(c *gin.Context) {
 	username := c.Param("username")
 	db := c.MustGet("db").(*sql.DB)
-	user := c.MustGet("user").(Row)
 	whomID := getUserId(username, db)
 	session := sessions.Default(c)
 
-	if user == nil {
+	if _, isLoggedIn := c.Get("user"); !isLoggedIn {
 		c.JSON(401, nil)
+		return
 	}
 	if whomID == nil {
 		c.JSON(404, nil)
+		return
 	}
 
 	queryDb(db, "delete from follower where who_id = ? and whom_id = ?",
@@ -423,10 +420,10 @@ func unfollowUser(c *gin.Context) {
 // Registers a new message for the user.
 func addMessage(c *gin.Context) {
 	db := c.MustGet("db").(*sql.DB)
-	session := sessions.Default(c)
-	userID := session.Get("user_id")
 
-	if userID == nil {
+	user, userLoggedIn := c.Get("user")
+
+	if !userLoggedIn {
 		c.JSON(401, nil)
 		return
 	}
@@ -441,7 +438,7 @@ func addMessage(c *gin.Context) {
 
 	if text != "" {
 		queryDb(db, "insert into message (author_id, text, pub_date, flagged) values (?, ?, ?, 0)",
-			session.Get("user_id"), text, time.Now().UTC().Unix())
+			user.(User).UserId, text, time.Now().UTC().Unix())
 
 		// TODO: flash('Your message was recorded')
 	}
