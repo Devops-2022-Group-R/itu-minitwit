@@ -8,7 +8,6 @@ import (
 	"io/ioutil"
 	"log"
 	"path"
-	"strconv"
 	"strings"
 	"time"
 
@@ -25,7 +24,7 @@ const (
 	secretKey = "development key"
 
 	timeLineUrl       = "/"
-	publicTimeLineUrl = "/public"
+	publicTimelineUrl = "/public"
 	loginUrl          = "/login"
 )
 
@@ -45,7 +44,7 @@ func main() {
 
 	r.GET(loginUrl, loginGetHandler)
 	r.POST(loginUrl, loginPostHandler)
-	r.GET(publicTimeLineUrl, publicTimeline)
+	r.GET(publicTimelineUrl, publicTimeline)
 	r.POST("/add_message", addMessage)
 	r.GET("/:username", userTimeline)
 
@@ -161,13 +160,57 @@ func beforeRequest(c *gin.Context) {
 // @app.route('/')
 func timeline(c *gin.Context) {
 	db := c.MustGet("db").(*sql.DB)
+	session := sessions.Default(c)
 	defer db.Close()
 
-	if user, isLoggedIn := c.Get("user").(Row); !isLoggedIn {
+	if _, isLoggedIn := c.Get("user"); !isLoggedIn {
 		c.Redirect(307, publicTimelineUrl)
 	}
+
+	userId := session.Get("user_id").(int)
 	// c.Request.args.Get("offset", int) // offset = request.args.get('offset', type=int)
-	renderTemplate("timeline.html", queryDb(,))
+	query :=
+		`
+			select message.*, user.* from message, user
+			where message.flagged = 0 and message.author_id = user.user_id and 
+			(
+				user.user_id = ? or
+				user.user_id in 
+				(
+					select whom_id from follower
+					where who_id = ?
+				)
+			)
+			order by message.pub_date desc limit ?
+		`
+	results := queryDb(db, query, userId, userId, perPage) //  [session['user_id'], session['user_id'], PER_PAGE]))
+
+	messages := make([]Message, 0)
+	users := make([]User, 0)
+
+	for _, result := range results {
+		message := Message{
+			Email:    result["email"].(string),
+			Username: result["username"].(string),
+			PubDate:  result["pub_date"].(int),
+			Text:     result["text"].(string),
+		}
+
+		user := User{
+			Username: result["username"].(string),
+		}
+
+		messages = append(messages, message)
+		users = append(users, user)
+	}
+
+	renderTemplate(c, "timeline.html", TimelineData{
+		IsPublicTimeline: false,
+		IsMyTimeline:     false,
+		IsFollowed:       false,
+		HasMessages:      len(messages) > 0,
+		Messages:         messages,
+	})
 }
 
 // Displays the latest messages of all users.
@@ -190,34 +233,35 @@ func publicTimeline(c *gin.Context) {
 	users := make([]User, 0)
 
 	for _, result := range results {
-		var message Message
-		var user User
-		var err error
-
-		message.Email = result["email"].(string)
-		message.Username = result["username"].(string)
-		message.Text = result["text"].(string)
-		message.PubDate, err = strconv.Atoi(result["pub_date"].(string))
-		user.Username = result["username"].(string)
-
-		if err != nil {
-			log.Fatal(err)
+		message := Message{
+			Email:    result["email"].(string),
+			Username: result["username"].(string),
+			Text:     result["text"].(string),
+			PubDate:  result["pub_date"].(int),
+		}
+		user := User{
+			Username: result["username"].(string),
 		}
 
 		messages = append(messages, message)
 		users = append(users, user)
 	}
 
-	// Currently doing work on the templates
+	timelineData := TimelineData{
+		IsPublicTimeline: true,
+		IsMyTimeline:     false,
+		IsFollowed:       true,
+		HasMessages:      len(messages) > 0,
+		Messages:         messages,
+	}
 }
 
 // Display's a users tweets.
 func userTimeline(c *gin.Context) {
-	username := c.Param("username")
-
 	db := c.MustGet("db").(*sql.DB)
-	user := c.MustGet("user").(Row)
-	userId := getUserId(username, db)
+	user := c.Get("user").(Row)
+	username := c.Param("username")
+	userId := session.Get("user_id").(int)
 
 	defer db.Close()
 
@@ -228,6 +272,7 @@ func userTimeline(c *gin.Context) {
 		c.JSON(404, nil) // abort(404)
 	}
 	followed := false
+
 	if user != nil { // if user is logged in - sessin g.user
 		query :=
 			`
@@ -247,7 +292,15 @@ func userTimeline(c *gin.Context) {
 			user where user.user_id = message.author_id and user.user_id = ?
 			order by message.pub_date desc limit
 		`
-	renderTemplate("timeline.html", queryDb(db, htmlQuery, profileUser[0]["user_id"], perPage), followed, profileUser) // refactor
+	results := queryDb(db, htmlQuery, profileUser[0]["user_id"], perPage)
+
+	messages := make([]Message, 0)
+
+	timelineData := TimelineData{
+		IsPublicTimeline: false,
+		IsFollowed:       followed,
+	}
+	renderTemplate(c, "timeline.html")
 }
 
 // Adds the current user as follower of the given user.
@@ -268,8 +321,7 @@ func followUser(username string, c *gin.Context) {
 	queryDb(db, "insert into follower (who_id, whom_id) values (?, ?)",
 		session.Get("user_id"), whomID)
 
-	// TODO:
-	// flash('You are now following "%s"' % username)
+	// TODO: flash('You are now following "%s"' % username)
 
 	c.Redirect(307, timeLineUrl)
 }
@@ -292,14 +344,12 @@ func unfollowUser(username string, c *gin.Context) {
 	queryDb(db, "delete from follower where who_id = ? and whom_id = ?",
 		session.Get("user_id"), whomID)
 
-	// TODO:
-	// flash('You are no longer following "%s"' % username)
+	// TODO: flash('You are no longer following "%s"' % username)
 
 	c.Redirect(307, timeLineUrl)
 }
 
 // Registers a new message for the user.
-// @app.route('', methods=['POST'])
 func addMessage(c *gin.Context) {
 	db := c.MustGet("db").(*sql.DB)
 	session := sessions.Default(c)
@@ -321,29 +371,24 @@ func addMessage(c *gin.Context) {
 		queryDb(db, "insert into message (author_id, text, pub_date, flagged) values (?, ?, ?, 0)",
 			session.Get("user_id"), text, time.Now())
 
-		// TODO:
-		// flash('Your message was recorded')
+		// TODO: flash('Your message was recorded')
 	}
 
-	// TODO:
-	// return redirect(url_for('timeline'))
+	// TODO: return redirect(url_for('timeline'))
 }
 
 func loginGetHandler(c *gin.Context) {
-	_, userIsInSession := c.Get("user")
-	if userIsInSession {
+	if _, userIsInSession := c.Get("user"); userIsInSession {
 		c.Redirect(307, timeLineUrl)
 		return
 	}
 
-	// TODO: Make work
-	renderTemplate("login.html")
+	renderTemplate(c, "login.html", LoginData{})
 }
 
 // Logs the user in.
 func loginPostHandler(c *gin.Context) {
-	user, userIsInSession := c.Get("user")
-	if userIsInSession {
+	if _, userIsInSession := c.Get("user"); userIsInSession {
 		c.Redirect(307, timeLineUrl)
 		return
 	}
@@ -362,7 +407,7 @@ func loginPostHandler(c *gin.Context) {
 	var errMsg string
 	if len(users) == 0 {
 		errMsg = "Invalid username"
-	} else if !checkPasswordHash(user[0]["pw_hash"], password) {
+	} else if !checkPasswordHash(users[0]["pw_hash"], password) {
 		errMsg = "Invalid password"
 	} else {
 		session.Set("user_id", users[0]["user_id"])
@@ -371,27 +416,25 @@ func loginPostHandler(c *gin.Context) {
 		return
 	}
 
-	// TODO: handle error
-	errMsg
+	renderTemplate(c, "login.html", LoginData{
+		Username: username,
+		ErrorMsg: errMsg,
+	})
 }
 
-// Registers the user.
-// @app.route('/register', methods=['GET', 'POST'])
-// def register():
+// Shows the page for registering the user.
 func registerGetHandler(c *gin.Context) {
-	_, userIsInSession := c.Get("user")
-	if userIsInSession {
+	if _, userIsInSession := c.Get("user"); userIsInSession {
 		c.Redirect(307, timeLineUrl)
 		return
 	}
 
-	// TODO: Make work
-	renderTemplate("register.html")
+	renderTemplate(c, "register.html", RegisterData{})
 }
 
+// Registers the user.
 func registerPostHandler(c *gin.Context) {
-	_, userIsInSession := c.Get("user")
-	if userIsInSession {
+	if _, userIsInSession := c.Get("user"); userIsInSession {
 		c.Redirect(307, timeLineUrl)
 		return
 	}
@@ -429,8 +472,11 @@ func registerPostHandler(c *gin.Context) {
 		c.Redirect(307, loginUrl)
 	}
 
-	// TODO: Make work
-	renderTemplate("register.html", errMsg)
+	renderTemplate(c, "register.html", RegisterData{
+		ErrorMsg: errMsg,
+		Username: form.Get("username"),
+		Email:    form.Get("email"),
+	})
 }
 
 // Logs the user out
@@ -439,6 +485,15 @@ func logout(c *gin.Context) {
 	session := sessions.Default(c)
 	session.Delete("user_id")
 	c.Redirect(307, publicTimelineUrl)
+}
+
+func renderTemplate(c *gin.Context, templateSubPath string, templateData interface{}) {
+	path := templatePath(templateSubPath)
+	t := parseHtmlFiles(path)
+	err := t.Execute(c.Writer, templateData)
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
 func parseHtmlFiles(files ...string) *template.Template {
@@ -461,15 +516,7 @@ func getHtmlDefaults() template.FuncMap {
 	}
 }
 
-/* func howToHtml(c *gin.Context) {
-	t := parseHtmlFiles("./templates/howto.html")
-
-	data := TimelineData{
-		somedata: Data
-	}
-
-	err := t.Execute(c.Writer, data)
-	if err != nil {
-		log.Fatal(err)
-	}
-} */
+// Prepends the path to the templates folder to the given path.
+func templatePath(subPath string) string {
+	return fmt.Sprintf("%s/%s", "./src/templates", subPath)
+}

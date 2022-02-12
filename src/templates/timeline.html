@@ -3,17 +3,28 @@
 {{ define "title" }}
     {{ if .IsPublicTimeline }}
         Public Timeline
+    {{ else if .IsMyTimeline }}
+        My timeline
     {{ else }}
         {{ .ProfileUser.Username }}'s Timeline
     {{ end }}
 {{ end }}
 
 {{ define "body" }}
-    <h2>{{ .Title }}</h2>
+    <h2>{{ template "title" .}}</h2>
 
-    {{ if .User }}
+    {{ if .User.Username }}
         {{ if .IsPublicTimeline }}
-            <div class="folloowstatus">
+             <div class=twitbox>
+                <h3>What's on your mind {{ .User.Username }}?</h3>
+
+                <form action="/add_message" method=post>
+                    <p><input type=text name=text size=60>
+                    <input type=submit value="Share">
+                </form>
+            </div>
+        {{ else }}
+            <div class="followstatus">
                 {{ if .IsMyTimeline }}
                     This is you!
                 {{ else }}
@@ -26,27 +37,18 @@
                     {{ end }}
                 {{ end }}
             </div>
-        {{ else }}
-            <div class=twitbox>
-                <h3>What's on your mind {{ .User.Username }}?</h3>
-
-                <form action="{{ url_for('add_message') }}" method=post>
-                    <p><input type=text name=text size=60>
-                    <input type=submit value="Share">
-                </form>
-            </div>
         {{ end }}
     {{ end }}
 
-    <ul class="messsages">
+    <ul class="messages">
         {{ if .HasMessages }}
             {{ range .Messages }}
                 <li>
-                    <img src="{{ gravatar .Email 48 }}">
+                    <img src="{{ gravatarUrl .Email 48 }}">
                     <p>
                         <strong><a href="/user_timeline/{{ .Username }}">{{ .Username }}</a></strong>
                         {{ .Text }}
-                        <small>&mdash; {{ datetimeformat .PubDate }}</small>
+                        <small>&mdash; {{ formatDatetime .PubDate }}</small>
                     </p>
                 </li>
             {{ end }}

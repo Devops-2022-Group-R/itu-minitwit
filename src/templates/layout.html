@@ -12,7 +12,7 @@
 
             <div class="navigation">
                 <!-- TODO: Make these methods -->
-                {{ if .User }}
+                {{ if .User.Username }}
                     <a href="/timeline">my timeline</a> |
                     <a href="/public_timeline">public timeline</a> |
                     <a href="/logout">sign out [{{ .User.Username }}]</a>

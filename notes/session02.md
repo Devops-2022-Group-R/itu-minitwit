@@ -17,7 +17,9 @@ We have attempted to do it as 1:1 as possible, but in moving from Python to Go, 
 - `useDbAndUser` should be split into two separate middlewares
 - `r.Use(beforeRequest)` connects and queries the database for all users - should only on a request-basis or have a global connection
 - Use a ORM, forexample GORM
+    - Or for making our simple crap code better, helper functions to create structs from a Row map
 - Currently, status code 307 is used in many redirects - investigate if this is proper usage of `c.Redirect` (or if it matches the old minitwit)
+- Use an external frontend. The html template stuff is not working well
 
 ## Other notes
 - Remember to remove `ping`, `pingHandler` etc. that was used for testing
