@@ -1,0 +1,38 @@
+{{ define "layout" }}
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>{{ template "title" .}} | MiniTwit</title>
+        <link rel="stylesheet" type="text/css" href="/static/style.css"> <!-- TODO: Replace with method -->
+    </head>
+
+    <body>
+        <div class="page">
+            <h1>MiniTwit</h1>
+
+            <div class="navigation">
+                <!-- TODO: Make these methods -->
+                {{ if .User }}
+                    <a href="/timeline">my timeline</a> |
+                    <a href="/public_timeline">public timeline</a> |
+                    <a href="/logout">sign out [{{ .User.Username }}]</a>
+                {{ else }}
+                    <a href="/public_timeline">public timeline</a> |
+                    <a href="/register">sign up</a> |
+                    <a href="/login">sign in</a>
+                {{ end }}
+            </div> 
+
+            <!-- TODO: Flashes -->
+
+            <div class="body">
+                {{ template "body" .}}
+            </div>
+
+            <div class="footer">
+                MiniTwit &mdash; A Gin Application
+            </div>
+        </div>
+    </body>
+</html>
+{{end}}
