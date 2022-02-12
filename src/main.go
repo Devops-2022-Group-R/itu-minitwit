@@ -120,9 +120,9 @@ func getUserId(username string, db *sql.DB) *int {
 }
 
 // Format a timestamp for display.
-// func formatDateTime(timestamp) {
-//
-// }
+func formatDateTime(timestamp int64) string {
+	return time.Unix(timestamp, 0).UTC().Format("%Y-%m-%d @ %H:%M")
+}
 
 // Return the gravatar image for the given email address.
 func gravatarUrl(email string, size int) string {
