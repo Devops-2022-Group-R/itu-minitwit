@@ -1,7 +1,10 @@
 package main
 
 type User struct {
-	Username string
+	UserId       int
+	Username     string
+	Email        string
+	PasswordHash string
 }
 
 type Message struct {

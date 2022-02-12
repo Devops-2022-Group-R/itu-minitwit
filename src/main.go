@@ -12,9 +12,10 @@ import (
 	"time"
 
 	"github.com/gin-contrib/sessions"
-	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-gonic/gin"
 	_ "github.com/mattn/go-sqlite3"
+
+	"github.com/Devops-2022-Group-R/itu-minitwit/src/password"
 )
 
 const (
@@ -122,6 +123,20 @@ func getUserId(username string, db *sql.DB) *int {
 	return &userId
 }
 
+func getUser(username string, db *sql.DB) *User {
+	rows := queryDb(db, "select * from user where username = ?", username)
+	if len(rows) == 0 {
+		return nil
+	}
+
+	return &User{
+		UserId:  rows[0]["user_id"].(int),
+		Username: rows[0]["username"].(string),
+		Email:    rows[0]["email"].(string),
+		PasswordHash: rows[0]["pw_hash"].(string),
+	}
+}
+
 // Format a timestamp for display.
 func formatDateTime(timestamp int64) string {
 	return time.Unix(timestamp, 0).UTC().Format("%Y-%m-%d @ %H:%M")
@@ -185,24 +200,7 @@ func timeline(c *gin.Context) {
 		`
 	results := queryDb(db, query, userId, userId, perPage) //  [session['user_id'], session['user_id'], PER_PAGE]))
 
-	messages := make([]Message, 0)
-	users := make([]User, 0)
-
-	for _, result := range results {
-		message := Message{
-			Email:    result["email"].(string),
-			Username: result["username"].(string),
-			PubDate:  result["pub_date"].(int),
-			Text:     result["text"].(string),
-		}
-
-		user := User{
-			Username: result["username"].(string),
-		}
-
-		messages = append(messages, message)
-		users = append(users, user)
-	}
+	messages, _ := createTweetsFromQuery(results) 
 
 	renderTemplate(c, "timeline.html", TimelineData{
 		IsPublicTimeline: false,
@@ -214,7 +212,6 @@ func timeline(c *gin.Context) {
 }
 
 // Displays the latest messages of all users.
-// @app.route('/public')
 func publicTimeline(c *gin.Context) {
 	db := c.MustGet("db").(*sql.DB)
 
@@ -247,13 +244,13 @@ func publicTimeline(c *gin.Context) {
 		users = append(users, user)
 	}
 
-	timelineData := TimelineData{
+	renderTemplate(c, "timeline.html", TimelineData{
 		IsPublicTimeline: true,
 		IsMyTimeline:     false,
 		IsFollowed:       true,
 		HasMessages:      len(messages) > 0,
 		Messages:         messages,
-	}
+	})
 }
 
 // Display's a users tweets.
@@ -263,24 +260,25 @@ func userTimeline(c *gin.Context) {
 
 	username := c.Param("username")
 	queryUserProfile := "select * from user where username = ?"
-	profileUser := queryDb(db, queryUserProfile, username)
-
-	if _, contain := profileUser[0][username]; !contain {
+	
+	profileUser := getUser(username, db)	
+	if profileUser == nil {
 		c.JSON(404, nil) // abort(404)
 	}
+
 	followed := false
 
-	if _, userExists := c.Get("user"); userExists{ // if g.user from .py
+	if _, userExists := c.Get("user"); userExists { // if g.user from .py
 		query :=
 			`
 				"select 1 
 				from follower 
 				where follower.who_id = ? and follower.whom_id = ?"
-				`
+			`
 		session := sessions.Default(c)
 		userId := session.Get("user_id").(int)
-		isFollowing := queryDb(db, query, userId, profileUser[0]["user_id"]) // [session['user_id'], profile_user['user_id']], one=True) is not None
-		if len(isFollowing[0]) > 0 {                                         // this condition is trying to check -> "is not none" - is this correct?
+		isFollowing := queryDb(db, query, userId, profileUser.UserId) 	// [session['user_id'], profile_user['user_id']], one=True) is not None
+		if len(isFollowing) > 0 {                                         		// this condition is trying to check -> "is not none" - is this correct?
 			followed = true
 		}
 	}
@@ -291,22 +289,81 @@ func userTimeline(c *gin.Context) {
 			user where user.user_id = message.author_id and user.user_id = ?
 			order by message.pub_date desc limit
 		`
-	results := queryDb(db, messageQuery, profileUser[0]["user_id"], perPage)
+	results := queryDb(db, messageQuery, profileUser.UserId, perPage)
+	messages, _ := createTweetsFromQuery(results)
 
-	messages := make([]Message, 0)
-	users := make([]User, 0)
-
-
+	// TODO: finish
 	timelineData := TimelineData{
 		IsPublicTimeline: false,
-		IsMyTimeline: ,
-		IsFollowed:       followed,
+		// IsMyTimeline: ,
+		IsFollowed:  followed,
 		HasMessages: len(messages) > 0,
-		User: ,
+		// User: ,
 		Messages: messages,
 	}
 
-	renderTemplate(c, "timeline.html",timelineData)
+	user := User {
+		Username: "",
+	}
+
+	if u, userLoggedIn = c.Get("username"); userLoggedIn {
+		user.Username = u.(string)
+	}
+
+	data := TimelineData{
+		LayoutData: LayoutData{
+			User: user,	
+		},
+
+		IsPublicTimeline: false,
+		IsMyTimeline:     user.Username == ,
+		IsFollowed:       followed,
+		HasMessages:      len(messages) > 0,
+
+		ProfileUser: User{
+			Username: profileUser[0]["username"].(string),
+		},
+
+		Messages: []Message{
+			{
+				Email:    "gamer@gamer.dk",
+				Username: "Gamer",
+				PubDate:  "Today",
+				Text:     "This is a different message",
+			},
+			{
+				Email:    "albert@risenielsen.dk",
+				Username: "Albert",
+				PubDate:  "Yesterday",
+				Text:     "This is a test message",
+			},
+		},
+	}
+
+	renderTemplate(c, "timeline.html", timelineData)
+}
+
+// Convenience transforming data from a query into messages  
+func createTweetsFromQuery(results []map[string]interface{}) ([]Message, []User) {
+	messages := make([]Message, 0)
+	users := make([]User, 0)
+
+	for _, result := range results {
+		message := Message{
+			Email:    result["email"].(string),
+			Username: result["username"].(string),
+			PubDate:  result["pub_date"].(int),
+			Text:     result["text"].(string),
+		}
+
+		user := User{
+			Username: result["username"].(string),
+		}
+
+		messages = append(messages, message)
+		users = append(users, user)
+	}
+	return messages, users
 }
 
 // Adds the current user as follower of the given user.
@@ -314,7 +371,7 @@ func userTimeline(c *gin.Context) {
 func followUser(username string, c *gin.Context) {
 	db := c.MustGet("db").(*sql.DB)
 	user := c.MustGet("user").(Row)
-	whomID := getUserId(username, c)
+	whomID := getUserId(username, db)
 	session := sessions.Default(c)
 
 	if user == nil {
@@ -337,7 +394,7 @@ func followUser(username string, c *gin.Context) {
 func unfollowUser(username string, c *gin.Context) {
 	db := c.MustGet("db").(*sql.DB)
 	user := c.MustGet("user").(Row)
-	whomID := getUserId(username, c)
+	whomID := getUserId(username, db)
 	session := sessions.Default(c)
 
 	if user == nil {
@@ -413,10 +470,11 @@ func loginPostHandler(c *gin.Context) {
 	var errMsg string
 	if len(users) == 0 {
 		errMsg = "Invalid username"
-	} else if !checkPasswordHash(users[0]["pw_hash"], password) {
+	} else if !CheckPasswordHash(users[0]["pw_hash"], password) {
 		errMsg = "Invalid password"
 	} else {
 		session.Set("user_id", users[0]["user_id"])
+		session.Set("username", users[0]["username"])
 		// TODO: Translate this from Python - flash('You were logged in')
 		c.Redirect(307, timeLineUrl)
 		return
@@ -468,7 +526,7 @@ func registerPostHandler(c *gin.Context) {
 			"insert into user (username, email, pw_hash) values (?, ?, ?)",
 			form.Get("username"),
 			form.Get("email"),
-			generatePasswordHash(form.Get("password")),
+			GeneratePasswordHash(form.Get("password")),
 			// TODO: Translate from Python - flash('You were successfully registered and can login now')
 		)
 		if err != nil {
