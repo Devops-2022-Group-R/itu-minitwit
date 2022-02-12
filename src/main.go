@@ -42,7 +42,6 @@ func main() {
 	r.Use(sessions.Sessions("mysession", store))
 
 	r.Use(beforeRequest)
-	r.Use(useLogger)
 	r.Static("/static", "./src/static")
 
 	r.GET(timeLineUrl, timeline)
@@ -60,12 +59,6 @@ func main() {
 	r.Run()
 }
 
-func useLogger(c *gin.Context) {
-	session := sessions.Default(c)
-	log.Printf("User: %v", session.Get("user_id"))
-	c.Next()
-}
-
 func connectDb() *sql.DB {
 	db, err := sql.Open("sqlite3", "./minitwit.db")
 	if err != nil {
@@ -79,7 +72,7 @@ func connectDb() *sql.DB {
 // 	db := connectDb()
 // 	defer db.Close()
 
-// 	file, err := ioutil.ReadFile("schema.sql")
+// 	file, err := ioutil.ReadFile("./src/schema.sql")
 // 	if err != nil {
 // 		log.Fatal(err)
 // 	}
@@ -96,7 +89,7 @@ func connectDb() *sql.DB {
 func queryDb(db *sql.DB, query string, args ...interface{}) []Row {
 	rows, err := db.Query(query, args...)
 	if err != nil {
-		log.Fatalf("rip: %v", err)
+		log.Fatalf("queryDb failure: %v", err)
 	}
 	defer rows.Close()
 
@@ -199,6 +192,8 @@ func beforeRequest(c *gin.Context) {
 	if session.Get("user_id") != nil {
 		users := queryDb(db, "select * from user where user_id = ?", session.Get("user_id"))
 		c.Set("user", users[0])
+		user := *getUserFromId(users[0]["user_id"].(int64), db)
+		c.Set("userx", user)
 	}
 
 	c.Next()
@@ -209,15 +204,16 @@ func beforeRequest(c *gin.Context) {
 // messages of followed users.
 func timeline(c *gin.Context) {
 	db := c.MustGet("db").(*sql.DB)
-	session := sessions.Default(c)
 	defer db.Close()
 
-	if _, isLoggedIn := c.Get("user"); !isLoggedIn {
+	var user User
+	if u, isLoggedIn := c.Get("userx"); isLoggedIn {
+		user = u.(User)
+	} else {
 		c.Redirect(302, publicTimelineUrl)
 		return
 	}
 
-	userId := session.Get("user_id").(int64)
 	// c.Request.args.Get("offset", int) // offset = request.args.get('offset', type=int)
 	query :=
 		`
@@ -233,13 +229,19 @@ func timeline(c *gin.Context) {
 			)
 			order by message.pub_date desc limit ?
 		`
-	results := queryDb(db, query, userId, userId, perPage) //  [session['user_id'], session['user_id'], PER_PAGE]))
+	results := queryDb(db, query, user.UserId, user.UserId, perPage) //  [session['user_id'], session['user_id'], PER_PAGE]))
 
 	messages := createTweetsFromQuery(results)
 
 	renderTemplate(c, "timeline.html", TimelineData{
+		LayoutData: LayoutData{
+			User: user,
+		},
+
+		ProfileUser: user,
+
 		IsPublicTimeline: false,
-		IsMyTimeline:     false,
+		IsMyTimeline:     true,
 		IsFollowed:       false,
 		HasMessages:      len(messages) > 0,
 		Messages:         messages,
@@ -307,9 +309,9 @@ func userTimeline(c *gin.Context) {
 	if _, userExists := c.Get("user"); userExists { // if g.user from .py
 		query :=
 			`
-				"select 1 
+				select 1 
 				from follower 
-				where follower.who_id = ? and follower.whom_id = ?"
+				where follower.who_id = ? and follower.whom_id = ?
 			`
 		session := sessions.Default(c)
 		userId := session.Get("user_id").(int64)
@@ -426,6 +428,7 @@ func addMessage(c *gin.Context) {
 
 	if userID == nil {
 		c.JSON(401, nil)
+		return
 	}
 
 	err := c.Request.ParseForm()
@@ -438,12 +441,12 @@ func addMessage(c *gin.Context) {
 
 	if text != "" {
 		queryDb(db, "insert into message (author_id, text, pub_date, flagged) values (?, ?, ?, 0)",
-			session.Get("user_id"), text, time.Now())
+			session.Get("user_id"), text, time.Now().UTC().Unix())
 
 		// TODO: flash('Your message was recorded')
 	}
 
-	// TODO: return redirect(url_for('timeline'))
+	c.Redirect(302, timeLineUrl)
 }
 
 func loginGet(c *gin.Context) {
@@ -480,6 +483,7 @@ func loginPost(c *gin.Context) {
 		errMsg = "Invalid password"
 	} else {
 		session.Set("user_id", users[0]["user_id"])
+		session.Save()
 		// TODO: Translate this from Python - flash('You were logged in')
 		c.Redirect(302, timeLineUrl)
 		return
@@ -555,6 +559,7 @@ func logout(c *gin.Context) {
 	// TODO: Translate this from Python - flash('You were logged out')
 	session := sessions.Default(c)
 	session.Delete("user_id")
+	session.Save()
 	c.Redirect(302, publicTimelineUrl)
 }
 
@@ -581,7 +586,6 @@ func parseHtmlFiles(files ...string) *template.Template {
 
 func getHtmlDefaults() template.FuncMap {
 	return template.FuncMap{
-		// "getStaticRoute": getStaticRoute,
 		"formatDatetime": formatDateTime,
 		"gravatarUrl":    gravatarUrl,
 	}

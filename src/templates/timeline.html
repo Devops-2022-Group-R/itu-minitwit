@@ -30,10 +30,10 @@
                 {{ else }}
                     {{ if .IsFollowed }}
                         You are currently following this user.
-                        <a class=unfollow href="/unfollow_user/{{ .ProfileUser.Username }}">Unfollow user</a>.
+                        <a class=unfollow href="/{{ .ProfileUser.Username }}/unfollow">Unfollow user</a>.
                     {{ else }}
                         You are not yet following this user.
-                        <a class=follow href="/follow_user/{{ .ProfileUser.Username }}">Unfollow user</a>.
+                        <a class=follow href="/{{ .ProfileUser.Username }}/follow">Follow user</a>.
                     {{ end }}
                 {{ end }}
             </div>
