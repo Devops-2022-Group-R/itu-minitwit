@@ -4,8 +4,11 @@ import (
 	"crypto/md5"
 	"database/sql"
 	"fmt"
+	"html/template"
 	"io/ioutil"
 	"log"
+	"path"
+	"strconv"
 	"strings"
 	"time"
 
@@ -38,7 +41,8 @@ func main() {
 	store := cookie.NewStore([]byte(secretKey))
 	r.Use(sessions.Sessions("mysession", store))
 
-		r.GET("/ping", pingHandler)
+	r.Static("/static", "static")
+
 	r.GET(loginUrl, loginGetHandler)
 	r.POST(loginUrl, loginPostHandler)
 	r.GET(publicTimeLineUrl, publicTimeline)
@@ -155,9 +159,16 @@ func beforeRequest(c *gin.Context) {
 }
 
 // @app.route('/')
-// func timeline(c *gin.Context) {
-//
-// }
+func timeline(c *gin.Context) {
+	db := c.MustGet("db").(*sql.DB)
+	defer db.Close()
+
+	if user, isLoggedIn := c.Get("user").(Row); !isLoggedIn {
+		c.Redirect(307, publicTimelineUrl)
+	}
+	// c.Request.args.Get("offset", int) // offset = request.args.get('offset', type=int)
+	renderTemplate("timeline.html", queryDb(,))
+}
 
 // Displays the latest messages of all users.
 // @app.route('/public')
@@ -175,18 +186,27 @@ func publicTimeline(c *gin.Context) {
 		limit ?`
 	results := queryDb(db, query, perPage)
 
-	messages := make([])
+	messages := make([]Message, 0)
+	users := make([]User, 0)
 
 	for _, result := range results {
+		var message Message
+		var user User
+		var err error
 
+		message.Email = result["email"].(string)
+		message.Username = result["username"].(string)
+		message.Text = result["text"].(string)
+		message.PubDate, err = strconv.Atoi(result["pub_date"].(string))
+		user.Username = result["username"].(string)
+
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		messages = append(messages, message)
+		users = append(users, user)
 	}
-
-	Message
-	message_id := list["user_id"]
-	author_id
-	text
-	pub_date
-	flagged
 
 	// Currently doing work on the templates
 }
@@ -205,22 +225,21 @@ func userTimeline(c *gin.Context) {
 	profileUser := queryDb(db, queryUserProfile, username)
 
 	if _, contain := profileUser[0][username]; !contain {
-		c.JSON(404, profileUser) // abort(404)
+		c.JSON(404, nil) // abort(404)
 	}
 	followed := false
-	if user != nil { // if user is logged - in sessin g.user
+	if user != nil { // if user is logged in - sessin g.user
 		query :=
 			`
 				"select 1 
 				from follower 
 				where follower.who_id = ? and follower.whom_id = ?"
 				`
-			isFollowing = queryDb(db, query, userId, profileUser[0]["user_id"]) // [session['user_id'], profile_user['user_id']], one=True) is not None
-			if len(isFollowing[0]) > 0 {
-				followed = true
-			}
-			followed =  // [session['user_id'], profile_user['user_id']], one=True) is not None
+		isFollowing := queryDb(db, query, userId, profileUser[0]["user_id"]) // [session['user_id'], profile_user['user_id']], one=True) is not None
+		if len(isFollowing[0]) > 0 {
+			followed = true
 		}
+	}
 
 	htmlQuery :=
 		`
@@ -228,7 +247,7 @@ func userTimeline(c *gin.Context) {
 			user where user.user_id = message.author_id and user.user_id = ?
 			order by message.pub_date desc limit
 		`
-	return renderTemplate("timeline.html", queryDb(db, htmlQuery, profileUser["user_id"], perPage), followed, profileUser) // refactor
+	renderTemplate("timeline.html", queryDb(db, htmlQuery, profileUser[0]["user_id"], perPage), followed, profileUser) // refactor
 }
 
 // Adds the current user as follower of the given user.
@@ -421,3 +440,36 @@ func logout(c *gin.Context) {
 	session.Delete("user_id")
 	c.Redirect(307, publicTimelineUrl)
 }
+
+func parseHtmlFiles(files ...string) *template.Template {
+	files = append(files, "./new-templates/layout.html")
+
+	name := path.Base(files[0])
+	t, err := template.New(name).Funcs(getHtmlDefaults()).ParseFiles(files...)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return t
+}
+
+func getHtmlDefaults() template.FuncMap {
+	return template.FuncMap{
+		// "getStaticRoute": getStaticRoute,
+		"formatDatetime": formatDateTime,
+		"gravatarUrl":    gravatarUrl,
+	}
+}
+
+/* func howToHtml(c *gin.Context) {
+	t := parseHtmlFiles("./templates/howto.html")
+
+	data := TimelineData{
+		somedata: Data
+	}
+
+	err := t.Execute(c.Writer, data)
+	if err != nil {
+		log.Fatal(err)
+	}
+} */

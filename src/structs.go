@@ -27,3 +27,14 @@ type TimelineData struct {
 
 	Messages []Message
 }
+
+type LoginData struct {
+	Username string
+	ErrorMsg string
+}
+
+type RegisterData struct {
+	Username string
+	Email    string
+	ErrorMsg string
+}
