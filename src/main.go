@@ -32,13 +32,17 @@ const (
 type Row = map[string]interface{}
 
 func main() {
+	if debug {
+		log.SetFlags(log.LstdFlags | log.Llongfile)
+	}
+
 	r := gin.Default()
 
 	store := cookie.NewStore([]byte(secretKey))
 	r.Use(sessions.Sessions("mysession", store))
 
 	r.Use(beforeRequest)
-	r.Static("/static", "static")
+	r.Static("/static", "./src/static")
 
 	r.GET(timeLineUrl, timeline)
 	r.GET(publicTimelineUrl, publicTimeline)
@@ -83,9 +87,9 @@ func connectDb() *sql.DB {
 
 // Queries the database and returns a list of dictionaries.
 func queryDb(db *sql.DB, query string, args ...interface{}) []Row {
-	rows, err := db.Query(query, args)
+	rows, err := db.Query(query, args...)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("rip: %v", err)
 	}
 	defer rows.Close()
 
@@ -97,14 +101,19 @@ func queryDb(db *sql.DB, query string, args ...interface{}) []Row {
 	results := make([]Row, 0)
 	for rows.Next() {
 		row := make(Row)
+
+		values := make([]interface{}, len(columnNames))
+		valuesRef := make([]interface{}, len(columnNames))
 		for i := 0; i < len(columnNames); i++ {
-			key := columnNames[i]
-			var value interface{}
-			err := rows.Scan(&value)
-			if err != nil {
-				log.Fatal(err)
-			}
-			row[key] = value
+			valuesRef[i] = &values[i]
+		}
+		err := rows.Scan(valuesRef...)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		for i := 0; i < len(columnNames); i++ {
+			row[columnNames[i]] = values[i]
 		}
 		results = append(results, row)
 	}
@@ -117,10 +126,10 @@ func queryDb(db *sql.DB, query string, args ...interface{}) []Row {
 }
 
 // Convenience method to look up the id for a username.
-func getUserId(username string, db *sql.DB) *int {
+func getUserId(username string, db *sql.DB) *int64 {
 	row := db.QueryRow("select user_id from user where username = ?", username)
 
-	var userId int
+	var userId int64
 	err := row.Scan(&userId)
 	if err != nil {
 		return nil
@@ -136,7 +145,7 @@ func getUser(username string, db *sql.DB) *User {
 	}
 
 	return &User{
-		UserId:       rows[0]["user_id"].(int),
+		UserId:       rows[0]["user_id"].(int64),
 		Username:     rows[0]["username"].(string),
 		Email:        rows[0]["email"].(string),
 		PasswordHash: rows[0]["pw_hash"].(string),
@@ -145,7 +154,7 @@ func getUser(username string, db *sql.DB) *User {
 
 // Format a timestamp for display.
 func formatDateTime(timestamp int64) string {
-	return time.Unix(timestamp, 0).UTC().Format("%Y-%m-%d @ %H:%M")
+	return time.Unix(timestamp, 0).UTC().Format("2006-01-02 @ 15:04")
 }
 
 // Return the gravatar image for the given email address.
@@ -167,7 +176,6 @@ func beforeRequest(c *gin.Context) {
 	defer db.Close()
 
 	c.Set("db", db)
-	c.Set("user", nil)
 
 	session := sessions.Default(c)
 	if session.Get("user_id") != nil {
@@ -191,7 +199,7 @@ func timeline(c *gin.Context) {
 		return
 	}
 
-	userId := session.Get("user_id").(int)
+	userId := session.Get("user_id").(int64)
 	// c.Request.args.Get("offset", int) // offset = request.args.get('offset', type=int)
 	query :=
 		`
@@ -241,7 +249,7 @@ func publicTimeline(c *gin.Context) {
 			Email:    result["email"].(string),
 			Username: result["username"].(string),
 			Text:     result["text"].(string),
-			PubDate:  result["pub_date"].(int),
+			PubDate:  result["pub_date"].(int64),
 		}
 
 		messages = append(messages, message)
@@ -276,7 +284,7 @@ func userTimeline(c *gin.Context) {
 				where follower.who_id = ? and follower.whom_id = ?"
 			`
 		session := sessions.Default(c)
-		userId := session.Get("user_id").(int)
+		userId := session.Get("user_id").(int64)
 		isFollowing := queryDb(db, query, userId, profileUser.UserId) // [session['user_id'], profile_user['user_id']], one=True) is not None
 		if len(isFollowing) > 0 {                                     // this condition is trying to check -> "is not none" - is this correct?
 			followed = true
@@ -326,7 +334,7 @@ func createTweetsFromQuery(results []map[string]interface{}) []Message {
 		message := Message{
 			Email:    result["email"].(string),
 			Username: result["username"].(string),
-			PubDate:  result["pub_date"].(int),
+			PubDate:  result["pub_date"].(int64),
 			Text:     result["text"].(string),
 		}
 
@@ -530,7 +538,7 @@ func renderTemplate(c *gin.Context, templateSubPath string, templateData interfa
 }
 
 func parseHtmlFiles(files ...string) *template.Template {
-	files = append(files, "./new-templates/layout.html")
+	files = append(files, "./src/templates/layout.html")
 
 	name := path.Base(files[0])
 	t, err := template.New(name).Funcs(getHtmlDefaults()).ParseFiles(files...)

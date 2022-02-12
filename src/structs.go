@@ -1,7 +1,7 @@
 package main
 
 type User struct {
-	UserId       int
+	UserId       int64
 	Username     string
 	Email        string
 	PasswordHash string
@@ -10,7 +10,7 @@ type User struct {
 type Message struct {
 	Email    string // Email of the user submitting this message
 	Username string // Username of the user submitting this message
-	PubDate  int    // FIXME: I think, depends on the database
+	PubDate  int64  // The publish timestamp as UNIX
 	Text     string // The message itself
 }
 
