@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 	"html/template"
+	"io/ioutil"
 	"log"
 	"path"
 	"strings"
@@ -19,7 +20,6 @@ import (
 )
 
 const (
-	database  = "./minitwit.db"
 	perPage   = 30
 	debug     = true
 	secretKey = "development key"
@@ -29,6 +29,8 @@ const (
 	loginUrl          = "/login"
 )
 
+var database = "./minitwit.db"
+
 type Row = map[string]interface{}
 
 func main() {
@@ -36,6 +38,12 @@ func main() {
 		log.SetFlags(log.LstdFlags | log.Llongfile)
 	}
 
+	initDb()
+
+	setupRouter().Run()
+}
+
+func setupRouter() *gin.Engine {
 	r := gin.Default()
 
 	store := cookie.NewStore([]byte(secretKey))
@@ -56,11 +64,11 @@ func main() {
 	r.POST("/register", registerPost)
 	r.GET("/logout", logout)
 
-	r.Run()
+	return r
 }
 
 func connectDb() *sql.DB {
-	db, err := sql.Open("sqlite3", "./minitwit.db")
+	db, err := sql.Open("sqlite3", database)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -68,22 +76,22 @@ func connectDb() *sql.DB {
 }
 
 // Creates the database tables.
-// func initDb() {
-// 	db := connectDb()
-// 	defer db.Close()
+func initDb() {
+	db := connectDb()
+	defer db.Close()
 
-// 	file, err := ioutil.ReadFile("./src/schema.sql")
-// 	if err != nil {
-// 		log.Fatal(err)
-// 	}
+	file, err := ioutil.ReadFile("./src/schema.sql")
+	if err != nil {
+		log.Fatal(err)
+	}
 
-// 	query := string(file)
+	query := string(file)
 
-// 	_, err = db.Exec(query)
-// 	if err != nil {
-// 		log.Fatal(err)
-// 	}
-// }
+	_, err = db.Exec(query)
+	if err != nil {
+		log.Fatal(err)
+	}
+}
 
 // Queries the database and returns a list of dictionaries.
 func queryDb(db *sql.DB, query string, args ...interface{}) []Row {
