@@ -1,7 +1,5 @@
 package main
 
-import "fmt"
-
 type User struct {
 	UserId       int64
 	Username     string
@@ -28,12 +26,10 @@ type DataProvider interface {
 }
 
 func (ld *LayoutData) setFlashes(flashes []string) {
-	fmt.Println(flashes, len(flashes))
 	ld.Flashes = flashes
 }
 
 func (ld *LayoutData) setUser(user User) {
-	fmt.Println(user)
 	ld.User = user
 }
 

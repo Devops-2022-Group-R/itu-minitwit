@@ -21,7 +21,6 @@ import (
 )
 
 const (
-	database  = "./minitwit.db"
 	perPage   = 30
 	debug     = true
 	secretKey = "development key"
@@ -32,6 +31,8 @@ const (
 
 	flashesKey = "flashes"
 )
+
+var database = "./minitwit.db"
 
 type Row = map[string]interface{}
 
@@ -48,6 +49,10 @@ func main() {
 		}
 	}
 
+	setupRouter().Run()
+}
+
+func setupRouter() *gin.Engine {
 	r := gin.Default()
 
 	store := cookie.NewStore([]byte(secretKey))
@@ -68,11 +73,11 @@ func main() {
 	r.POST("/register", registerPost)
 	r.GET("/logout", logout)
 
-	r.Run()
+	return r
 }
 
 func connectDb() *sql.DB {
-	db, err := sql.Open("sqlite3", "./minitwit.db")
+	db, err := sql.Open("sqlite3", database)
 	if err != nil {
 		log.Fatal(err)
 	}
