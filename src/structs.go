@@ -1,5 +1,7 @@
 package main
 
+import "github.com/gin-gonic/gin"
+
 type User struct {
 	UserId       int64
 	Username     string
@@ -15,7 +17,21 @@ type Message struct {
 }
 
 type LayoutData struct {
-	User User // Me
+	Context *gin.Context
+	User    User // Me
+}
+
+type DataProvider interface {
+	setContext(ctx *gin.Context)
+	setUser(user User)
+}
+
+func (ld LayoutData) setContext(ctx *gin.Context) {
+	ld.Context = ctx
+}
+
+func (ld LayoutData) setUser(user User) {
+	ld.User = user
 }
 
 type TimelineData struct {

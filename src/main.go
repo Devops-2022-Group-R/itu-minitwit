@@ -232,10 +232,6 @@ func timeline(c *gin.Context) {
 	messages := createTweetsFromQuery(results)
 
 	renderTemplate(c, "timeline.html", TimelineData{
-		LayoutData: LayoutData{
-			User: user,
-		},
-
 		ProfileUser: user,
 
 		IsPublicTimeline: false,
@@ -273,15 +269,7 @@ func publicTimeline(c *gin.Context) {
 		messages = append(messages, message)
 	}
 
-	var user User
-	if u, ok := c.Get("user"); ok {
-		user = u.(User)
-	}
-
 	renderTemplate(c, "timeline.html", TimelineData{
-		LayoutData: LayoutData{
-			User: user,
-		},
 		IsPublicTimeline: true,
 		IsMyTimeline:     false,
 		IsFollowed:       true,
@@ -335,10 +323,6 @@ func userTimeline(c *gin.Context) {
 	messages := createTweetsFromQuery(results)
 
 	timelineData := TimelineData{
-		LayoutData: LayoutData{
-			User: user,
-		},
-
 		IsPublicTimeline: false,
 		IsMyTimeline:     user.Username == profileUser.Username,
 		IsFollowed:       followed,
@@ -560,7 +544,12 @@ func logout(c *gin.Context) {
 	c.Redirect(302, publicTimelineUrl)
 }
 
-func renderTemplate(c *gin.Context, templateSubPath string, templateData interface{}) {
+func renderTemplate(c *gin.Context, templateSubPath string, templateData DataProvider) {
+	templateData.setContext(c)
+	if user, userExists := c.Get("user"); userExists {
+		templateData.setUser(user.(User))
+	}
+
 	path := templatePath(templateSubPath)
 	t := parseHtmlFiles(path)
 	err := t.Execute(c.Writer, templateData)
