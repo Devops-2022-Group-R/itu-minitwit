@@ -1,6 +1,6 @@
 package main
 
-import "github.com/gin-gonic/gin"
+import "fmt"
 
 type User struct {
 	UserId       int64
@@ -17,25 +17,28 @@ type Message struct {
 }
 
 type LayoutData struct {
-	Context *gin.Context
+	Flashes []string
 	User    User // Me
 }
 
 type DataProvider interface {
-	setContext(ctx *gin.Context)
+	initLayoutData()
+	setFlashes([]string)
 	setUser(user User)
 }
 
-func (ld LayoutData) setContext(ctx *gin.Context) {
-	ld.Context = ctx
+func (ld *LayoutData) setFlashes(flashes []string) {
+	fmt.Println(flashes, len(flashes))
+	ld.Flashes = flashes
 }
 
-func (ld LayoutData) setUser(user User) {
+func (ld *LayoutData) setUser(user User) {
+	fmt.Println(user)
 	ld.User = user
 }
 
 type TimelineData struct {
-	LayoutData
+	*LayoutData
 
 	IsPublicTimeline bool
 	IsMyTimeline     bool // Used if IsPublicTimeline is false
@@ -47,17 +50,29 @@ type TimelineData struct {
 	Messages []Message
 }
 
+func (t *TimelineData) initLayoutData() {
+	t.LayoutData = &LayoutData{}
+}
+
 type LoginData struct {
-	LayoutData
+	*LayoutData
 
 	Username string
 	ErrorMsg string
 }
 
+func (t *LoginData) initLayoutData() {
+	t.LayoutData = &LayoutData{}
+}
+
 type RegisterData struct {
-	LayoutData
+	*LayoutData
 
 	Username string
 	Email    string
 	ErrorMsg string
+}
+
+func (t *RegisterData) initLayoutData() {
+	t.LayoutData = &LayoutData{}
 }
