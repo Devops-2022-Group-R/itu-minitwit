@@ -3,7 +3,7 @@
 <html>
     <head>
         <title>{{ template "title" .}} | MiniTwit</title>
-        <link rel="stylesheet" type="text/css" href="/static/style.css"> <!-- TODO: Replace with method -->
+        <link rel="stylesheet" type="text/css" href="/static/style.css">
     </head>
 
     <body>
@@ -11,7 +11,6 @@
             <h1>MiniTwit</h1>
 
             <div class="navigation">
-                <!-- TODO: Make these methods -->
                 {{ if .User.Username }}
                     <a href="/">my timeline</a> |
                     <a href="/public">public timeline</a> |
