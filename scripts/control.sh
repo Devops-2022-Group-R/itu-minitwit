@@ -14,9 +14,9 @@ elif [ "$1" = "stop" ]; then
     echo "Stopping minitwit..."
     pkill -f src
 elif [ "$1" = "inspectdb" ]; then
-    ./flag_tool -i | less
+    ./scripts/flag_tool -i | less
 elif [ "$1" = "flag" ]; then
-    ./flag_tool "$@"
+    ./scripts/flag_tool "$@"
 else
   echo "I do not know this command..."
 fi
