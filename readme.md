@@ -3,7 +3,7 @@
 
 To build the MiniTwit Docker image:
 ```sh
-docker build -t my-go-app .
+docker build -t minitwit .
 ```
 
 To run the MiniTwit Docker container:
