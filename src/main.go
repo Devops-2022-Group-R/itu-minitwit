@@ -29,6 +29,8 @@ const (
 	timeLineUrl       = "/"
 	publicTimelineUrl = "/public"
 	loginUrl          = "/login"
+
+	flashesKey = "flashes"
 )
 
 type Row = map[string]interface{}
@@ -190,6 +192,35 @@ func gravatarUrl(email string, size int) string {
 	return fmt.Sprintf("http://www.gravatar.com/avatar/%s?d=identicon&s=%d", hex, size)
 }
 
+func flash(c *gin.Context, message string) {
+	session := sessions.Default(c)
+
+	var flashes []string
+	if f := session.Get(flashesKey); f != nil {
+		flashes = f.([]string)
+	} else {
+		flashes = make([]string, 1)
+	}
+
+	flashes = append(flashes, message)
+
+	session.Set(flashesKey, flashes)
+	session.Save()
+}
+
+func getFlashes(c *gin.Context) []string {
+	session := sessions.Default(c)
+
+	if f := session.Get(flashesKey); f != nil {
+		session.Set(flashesKey, make([]string, 0))
+		session.Save()
+
+		return f.([]string)
+	} else {
+		return nil
+	}
+}
+
 // Make sure we are connected to the database each request and look
 // up the current user so that we know he's there.
 func beforeRequest(c *gin.Context) {
@@ -241,11 +272,7 @@ func timeline(c *gin.Context) {
 
 	messages := createTweetsFromQuery(results)
 
-	renderTemplate(c, "timeline.html", TimelineData{
-		LayoutData: LayoutData{
-			User: user,
-		},
-
+	renderTemplate(c, "timeline.html", &TimelineData{
 		ProfileUser: user,
 
 		IsPublicTimeline: false,
@@ -283,15 +310,7 @@ func publicTimeline(c *gin.Context) {
 		messages = append(messages, message)
 	}
 
-	var user User
-	if u, ok := c.Get("user"); ok {
-		user = u.(User)
-	}
-
-	renderTemplate(c, "timeline.html", TimelineData{
-		LayoutData: LayoutData{
-			User: user,
-		},
+	renderTemplate(c, "timeline.html", &TimelineData{
 		IsPublicTimeline: true,
 		IsMyTimeline:     false,
 		IsFollowed:       true,
@@ -345,10 +364,6 @@ func userTimeline(c *gin.Context) {
 	messages := createTweetsFromQuery(results)
 
 	timelineData := TimelineData{
-		LayoutData: LayoutData{
-			User: user,
-		},
-
 		IsPublicTimeline: false,
 		IsMyTimeline:     user.Username == profileUser.Username,
 		IsFollowed:       followed,
@@ -359,7 +374,7 @@ func userTimeline(c *gin.Context) {
 		Messages: messages,
 	}
 
-	renderTemplate(c, "timeline.html", timelineData)
+	renderTemplate(c, "timeline.html", &timelineData)
 }
 
 // Convenience transforming data from a query into messages
@@ -398,7 +413,7 @@ func followUser(c *gin.Context) {
 	queryDb(db, "insert into follower (who_id, whom_id) values (?, ?)",
 		session.Get("user_id"), whomID)
 
-	// TODO: flash('You are now following "%s"' % username)
+	flash(c, fmt.Sprintf("You are now following %s", username))
 
 	c.Redirect(302, timeLineUrl)
 }
@@ -422,7 +437,7 @@ func unfollowUser(c *gin.Context) {
 	queryDb(db, "delete from follower where who_id = ? and whom_id = ?",
 		session.Get("user_id"), whomID)
 
-	// TODO: flash('You are no longer following "%s"' % username)
+	flash(c, fmt.Sprintf("You are no longer following %s", username))
 
 	c.Redirect(302, timeLineUrl)
 }
@@ -450,7 +465,7 @@ func addMessage(c *gin.Context) {
 		queryDb(db, "insert into message (author_id, text, pub_date, flagged) values (?, ?, ?, 0)",
 			user.(User).UserId, text, time.Now().UTC().Unix())
 
-		// TODO: flash('Your message was recorded')
+		flash(c, "Your message was recorded")
 	}
 
 	c.Redirect(302, timeLineUrl)
@@ -462,7 +477,7 @@ func loginGet(c *gin.Context) {
 		return
 	}
 
-	renderTemplate(c, "login.html", LoginData{})
+	renderTemplate(c, "login.html", &LoginData{})
 }
 
 // Logs the user in.
@@ -491,12 +506,14 @@ func loginPost(c *gin.Context) {
 	} else {
 		session.Set("user_id", users[0]["user_id"])
 		session.Save()
-		// TODO: Translate this from Python - flash('You were logged in')
+
+		flash(c, "You were logged in")
+
 		c.Redirect(302, timeLineUrl)
 		return
 	}
 
-	renderTemplate(c, "login.html", LoginData{
+	renderTemplate(c, "login.html", &LoginData{
 		Username: username,
 		ErrorMsg: errMsg,
 	})
@@ -509,7 +526,7 @@ func registerGet(c *gin.Context) {
 		return
 	}
 
-	renderTemplate(c, "register.html", RegisterData{})
+	renderTemplate(c, "register.html", &RegisterData{})
 }
 
 // Registers the user.
@@ -544,17 +561,18 @@ func registerPost(c *gin.Context) {
 			form.Get("username"),
 			form.Get("email"),
 			pwdHash.GeneratePasswordHash(form.Get("password")),
-			// TODO: Translate from Python - flash('You were successfully registered and can login now')
 		)
 		if err != nil {
 			log.Fatal(err)
 		}
 
+		flash(c, "You were successfully registered and can login now")
+
 		c.Redirect(302, loginUrl)
 		return
 	}
 
-	renderTemplate(c, "register.html", RegisterData{
+	renderTemplate(c, "register.html", &RegisterData{
 		ErrorMsg: errMsg,
 		Username: form.Get("username"),
 		Email:    form.Get("email"),
@@ -563,14 +581,20 @@ func registerPost(c *gin.Context) {
 
 // Logs the user out
 func logout(c *gin.Context) {
-	// TODO: Translate this from Python - flash('You were logged out')
+	flash(c, "You were logged out")
 	session := sessions.Default(c)
 	session.Delete("user_id")
 	session.Save()
 	c.Redirect(302, publicTimelineUrl)
 }
 
-func renderTemplate(c *gin.Context, templateSubPath string, templateData interface{}) {
+func renderTemplate(c *gin.Context, templateSubPath string, templateData DataProvider) {
+	templateData.initLayoutData()
+	templateData.setFlashes(getFlashes(c))
+	if user, userExists := c.Get("user"); userExists {
+		templateData.setUser(user.(User))
+	}
+
 	path := templatePath(templateSubPath)
 	t := parseHtmlFiles(path)
 	err := t.Execute(c.Writer, templateData)
