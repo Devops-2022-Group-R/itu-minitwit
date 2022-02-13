@@ -26,8 +26,8 @@ func init() {
 
 func TestMain(m *testing.M) {
 	initDb()
-	defer os.Remove(testDatabase)
 	exitVal := m.Run()
+	os.Remove(testDatabase)
 	os.Exit(exitVal)
 }
 
