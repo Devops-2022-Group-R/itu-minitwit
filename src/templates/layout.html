@@ -23,7 +23,13 @@
                 {{ end }}
             </div> 
 
-            <!-- TODO: Flashes -->
+            {{ if .Flashes }}
+                <ul class="flashes">
+                    {{ range .Flashes }}
+                        <li>{{ . }}</li>
+                    {{ end }}
+                </ul>
+            {{ end }}
 
             <div class="body">
                 {{ template "body" .}}
