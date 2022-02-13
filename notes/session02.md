@@ -21,6 +21,8 @@ We have attempted to do it as 1:1 as possible, but in moving from Python to Go, 
 - Currently, status code 307 is used in many redirects - investigate if this is proper usage of `c.Redirect` (or if it matches the old minitwit)
 - Use an external frontend. The html template stuff is not working well
 - Split things into multiple files, one large main.go file is confusing
+- Storing any cookies in the containerized app, results in a runtime error the next time the container is run
+    - This happens when you create a new user, and sign in
 
 ## Other notes
 - Remember to remove `ping`, `pingHandler` etc. that was used for testing
