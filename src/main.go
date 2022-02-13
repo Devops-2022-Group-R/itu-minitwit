@@ -5,7 +5,9 @@ import (
 	"database/sql"
 	"fmt"
 	"html/template"
+	"io/ioutil"
 	"log"
+	"os"
 	"path"
 	"strings"
 	"time"
@@ -34,6 +36,14 @@ type Row = map[string]interface{}
 func main() {
 	if debug {
 		log.SetFlags(log.LstdFlags | log.Llongfile)
+	}
+
+	if len(os.Args) > 1 {
+		input := os.Args[1]
+		if strings.EqualFold("initDb", input) {
+			initDb()
+			return
+		}
 	}
 
 	r := gin.Default()
@@ -68,22 +78,22 @@ func connectDb() *sql.DB {
 }
 
 // Creates the database tables.
-// func initDb() {
-// 	db := connectDb()
-// 	defer db.Close()
+func initDb() {
+	db := connectDb()
+	defer db.Close()
 
-// 	file, err := ioutil.ReadFile("./src/schema.sql")
-// 	if err != nil {
-// 		log.Fatal(err)
-// 	}
+	file, err := ioutil.ReadFile("./src/schema.sql")
+	if err != nil {
+		log.Fatal(err)
+	}
 
-// 	query := string(file)
+	query := string(file)
 
-// 	_, err = db.Exec(query)
-// 	if err != nil {
-// 		log.Fatal(err)
-// 	}
-// }
+	_, err = db.Exec(query)
+	if err != nil {
+		log.Fatal(err)
+	}
+}
 
 // Queries the database and returns a list of dictionaries.
 func queryDb(db *sql.DB, query string, args ...interface{}) []Row {
