@@ -45,7 +45,6 @@ func main() {
 		input := os.Args[1]
 		if strings.EqualFold("initDb", input) {
 			initDb()
-
 			return
 		}
 	}
