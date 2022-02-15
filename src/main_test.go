@@ -16,18 +16,18 @@ import (
 )
 
 const (
-	testDatabase = "./minitwit-test.db"
+	testDatabasePath = "./minitwit-test.db"
 )
 
 func init() {
-	database = testDatabase
+	databasePath = testDatabasePath
 	os.Chdir("..")
 }
 
 func TestMain(m *testing.M) {
 	initDb()
 	exitVal := m.Run()
-	os.Remove(testDatabase)
+	os.Remove(testDatabasePath)
 	os.Exit(exitVal)
 }
 

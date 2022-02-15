@@ -32,7 +32,7 @@ const (
 	flashesKey = "flashes"
 )
 
-var database = "./minitwit.db"
+var databasePath = "./minitwit.db"
 
 type Row = map[string]interface{}
 
@@ -77,7 +77,7 @@ func setupRouter() *gin.Engine {
 }
 
 func connectDb() *sql.DB {
-	db, err := sql.Open("sqlite3", database)
+	db, err := sql.Open("sqlite3", databasePath)
 	if err != nil {
 		log.Fatal(err)
 	}
