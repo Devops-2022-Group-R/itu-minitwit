@@ -17,7 +17,6 @@ import (
 	"github.com/gin-gonic/gin"
 	_ "github.com/mattn/go-sqlite3"
 
-	. "github.com/Devops-2022-Group-R/itu-minitwit/src/utils"
 	"github.com/Devops-2022-Group-R/itu-minitwit/src/controllers"
 	"github.com/Devops-2022-Group-R/itu-minitwit/src/database"
 	_ "github.com/Devops-2022-Group-R/itu-minitwit/src/password"
@@ -115,13 +114,13 @@ func getUserId(username string, db *sql.DB) *int64 {
 }
 
 func getUserFromUsername(username string, db *sql.DB) *User {
-	rows := QueryDb(db, "select * from user where username = ?", username)
+	rows := database.QueryDb(db, "select * from user where username = ?", username)
 
 	return parseUser(rows)
 }
 
 func getUserFromId(id int64, db *sql.DB) *User {
-	rows := QueryDb(db, "select * from user where user_id = ?", id)
+	rows := database.QueryDb(db, "select * from user where user_id = ?", id)
 
 	return parseUser(rows)
 }
@@ -232,7 +231,7 @@ func timeline(c *gin.Context) {
 			)
 			order by message.pub_date desc limit ?
 		`
-	results := QueryDb(db, query, user.UserId, user.UserId, perPage) //  [session['user_id'], session['user_id'], PER_PAGE]))
+	results := database.QueryDb(db, query, user.UserId, user.UserId, perPage) //  [session['user_id'], session['user_id'], PER_PAGE]))
 
 	messages := createTweetsFromQuery(results)
 
@@ -259,7 +258,7 @@ func publicTimeline(c *gin.Context) {
 			and message.author_id = user.user_id 
 		order by message.pub_date desc
 		limit ?`
-	results := QueryDb(db, query, perPage)
+	results := database.QueryDb(db, query, perPage)
 
 	messages := make([]Message, 0)
 
@@ -312,7 +311,7 @@ func userTimeline(c *gin.Context) {
 			`
 		session := sessions.Default(c)
 		userId := session.Get("user_id").(int64)
-		isFollowing := QueryDb(db, query, userId, profileUser.UserId) // [session['user_id'], profile_user['user_id']], one=True) is not None
+		isFollowing := database.QueryDb(db, query, userId, profileUser.UserId) // [session['user_id'], profile_user['user_id']], one=True) is not None
 		if len(isFollowing) > 0 {                                     // this condition is trying to check -> "is not none" - is this correct?
 			followed = true
 		}
@@ -324,7 +323,7 @@ func userTimeline(c *gin.Context) {
 			user where user.user_id = message.author_id and user.user_id = ?
 			order by message.pub_date desc limit ?
 		`
-	results := QueryDb(db, messageQuery, profileUser.UserId, perPage)
+	results := database.QueryDb(db, messageQuery, profileUser.UserId, perPage)
 	messages := createTweetsFromQuery(results)
 
 	timelineData := TimelineData{
@@ -374,7 +373,7 @@ func followUser(c *gin.Context) {
 		return
 	}
 
-	QueryDb(db, "insert into follower (who_id, whom_id) values (?, ?)",
+	database.QueryDb(db, "insert into follower (who_id, whom_id) values (?, ?)",
 		session.Get("user_id"), whomID)
 
 	flash(c, fmt.Sprintf("You are now following %s", username))
@@ -398,7 +397,7 @@ func unfollowUser(c *gin.Context) {
 		return
 	}
 
-	QueryDb(db, "delete from follower where who_id = ? and whom_id = ?",
+	database.QueryDb(db, "delete from follower where who_id = ? and whom_id = ?",
 		session.Get("user_id"), whomID)
 
 	flash(c, fmt.Sprintf("You are no longer following %s", username))
@@ -426,7 +425,7 @@ func addMessage(c *gin.Context) {
 	text := form.Get("text")
 
 	if text != "" {
-		QueryDb(db, "insert into message (author_id, text, pub_date, flagged) values (?, ?, ?, 0)",
+		database.QueryDb(db, "insert into message (author_id, text, pub_date, flagged) values (?, ?, ?, 0)",
 			user.(User).UserId, text, time.Now().UTC().Unix())
 
 		flash(c, "Your message was recorded")
