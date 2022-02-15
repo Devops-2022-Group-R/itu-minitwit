@@ -30,7 +30,7 @@ const (
 	timeLineUrl       = "/"
 	publicTimelineUrl = "/public"
 	loginUrl          = "/login"
-	flashesKey = "flashes"
+	flashesKey        = "flashes"
 )
 
 var databasePath = "./minitwit.db"
@@ -69,7 +69,6 @@ func setupRouter() *gin.Engine {
 	r.GET(loginUrl, loginGet)
 	r.POST(loginUrl, controllers.LoginPost)
 	r.POST("/register", controllers.RegisterController)
-	r.GET("/logout", logout)
 
 	return r
 }
@@ -312,7 +311,7 @@ func userTimeline(c *gin.Context) {
 		session := sessions.Default(c)
 		userId := session.Get("user_id").(int64)
 		isFollowing := database.QueryDb(db, query, userId, profileUser.UserId) // [session['user_id'], profile_user['user_id']], one=True) is not None
-		if len(isFollowing) > 0 {                                     // this condition is trying to check -> "is not none" - is this correct?
+		if len(isFollowing) > 0 {                                              // this condition is trying to check -> "is not none" - is this correct?
 			followed = true
 		}
 	}
@@ -441,15 +440,6 @@ func loginGet(c *gin.Context) {
 	}
 
 	renderTemplate(c, "login.html", &LoginData{})
-}
-
-// Logs the user out
-func logout(c *gin.Context) {
-	flash(c, "You were logged out")
-	session := sessions.Default(c)
-	session.Delete("user_id")
-	session.Save()
-	c.Redirect(302, publicTimelineUrl)
 }
 
 func renderTemplate(c *gin.Context, templateSubPath string, templateData DataProvider) {
