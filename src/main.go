@@ -17,6 +17,7 @@ import (
 	"github.com/gin-gonic/gin"
 	_ "github.com/mattn/go-sqlite3"
 
+	"github.com/Devops-2022-Group-R/itu-minitwit/src/controllers"
 	"github.com/Devops-2022-Group-R/itu-minitwit/src/database"
 	pwdHash "github.com/Devops-2022-Group-R/itu-minitwit/src/password"
 )
@@ -70,8 +71,7 @@ func setupRouter() *gin.Engine {
 	r.POST("/add_message", addMessage)
 	r.GET(loginUrl, loginGet)
 	r.POST(loginUrl, loginPost)
-	r.GET("/register", registerGet)
-	r.POST("/register", registerPost)
+	r.POST("/register", controllers.RegisterController)
 	r.GET("/logout", logout)
 
 	return r
@@ -509,66 +509,6 @@ func loginPost(c *gin.Context) {
 	renderTemplate(c, "login.html", &LoginData{
 		Username: username,
 		ErrorMsg: errMsg,
-	})
-}
-
-// Shows the page for registering the user.
-func registerGet(c *gin.Context) {
-	if _, userIsInSession := c.Get("user"); userIsInSession {
-		c.Redirect(302, timeLineUrl)
-		return
-	}
-
-	renderTemplate(c, "register.html", &RegisterData{})
-}
-
-// Registers the user.
-func registerPost(c *gin.Context) {
-	if _, userIsInSession := c.Get("user"); userIsInSession {
-		// c.Writer.WriteHeader(http.StatusNoContent)
-		c.Redirect(302, timeLineUrl)
-		return
-	}
-
-	err := c.Request.ParseForm()
-	if err != nil {
-		log.Fatal(err)
-	}
-	form := c.Request.Form
-
-	db := c.MustGet("db").(*sql.DB)
-	var errMsg string
-	if form.Get("username") == "" {
-		errMsg = "You have to enter a username"
-	} else if form.Get("email") == "" || !strings.Contains(form.Get("email"), "@") {
-		errMsg = "You have to enter a valid email address"
-	} else if form.Get("password") == "" {
-		errMsg = "You have to enter a password"
-	} else if form.Get("password") != form.Get("password2") {
-		errMsg = "The two passwords do not match"
-	} else if database.GetUserId(form.Get("username"), db) != nil {
-		errMsg = "The username is already taken"
-	} else {
-		_, err := db.Exec(
-			"insert into user (username, email, pw_hash) values (?, ?, ?)",
-			form.Get("username"),
-			form.Get("email"),
-			pwdHash.GeneratePasswordHash(form.Get("password")),
-		)
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		flash(c, "You were successfully registered and can login now")
-
-		c.Redirect(302, loginUrl)
-		return
-	}
-
-	renderTemplate(c, "register.html", &RegisterData{
-		ErrorMsg: errMsg,
-		Username: form.Get("username"),
-		Email:    form.Get("email"),
 	})
 }
 
