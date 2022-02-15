@@ -5,7 +5,6 @@ import (
 	"database/sql"
 	"fmt"
 	"html/template"
-	"io/ioutil"
 	"log"
 	"os"
 	"path"
@@ -17,6 +16,8 @@ import (
 	"github.com/gin-gonic/gin"
 	_ "github.com/mattn/go-sqlite3"
 
+	"github.com/Devops-2022-Group-R/itu-minitwit/src/database"
+	"github.com/Devops-2022-Group-R/itu-minitwit/src/models"
 	pwdHash "github.com/Devops-2022-Group-R/itu-minitwit/src/password"
 )
 
@@ -30,9 +31,10 @@ const (
 	loginUrl          = "/login"
 
 	flashesKey = "flashes"
-)
 
-var database = "./minitwit.db"
+	userRepositoryKey    = "userRepository"
+	messageRepositoryKey = "messageRepository"
+)
 
 type Row = map[string]interface{}
 
@@ -77,7 +79,7 @@ func setupRouter() *gin.Engine {
 }
 
 func connectDb() *sql.DB {
-	db, err := sql.Open("sqlite3", database)
+	db, err := sql.Open("sqlite3", "./minitwit.db")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -86,98 +88,13 @@ func connectDb() *sql.DB {
 
 // Creates the database tables.
 func initDb() {
-	db := connectDb()
-	defer db.Close()
-
-	file, err := ioutil.ReadFile("./src/schema.sql")
+	db, err := database.ConnectDatabase()
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	query := string(file)
-
-	_, err = db.Exec(query)
-	if err != nil {
-		log.Fatal(err)
-	}
-}
-
-// Queries the database and returns a list of dictionaries.
-func queryDb(db *sql.DB, query string, args ...interface{}) []Row {
-	rows, err := db.Query(query, args...)
-	if err != nil {
-		log.Fatalf("queryDb failure: %v", err)
-	}
-	defer rows.Close()
-
-	columnNames, err := rows.Columns()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	results := make([]Row, 0)
-	for rows.Next() {
-		row := make(Row)
-
-		values := make([]interface{}, len(columnNames))
-		valuesRef := make([]interface{}, len(columnNames))
-		for i := 0; i < len(columnNames); i++ {
-			valuesRef[i] = &values[i]
-		}
-		err := rows.Scan(valuesRef...)
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		for i := 0; i < len(columnNames); i++ {
-			row[columnNames[i]] = values[i]
-		}
-		results = append(results, row)
-	}
-	err = rows.Err()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	return results
-}
-
-// Convenience method to look up the id for a username.
-func getUserId(username string, db *sql.DB) *int64 {
-	row := db.QueryRow("select user_id from user where username = ?", username)
-
-	var userId int64
-	err := row.Scan(&userId)
-	if err != nil {
-		return nil
-	}
-
-	return &userId
-}
-
-func getUserFromUsername(username string, db *sql.DB) *User {
-	rows := queryDb(db, "select * from user where username = ?", username)
-
-	return parseUser(rows)
-}
-
-func getUserFromId(id int64, db *sql.DB) *User {
-	rows := queryDb(db, "select * from user where user_id = ?", id)
-
-	return parseUser(rows)
-}
-
-func parseUser(rows []map[string]interface{}) *User {
-	if len(rows) == 0 {
-		return nil
-	}
-
-	return &User{
-		UserId:       rows[0]["user_id"].(int64),
-		Username:     rows[0]["username"].(string),
-		Email:        rows[0]["email"].(string),
-		PasswordHash: rows[0]["pw_hash"].(string),
-	}
+	database.NewGormUserRepository(db).Migrate()
+	database.NewGormMessageRepository(db).Migrate()
 }
 
 // Format a timestamp for display.
@@ -234,9 +151,21 @@ func beforeRequest(c *gin.Context) {
 
 	c.Set("db", db)
 
+	gormDb, err := database.ConnectDatabase()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	userRepository := database.NewGormUserRepository(gormDb)
+	c.Set(userRepositoryKey, database.NewGormUserRepository(gormDb))
+	c.Set(messageRepositoryKey, database.NewGormMessageRepository(gormDb))
+
 	session := sessions.Default(c)
 	if userId := session.Get("user_id"); userId != nil {
-		user := *getUserFromId(userId.(int64), db)
+		user, err := userRepository.GetByID(userId.(int64))
+		if err != nil {
+			log.Fatal(err)
+		}
 		c.Set("user", user)
 	}
 
@@ -247,35 +176,20 @@ func beforeRequest(c *gin.Context) {
 // public timeline. This timeline shows the user's messages as well as all the
 // messages of followed users.
 func timeline(c *gin.Context) {
-	db := c.MustGet("db").(*sql.DB)
-	defer db.Close()
+	messageRepository := c.MustGet(messageRepositoryKey).(database.IMessageRepository)
 
-	var user User
+	var user models.User
 	if u, isLoggedIn := c.Get("user"); isLoggedIn {
-		user = u.(User)
+		user = u.(models.User)
 	} else {
 		c.Redirect(302, publicTimelineUrl)
 		return
 	}
 
-	// c.Request.args.Get("offset", int) // offset = request.args.get('offset', type=int)
-	query :=
-		`
-			select message.*, user.* from message, user
-			where message.flagged = 0 and message.author_id = user.user_id and 
-			(
-				user.user_id = ? or
-				user.user_id in 
-				(
-					select whom_id from follower
-					where who_id = ?
-				)
-			)
-			order by message.pub_date desc limit ?
-		`
-	results := queryDb(db, query, user.UserId, user.UserId, perPage) //  [session['user_id'], session['user_id'], PER_PAGE]))
-
-	messages := createTweetsFromQuery(results)
+	messages, err := messageRepository.GetByUserAndItsFollowers(user.UserId, perPage)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	renderTemplate(c, "timeline.html", &TimelineData{
 		ProfileUser: user,
@@ -290,29 +204,13 @@ func timeline(c *gin.Context) {
 
 // Displays the latest messages of all users.
 func publicTimeline(c *gin.Context) {
-	db := c.MustGet("db").(*sql.DB)
-	defer db.Close()
+	messageRepository := c.MustGet(messageRepositoryKey).(database.IMessageRepository)
 
-	query := `
-		select message.*, user.* 
-		from message, user 
-		where message.flagged = 0 
-			and message.author_id = user.user_id 
-		order by message.pub_date desc
-		limit ?`
-	results := queryDb(db, query, perPage)
-
-	messages := make([]Message, 0)
-
-	for _, result := range results {
-		message := Message{
-			Email:    result["email"].(string),
-			Username: result["username"].(string),
-			Text:     result["text"].(string),
-			PubDate:  result["pub_date"].(int64),
-		}
-
-		messages = append(messages, message)
+	messages, err := messageRepository.GetWithLimit(perPage)
+	if err != nil {
+		log.Println(err)
+		c.JSON(500, gin.H{"error": "Could not fetch messages."})
+		return
 	}
 
 	renderTemplate(c, "timeline.html", &TimelineData{
@@ -326,47 +224,29 @@ func publicTimeline(c *gin.Context) {
 
 // Display's a users tweets.
 func userTimeline(c *gin.Context) {
-	db := c.MustGet("db").(*sql.DB)
-	defer db.Close()
+	userRepository := c.MustGet(userRepositoryKey).(database.IUserRepository)
+	messageRepository := c.MustGet(messageRepositoryKey).(database.IMessageRepository)
 
 	username := c.Param("username")
-
-	profileUser := getUserFromUsername(username, db)
-	if profileUser == nil {
+	profileUser, err := userRepository.GetByUsername(username)
+	if (profileUser == models.User{}) || err != nil {
 		c.JSON(404, nil) // abort(404)
 		return
 	}
 
 	followed := false
 	u, userLoggedIn := c.Get("user")
-	user := User{
-		Username: "",
-	}
+	user := models.User{}
 
 	if userLoggedIn { // if g.user from .py
-		user = u.(User)
-		query :=
-			`
-				select 1 
-				from follower 
-				where follower.who_id = ? and follower.whom_id = ?
-			`
-		session := sessions.Default(c)
-		userId := session.Get("user_id").(int64)
-		isFollowing := queryDb(db, query, userId, profileUser.UserId) // [session['user_id'], profile_user['user_id']], one=True) is not None
-		if len(isFollowing) > 0 {                                     // this condition is trying to check -> "is not none" - is this correct?
-			followed = true
-		}
+		user = u.(models.User)
+		followed, _ = userRepository.IsFollowing(user.UserId, profileUser.UserId)
 	}
 
-	messageQuery :=
-		`
-			select message.*, user.* from message, 
-			user where user.user_id = message.author_id and user.user_id = ?
-			order by message.pub_date desc limit ?
-		`
-	results := queryDb(db, messageQuery, profileUser.UserId, perPage)
-	messages := createTweetsFromQuery(results)
+	messages, err := messageRepository.GetByUserId(profileUser.UserId, perPage)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	timelineData := TimelineData{
 		IsPublicTimeline: false,
@@ -374,7 +254,7 @@ func userTimeline(c *gin.Context) {
 		IsFollowed:       followed,
 		HasMessages:      len(messages) > 0,
 
-		ProfileUser: *profileUser,
+		ProfileUser: profileUser,
 
 		Messages: messages,
 	}
@@ -382,41 +262,25 @@ func userTimeline(c *gin.Context) {
 	renderTemplate(c, "timeline.html", &timelineData)
 }
 
-// Convenience transforming data from a query into messages
-func createTweetsFromQuery(results []map[string]interface{}) []Message {
-	messages := make([]Message, 0)
-
-	for _, result := range results {
-		message := Message{
-			Email:    result["email"].(string),
-			Username: result["username"].(string),
-			PubDate:  result["pub_date"].(int64),
-			Text:     result["text"].(string),
-		}
-
-		messages = append(messages, message)
-	}
-	return messages
-}
-
 // Adds the current user as follower of the given user.
 func followUser(c *gin.Context) {
-	username := c.Param("username")
-	db := c.MustGet("db").(*sql.DB)
-	whomID := getUserId(username, db)
-	session := sessions.Default(c)
+	userRepository := c.MustGet("userRepository").(database.IUserRepository)
 
-	if _, isLoggedIn := c.Get("user"); !isLoggedIn {
-		c.JSON(401, nil)
-		return
-	}
-	if whomID == nil {
+	username := c.Param("username")
+	whom, err := userRepository.GetByUsername(username)
+	if err != nil {
 		c.JSON(404, nil)
 		return
 	}
 
-	queryDb(db, "insert into follower (who_id, whom_id) values (?, ?)",
-		session.Get("user_id"), whomID)
+	who, isLoggedIn := c.Get("user")
+
+	if !isLoggedIn {
+		c.JSON(401, nil)
+		return
+	}
+
+	userRepository.Follow(who.(models.User).UserId, whom.UserId)
 
 	flash(c, fmt.Sprintf("You are now following %s", username))
 
@@ -425,22 +289,23 @@ func followUser(c *gin.Context) {
 
 // Removes the current user as follower of the given user.
 func unfollowUser(c *gin.Context) {
-	username := c.Param("username")
-	db := c.MustGet("db").(*sql.DB)
-	whomID := getUserId(username, db)
-	session := sessions.Default(c)
+	userRepository := c.MustGet("userRepository").(database.IUserRepository)
 
-	if _, isLoggedIn := c.Get("user"); !isLoggedIn {
-		c.JSON(401, nil)
-		return
-	}
-	if whomID == nil {
+	username := c.Param("username")
+	whom, err := userRepository.GetByUsername(username)
+	if err != nil {
 		c.JSON(404, nil)
 		return
 	}
 
-	queryDb(db, "delete from follower where who_id = ? and whom_id = ?",
-		session.Get("user_id"), whomID)
+	who, isLoggedIn := c.Get("user")
+
+	if !isLoggedIn {
+		c.JSON(401, nil)
+		return
+	}
+
+	userRepository.Unfollow(who.(models.User).UserId, whom.UserId)
 
 	flash(c, fmt.Sprintf("You are no longer following %s", username))
 
@@ -449,8 +314,6 @@ func unfollowUser(c *gin.Context) {
 
 // Registers a new message for the user.
 func addMessage(c *gin.Context) {
-	db := c.MustGet("db").(*sql.DB)
-
 	user, userLoggedIn := c.Get("user")
 
 	if !userLoggedIn {
@@ -467,8 +330,12 @@ func addMessage(c *gin.Context) {
 	text := form.Get("text")
 
 	if text != "" {
-		queryDb(db, "insert into message (author_id, text, pub_date, flagged) values (?, ?, ?, 0)",
-			user.(User).UserId, text, time.Now().UTC().Unix())
+		messageRepository := c.MustGet(messageRepositoryKey).(database.IMessageRepository)
+		messageRepository.Create(models.Message{
+			Author:  user.(models.User),
+			Text:    text,
+			PubDate: time.Now().Unix(),
+		})
 
 		flash(c, "Your message was recorded")
 	}
@@ -499,17 +366,21 @@ func loginPost(c *gin.Context) {
 	form := c.Request.Form
 
 	username, password := form.Get("username"), form.Get("password")
-	db := c.MustGet("db").(*sql.DB)
-	users := queryDb(db, "select * from user where username = ?", username)
+	userRepository := c.MustGet(userRepositoryKey).(database.IUserRepository)
+	user, err := userRepository.GetByUsername(username)
+	fmt.Println(user)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	session := sessions.Default(c)
 	var errMsg string
-	if len(users) == 0 {
+	if (models.User{} == user) {
 		errMsg = "Invalid username"
-	} else if !pwdHash.CheckPasswordHash(password, users[0]["pw_hash"].(string)) {
+	} else if !pwdHash.CheckPasswordHash(password, user.PasswordHash) {
 		errMsg = "Invalid password"
 	} else {
-		session.Set("user_id", users[0]["user_id"])
+		session.Set("user_id", user.UserId)
 		session.Save()
 
 		flash(c, "You were logged in")
@@ -548,7 +419,8 @@ func registerPost(c *gin.Context) {
 	}
 	form := c.Request.Form
 
-	db := c.MustGet("db").(*sql.DB)
+	userRepository := c.MustGet(userRepositoryKey).(database.IUserRepository)
+
 	var errMsg string
 	if form.Get("username") == "" {
 		errMsg = "You have to enter a username"
@@ -558,15 +430,14 @@ func registerPost(c *gin.Context) {
 		errMsg = "You have to enter a password"
 	} else if form.Get("password") != form.Get("password2") {
 		errMsg = "The two passwords do not match"
-	} else if getUserId(form.Get("username"), db) != nil {
+	} else if user, _ := userRepository.GetByUsername(form.Get("username")); (user != models.User{}) { // TODO: This is heresy
 		errMsg = "The username is already taken"
 	} else {
-		_, err := db.Exec(
-			"insert into user (username, email, pw_hash) values (?, ?, ?)",
-			form.Get("username"),
-			form.Get("email"),
-			pwdHash.GeneratePasswordHash(form.Get("password")),
-		)
+		userRepository.Create(models.User{
+			Username:     form.Get("username"),
+			Email:        form.Get("email"),
+			PasswordHash: pwdHash.GeneratePasswordHash(form.Get("password")),
+		})
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -597,7 +468,7 @@ func renderTemplate(c *gin.Context, templateSubPath string, templateData DataPro
 	templateData.initLayoutData()
 	templateData.setFlashes(getFlashes(c))
 	if user, userExists := c.Get("user"); userExists {
-		templateData.setUser(user.(User))
+		templateData.setUser(user.(models.User))
 	}
 
 	path := templatePath(templateSubPath)
