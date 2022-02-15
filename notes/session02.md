@@ -4,6 +4,16 @@
 - Gin framework for HTTP
 - gin/contrib for sessions
 - go-sqlite3
+- Go's built-in HTML templating
+
+## General method for refactor
+- Attempt as much of 1:1 as possible
+- Just been done as 1 huge Python -> Go change in a VS Code Live Share
+   - Would perhaps have been better to commit a basic boilerplate Gin app and then have each member slowly commit more changes..
+- Translate test suite precisely 1:1 to ensure that the main features work identically
+
+## Distributed workflow
+See `CONTRIBUTING.md` for the results of our discussion.
 
 ## Changes
 We have attempted to do it as 1:1 as possible, but in moving from Python to Go, there are some things that have to be different.
