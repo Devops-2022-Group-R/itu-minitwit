@@ -72,7 +72,6 @@ func setupRouter() *gin.Engine {
 	r.GET(loginUrl, loginGet)
 	r.POST(loginUrl, loginPost)
 	r.POST("/register", controllers.RegisterController)
-	r.GET("/logout", logout)
 
 	return r
 }
@@ -510,15 +509,6 @@ func loginPost(c *gin.Context) {
 		Username: username,
 		ErrorMsg: errMsg,
 	})
-}
-
-// Logs the user out
-func logout(c *gin.Context) {
-	flash(c, "You were logged out")
-	session := sessions.Default(c)
-	session.Delete("user_id")
-	session.Save()
-	c.Redirect(302, publicTimelineUrl)
 }
 
 func renderTemplate(c *gin.Context, templateSubPath string, templateData DataProvider) {
