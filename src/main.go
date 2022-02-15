@@ -65,7 +65,8 @@ func setupRouter() *gin.Engine {
 	r.GET("/:username", userTimeline)
 	r.GET("/:username/follow", followUser)
 	r.GET("/:username/unfollow", unfollowUser)
-	r.POST("/add_message", addMessage)
+	r.GET("/msgs/:username", controllers.GetMessage)
+	r.POST("/msgs/:username", controllers.PostMessage)
 	r.GET(loginUrl, loginGet)
 	r.POST(loginUrl, controllers.LoginPost)
 	r.POST("/register", controllers.RegisterController)
@@ -400,35 +401,6 @@ func unfollowUser(c *gin.Context) {
 		session.Get("user_id"), whomID)
 
 	flash(c, fmt.Sprintf("You are no longer following %s", username))
-
-	c.Redirect(302, timeLineUrl)
-}
-
-// Registers a new message for the user.
-func addMessage(c *gin.Context) {
-	db := c.MustGet("db").(*sql.DB)
-
-	user, userLoggedIn := c.Get("user")
-
-	if !userLoggedIn {
-		c.JSON(401, nil)
-		return
-	}
-
-	err := c.Request.ParseForm()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	form := c.Request.Form
-	text := form.Get("text")
-
-	if text != "" {
-		database.QueryDb(db, "insert into message (author_id, text, pub_date, flagged) values (?, ?, ?, 0)",
-			user.(User).UserId, text, time.Now().UTC().Unix())
-
-		flash(c, "Your message was recorded")
-	}
 
 	c.Redirect(302, timeLineUrl)
 }
