@@ -25,16 +25,8 @@ func RegisterController(c *gin.Context) {
 		return
 	}
 
-	var errMsg string
-	if body.Username == "" {
-		errMsg = "username must not be empty"
-	} else if body.Email == "" || !strings.Contains(body.Email, "@") {
-		errMsg = "email address was not valid"
-	} else if body.Password == "" {
-		errMsg = "password must not be empty"
-	}
-	if errMsg != "" {
-		c.JSON(http.StatusUnprocessableEntity, gin.H{"error": errMsg})
+	if !strings.Contains(body.Email, "@") {
+		c.JSON(http.StatusUnprocessableEntity, gin.H{"error": "email address was not valid"})
 		return
 	}
 
