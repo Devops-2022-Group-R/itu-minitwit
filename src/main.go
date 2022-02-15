@@ -17,6 +17,7 @@ import (
 	"github.com/gin-gonic/gin"
 	_ "github.com/mattn/go-sqlite3"
 
+	"github.com/Devops-2022-Group-R/itu-minitwit/src/database"
 	pwdHash "github.com/Devops-2022-Group-R/itu-minitwit/src/password"
 )
 
@@ -140,19 +141,6 @@ func queryDb(db *sql.DB, query string, args ...interface{}) []Row {
 	}
 
 	return results
-}
-
-// Convenience method to look up the id for a username.
-func getUserId(username string, db *sql.DB) *int64 {
-	row := db.QueryRow("select user_id from user where username = ?", username)
-
-	var userId int64
-	err := row.Scan(&userId)
-	if err != nil {
-		return nil
-	}
-
-	return &userId
 }
 
 func getUserFromUsername(username string, db *sql.DB) *User {
@@ -403,7 +391,7 @@ func createTweetsFromQuery(results []map[string]interface{}) []Message {
 func followUser(c *gin.Context) {
 	username := c.Param("username")
 	db := c.MustGet("db").(*sql.DB)
-	whomID := getUserId(username, db)
+	whomID := database.GetUserId(username, db)
 	session := sessions.Default(c)
 
 	if _, isLoggedIn := c.Get("user"); !isLoggedIn {
@@ -427,7 +415,7 @@ func followUser(c *gin.Context) {
 func unfollowUser(c *gin.Context) {
 	username := c.Param("username")
 	db := c.MustGet("db").(*sql.DB)
-	whomID := getUserId(username, db)
+	whomID := database.GetUserId(username, db)
 	session := sessions.Default(c)
 
 	if _, isLoggedIn := c.Get("user"); !isLoggedIn {
@@ -558,7 +546,7 @@ func registerPost(c *gin.Context) {
 		errMsg = "You have to enter a password"
 	} else if form.Get("password") != form.Get("password2") {
 		errMsg = "The two passwords do not match"
-	} else if getUserId(form.Get("username"), db) != nil {
+	} else if database.GetUserId(form.Get("username"), db) != nil {
 		errMsg = "The username is already taken"
 	} else {
 		_, err := db.Exec(
