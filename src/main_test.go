@@ -20,7 +20,6 @@ const (
 )
 
 func init() {
-	database = testDatabase
 	os.Chdir("..")
 }
 
