@@ -5,8 +5,8 @@ import (
 	"gorm.io/gorm"
 )
 
-func ConnectDatabase() (*gorm.DB, error) {
-	database, err := gorm.Open(sqlite.Open("./minitwit.db"), &gorm.Config{})
+func ConnectDatabase(databasePath string) (*gorm.DB, error) {
+	database, err := gorm.Open(sqlite.Open(databasePath), &gorm.Config{})
 
 	if err != nil {
 		return nil, err
