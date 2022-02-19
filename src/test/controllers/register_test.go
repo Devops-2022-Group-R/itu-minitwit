@@ -17,6 +17,18 @@ func (suite *TestSuite) TestRegisterController_GivenNoBody_Returns400() {
 	assert.Equal(suite.T(), http.StatusBadRequest, w.Code)
 }
 
+func (suite *TestSuite) TestRegisterController_GivenMissingField_Returns400() {
+	body, _ := json.Marshal(gin.H{
+		"username": "Yennefer of Vengerberg",
+		"password": "chaosmaster",
+	})
+
+	req, _ := http.NewRequest(http.MethodPost, "/register", bytes.NewReader(body))
+	w := suite.sendRequest(req)
+
+	assert.Equal(suite.T(), http.StatusBadRequest, w.Code)
+}
+
 func (suite *TestSuite) TestRegisterController_GivenValidRequest_Returns204() {
 	body, _ := json.Marshal(gin.H{
 		"username": "Yennefer of Vengerberg",
