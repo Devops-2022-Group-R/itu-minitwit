@@ -27,7 +27,7 @@ func main() {
 	}
 
 	var openDatabase = func() gorm.Dialector {
-		return sqlite.Open("./minitwit.db")
+		return sqlite.Open("minitwit.db")
 	}
 
 	if len(os.Args) > 1 {
