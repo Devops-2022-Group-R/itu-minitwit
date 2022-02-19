@@ -33,8 +33,8 @@ func FollowPostController(c *gin.Context) {
 		return
 	}
 
-	if authUsername, isAuthenticated := GetAuthState(c); authUsername == "" || !isAuthenticated {
-		c.JSON(http.StatusForbidden, gin.H{"error": "missing or invalid authorization credentials"})
+	if authUsername, err := GetAuthState(c); authUsername == "" || err != nil {
+		c.JSON(http.StatusForbidden, gin.H{"error": err.Error()})
 		return
 	} else if authUsername != urlUsername {
 		c.JSON(http.StatusUnprocessableEntity, gin.H{"error": "the URL username did not match the Authorization header username"})
