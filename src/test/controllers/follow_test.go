@@ -119,3 +119,21 @@ func (suite *TestSuite) TestFollowPostController_GivenValidUnfollow_Returns204()
 	w := sendAuthRequest(suite, followUrl, gin.H{"unfollow": "triss"})
 	assert.Equal(suite.T(), http.StatusNoContent, w.Code)
 }
+
+func (suite *TestSuite) TestFollowPostController_GivenFollowAlreadyFollowed_Returns204() {
+	setupTestFollowRelationships(suite)
+	w := sendAuthRequest(suite, followUrl, gin.H{"follow": "yennefer"})
+	assert.Equal(suite.T(), http.StatusNoContent, w.Code)
+}
+
+func (suite *TestSuite) TestFollowPostController_GivenUnfollowAlreadyUnfollowed_Returns204() {
+	setupTestFollowRelationships(suite)
+	w := sendAuthRequest(suite, followUrl, gin.H{"unfollow": "eredin"})
+	assert.Equal(suite.T(), http.StatusNoContent, w.Code)
+}
+
+func (suite *TestSuite) TestFollowPostController_GivenValidFollowAndUnfollow_Returns204() {
+	utilCreateUsersInDatabase(suite)
+	w := sendAuthRequest(suite, followUrl, gin.H{"unfollow": "triss", "follow": "eredin"})
+	assert.Equal(suite.T(), http.StatusNoContent, w.Code)
+}
