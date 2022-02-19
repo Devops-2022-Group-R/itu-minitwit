@@ -16,7 +16,7 @@ func (suite *TestSuite) TestLoginController_GivenNoBody_Returns401() {
 
 func (suite *TestSuite) TestLoginController_Given_Bruce_Lee_10000kicks_returns404() {
 	req, _ := http.NewRequest(http.MethodPost, "/login", nil)
-	encodedCredentials := encodeCredentialsTob64("Bruce Lee", "10000kicks")
+	encodedCredentials := encodeCredentialsToB64("Bruce Lee", "10000kicks")
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Connection", "close")
 	req.Header.Set("Authorization", "Basic "+encodedCredentials)
@@ -26,9 +26,8 @@ func (suite *TestSuite) TestLoginController_Given_Bruce_Lee_10000kicks_returns40
 	assert.Equal(suite.T(), http.StatusNotFound, w.Code)
 }
 
-
 // helper
-func encodeCredentialsTob64(username string, password string) string {
+func encodeCredentialsToB64(username string, password string) string {
 	data := username + ":" + password
 	sEnc := base64.StdEncoding.EncodeToString([]byte(data))
 	return sEnc
