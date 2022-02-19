@@ -44,7 +44,11 @@ func FollowPostController(c *gin.Context) {
 		return
 	}
 
-	userRepository.Follow(author.UserId, target.UserId)
+	err = userRepository.Follow(author.UserId, target.UserId)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
 
 	c.JSON(http.StatusNoContent, nil)
 }
@@ -78,26 +82,47 @@ func FollowGetController(c *gin.Context) {
 	})
 }
 
-// func UnfollowController(c *gin.Context) {
-// 	userRepository := c.MustGet("userRepository").(database.IUserRepository)
+type UnfollowRequestBody struct {
+	Unfollow string `form:"unfollow" json:"unfollow" binding:"required"`
+}
 
-// 	username := c.Param("username")
-// 	whom, err := userRepository.GetByUsername(username)
-// 	if err != nil {
-// 		c.JSON(404, nil)
-// 		return
-// 	}
+// Removes the current user as follower of the given user.
+func UnfollowController(c *gin.Context) {
+	userRepository := c.MustGet(UserRepositoryKey).(database.IUserRepository)
 
-// 	who, isLoggedIn := c.Get("user")
+	var body UnfollowRequestBody
+	if err := c.BindJSON(&body); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
 
-// 	if !isLoggedIn {
-// 		c.JSON(401, nil)
-// 		return
-// 	}
+	urlUsername := c.Param("username")
+	author, err := userRepository.GetByUsername(urlUsername)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	} else if author == nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "the username provided in the URL does not exist"})
+		return
+	}
 
-// 	userRepository.Unfollow(who.(models.User).UserId, whom.UserId)
+	// TODO: check if requestee = username in url. Or ignore requestee and use value from auth
+	// TODO: forbidden if not logged in
 
-// 	flash(c, fmt.Sprintf("You are no longer following %s", username))
+	target, err := userRepository.GetByUsername(body.Unfollow)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	} else if target == nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "the username to unfollow does not exist"})
+		return
+	}
 
-// 	c.Redirect(302, controllers.TimeLineUrl)
-// }
+	err = userRepository.Unfollow(author.UserId, target.UserId)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusNoContent, nil)
+}
