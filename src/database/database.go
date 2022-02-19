@@ -1,6 +1,9 @@
 package database
 
 import (
+	"log"
+	"os"
+
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
@@ -18,4 +21,20 @@ func ConnectDatabase(databasePath string) (*gorm.DB, error) {
 	}
 
 	return database, nil
+}
+
+func InitDatabase(databasePath string) {
+	db, err := ConnectDatabase(databasePath)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	NewGormUserRepository(db).Migrate()
+	NewGormMessageRepository(db).Migrate()
+}
+
+func NukeDatabase(databasePath string) {
+	if err := os.Remove(databasePath); err != nil {
+		log.Fatal(err)
+	}
 }

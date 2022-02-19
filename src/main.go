@@ -27,21 +27,10 @@ func main() {
 	if len(os.Args) > 1 {
 		input := os.Args[1]
 		if strings.EqualFold("initDb", input) {
-			initDb()
+			database.InitDatabase(database.DatabasePath)
 			return
 		}
 	}
 
 	controllers.SetupRouter(database.DatabasePath).Run()
-}
-
-// Creates the database tables.
-func initDb() {
-	db, err := database.ConnectDatabase(database.DatabasePath)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	database.NewGormUserRepository(db).Migrate()
-	database.NewGormMessageRepository(db).Migrate()
 }
