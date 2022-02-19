@@ -32,7 +32,7 @@ func main() {
 		}
 	}
 
-	controllers.SetupRouter().Run()
+	controllers.SetupRouter(database.DatabasePath).Run()
 }
 
 // Creates the database tables.
