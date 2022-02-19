@@ -12,8 +12,8 @@ func SetupRouter(openDatabase database.OpenDatabaseFunc) *gin.Engine {
 
 	r.Use(beforeRequest(openDatabase))
 
-	//r.GET("/:username/follow", followUser)
-	//r.GET("/:username/unfollow", unfollowUser)
+	r.POST("/fllws/:username", FollowPostController)
+	r.GET("/fllws/:username", FollowGetController)
 	r.GET("/msgs", GetMessages)
 	r.GET("/msgs/:username", GetUserMessages)
 	r.POST("/msgs/:username", PostUserMessage)

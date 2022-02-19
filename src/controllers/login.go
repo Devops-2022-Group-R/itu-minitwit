@@ -37,10 +37,11 @@ func LoginGet(c *gin.Context) {
 
 }
 
-func IsAuthenticated(c *gin.Context) bool {
+// Returns a pair (username, isAuthenticated) indicating the context's auth state
+func GetAuthState(c *gin.Context) (string, bool) {
 	username, password, hasAuth := c.Request.BasicAuth()
 	if !hasAuth {
-		return false
+		return username, false
 	}
 
 	userRepository := c.MustGet(UserRepositoryKey).(database.IUserRepository)
@@ -50,7 +51,8 @@ func IsAuthenticated(c *gin.Context) bool {
 	}
 
 	if user == nil || !pwdHash.CheckPasswordHash(password, user.PasswordHash) {
-		return false
+		return username, false
 	}
-	return true
+
+	return username, true
 }
