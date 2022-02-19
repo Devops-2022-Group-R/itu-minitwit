@@ -2,34 +2,45 @@ package controllers
 
 import (
 	"database/sql"
-	_ "log"
 	"net/http"
 
-	pwdHash "github.com/Devops-2022-Group-R/itu-minitwit/src/password"
-	. "github.com/Devops-2022-Group-R/itu-minitwit/src/database"
 	"github.com/gin-gonic/gin"
-)
 
-type Login struct {
-	Username string `form:"username" json:"user" binding:"required"`
-	Password string `form:"password" json:"password" binding:"required"`
-}
+	"github.com/Devops-2022-Group-R/itu-minitwit/src/database"
+	pwdHash "github.com/Devops-2022-Group-R/itu-minitwit/src/password"
+)
 
 // Logs the user in.
 func LoginPost(c *gin.Context) {
-	var body Login
-	if c.BindJSON(&body) == nil {
-		db := c.MustGet("db").(*sql.DB)
-		users := QueryDb(db, "select * from user where username = ?", body.Username)
+	db := c.MustGet("db").(*sql.DB)
 
-		if len(users) == 0 {
-			c.JSON(http.StatusBadRequest, gin.H{"status": "Invalid username"})
-		} else if !pwdHash.CheckPasswordHash(body.Password, users[0]["pw_hash"].(string)) {
-			c.JSON(http.StatusUnauthorized, gin.H{"status": "password is incorrect"})
-		} else {
-			//TODO: add login logic instead of session - gin authentication?
-			c.JSON(http.StatusNoContent, nil)
-			return
-		}
+	username, password, hasAuth := c.Request.BasicAuth()
+	if !hasAuth {
+		c.JSON(http.StatusUnauthorized, gin.H{"status": "Couldn't authenticate"})
+		return
 	}
+	users := database.QueryDb(db, "select * from user where username = ?", username)
+
+	if len(users) == 0 {
+		c.JSON(http.StatusNotFound, gin.H{"status": "Invalid username"})
+		return
+	} else if !pwdHash.CheckPasswordHash(password, users[0]["pw_hash"].(string)) {
+		c.JSON(http.StatusUnauthorized, gin.H{"status": "password is incorrect"})
+		return
+	}
+	c.JSON(http.StatusNoContent, nil)
+}
+
+func IsAuthenticated(c *gin.Context) bool {
+	db := c.MustGet("db").(*sql.DB)
+	username, password, hasAuth := c.Request.BasicAuth()
+	if !hasAuth {
+		return false
+	}
+	users := database.QueryDb(db, "select * from user where username = ?", username)
+
+	if len(users) == 0 || !pwdHash.CheckPasswordHash(password, users[0]["pw_hash"].(string)) {
+		return false
+	}
+	return true
 }
