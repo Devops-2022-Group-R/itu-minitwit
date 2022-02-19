@@ -7,6 +7,8 @@ require (
 	github.com/gin-gonic/gin v1.7.7
 	github.com/mattn/go-sqlite3 v1.14.11
 	golang.org/x/crypto v0.0.0-20220210151621-f4118a5b28e2
+	gorm.io/driver/sqlite v1.2.6
+	gorm.io/gorm v1.22.5
 )
 
 require (
@@ -19,6 +21,8 @@ require (
 	github.com/gorilla/context v1.1.1 // indirect
 	github.com/gorilla/securecookie v1.1.1 // indirect
 	github.com/gorilla/sessions v1.2.0 // indirect
+	github.com/jinzhu/inflection v1.0.0 // indirect
+	github.com/jinzhu/now v1.1.4 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/leodido/go-urn v1.2.1 // indirect
 	github.com/mattn/go-isatty v0.0.14 // indirect

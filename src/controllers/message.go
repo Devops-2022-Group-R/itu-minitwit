@@ -1,16 +1,13 @@
 package controllers
 
 import (
-	"database/sql"
 	"net/http"
 	"time"
 
 	"github.com/Devops-2022-Group-R/itu-minitwit/src/database"
+	"github.com/Devops-2022-Group-R/itu-minitwit/src/models"
 	"github.com/gin-gonic/gin"
 )
-
-const messagesPerPage = 30
-const USERID = -42 // TODO: Figure out user ID
 
 type MessageRequestBody struct {
 	Username string `form:"username" json:"username" binding:"required"`
@@ -18,32 +15,38 @@ type MessageRequestBody struct {
 }
 
 func GetMessages(c *gin.Context) {
-	db := c.MustGet("db").(*sql.DB)
+	messageRepository := c.MustGet(MessageRepositoryKey).(database.IMessageRepository)
+	messages, err := messageRepository.GetWithLimit(perPage)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
 
-	query := `SELECT message.*, user.*
-			  FROM message, user
-			  WHERE message.flagged = 0
-			      AND message.author_id = user.user_id
-			  ORDER BY message.pub_date DESC
-			  LIMIT ?`
-	rows := database.QueryDb(db, query, messagesPerPage)
-
-	println(rows) // To compile
+	c.JSON(http.StatusOK, messages)
 }
 
 func GetUserMessages(c *gin.Context) {
-	db := c.MustGet("db").(*sql.DB)
+	userRepository := c.MustGet(UserRepositoryKey).(database.IUserRepository)
+	messageRepository := c.MustGet(MessageRepositoryKey).(database.IMessageRepository)
 
-	query := `SELECT message.*, user.*
-			  FROM message, user 
-			  WHERE message.flagged = 0
-			  	  AND user.user_id = message.author_id
-				  AND user.user_id = ?
-			  ORDER BY message.pub_date DESC
-			  LIMIT ?`
-	rows := database.QueryDb(db, query, USERID, messagesPerPage)
+	user, err := userRepository.GetByUsername(c.Param("username"))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
 
-	println(rows) // To compile
+	if user == nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "user not found"})
+		return
+	}
+
+	messages, err := messageRepository.GetByUserId(user.UserId, perPage)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, messages)
 }
 
 func PostUserMessage(c *gin.Context) {
@@ -59,9 +62,59 @@ func PostUserMessage(c *gin.Context) {
 		return
 	}
 
-	query := "INSERT INTO message (author_id, text, pub_date, flagged) VALUES (?, ?, ?, 0)"
-	db := c.MustGet("db").(*sql.DB)
-	database.QueryDb(db, query, USERID, body.Content, time.Now().UTC().Unix())
+	userRepository := c.MustGet(UserRepositoryKey).(database.IUserRepository)
+	messageRepository := c.MustGet(MessageRepositoryKey).(database.IMessageRepository)
+
+	user, err := userRepository.GetByUsername(c.Param("username"))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	if user == nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "user not found"})
+		return
+	}
+
+	messageRepository.Create(models.Message{
+		Author:  *user,
+		Text:    body.Content,
+		PubDate: time.Now().UTC().Unix(),
+		Flagged: false,
+	})
 
 	c.JSON(http.StatusNoContent, nil)
 }
+
+/*
+// Registers a new message for the user.
+func addMessage(c *gin.Context) {
+	user, userLoggedIn := c.Get("user")
+
+	if !userLoggedIn {
+		c.JSON(401, nil)
+		return
+	}
+
+	err := c.Request.ParseForm()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	form := c.Request.Form
+	text := form.Get("text")
+
+	if text != "" {
+		messageRepository := c.MustGet(messageRepositoryKey).(database.IMessageRepository)
+		messageRepository.Create(models.Message{
+			Author:  user.(models.User),
+			Text:    text,
+			PubDate: time.Now().Unix(),
+		})
+
+		flash(c, "Your message was recorded")
+	}
+
+	c.Redirect(302, timeLineUrl)
+}
+*/
