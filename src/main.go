@@ -55,8 +55,9 @@ func setupRouter() *gin.Engine {
 
 	//r.GET("/:username/follow", followUser)
 	//r.GET("/:username/unfollow", unfollowUser)
-	r.GET("/msgs/:username", controllers.GetMessage)
-	r.POST("/msgs/:username", controllers.PostMessage)
+	r.GET("/msgs", controllers.GetMessages)
+	r.GET("/msgs/:username", controllers.GetUserMessages)
+	r.POST("/msgs/:username", controllers.PostUserMessage)
 	r.POST(controllers.LoginUrl, controllers.LoginPost)
 	r.POST("/register", controllers.RegisterController)
 

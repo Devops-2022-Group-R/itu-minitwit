@@ -2,20 +2,54 @@ package controllers
 
 import (
 	"net/http"
+	"time"
 
+	"github.com/Devops-2022-Group-R/itu-minitwit/src/database"
+	"github.com/Devops-2022-Group-R/itu-minitwit/src/models"
 	"github.com/gin-gonic/gin"
 )
 
 type MessageRequestBody struct {
 	Username string `form:"username" json:"username" binding:"required"`
-	Message  string `form:"text" json:"text" binding:"required"`
+	Content  string `form:"content" json:"content" binding:"required"`
 }
 
-func GetMessage(c *gin.Context) {
+func GetMessages(c *gin.Context) {
+	messageRepository := c.MustGet(MessageRepositoryKey).(database.IMessageRepository)
+	messages, err := messageRepository.GetWithLimit(perPage)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, messages)
 }
 
-// Look into authorization
-func PostMessage(c *gin.Context) {
+func GetUserMessages(c *gin.Context) {
+	userRepository := c.MustGet(UserRepositoryKey).(database.IUserRepository)
+	messageRepository := c.MustGet(MessageRepositoryKey).(database.IMessageRepository)
+
+	user, err := userRepository.GetByUsername(c.Param("username"))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	if user == nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "user not found"})
+		return
+	}
+
+	messages, err := messageRepository.GetByUserId(user.UserId, perPage)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, messages)
+}
+
+func PostUserMessage(c *gin.Context) {
 	var body MessageRequestBody
 
 	if err := c.BindJSON(&body); err != nil {
@@ -23,14 +57,31 @@ func PostMessage(c *gin.Context) {
 		return
 	}
 
-	if body.Message == "" {
+	if body.Content == "" {
 		c.JSON(http.StatusUnprocessableEntity, gin.H{"error": "Message may not be empty"})
 		return
 	}
 
-	// db := c.MustGet("db").(*sql.DB)
-	// database.QueryDb(db, "insert into message (author_id, text, pub_date, flagged) values (?, ?, ?, 0)",
-	// 	user.(User).UserId, body.Message, time.Now().UTC().Unix())
+	userRepository := c.MustGet(UserRepositoryKey).(database.IUserRepository)
+	messageRepository := c.MustGet(MessageRepositoryKey).(database.IMessageRepository)
+
+	user, err := userRepository.GetByUsername(c.Param("username"))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	if user == nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "user not found"})
+		return
+	}
+
+	messageRepository.Create(models.Message{
+		Author:  *user,
+		Text:    body.Content,
+		PubDate: time.Now().UTC().Unix(),
+		Flagged: false,
+	})
 
 	c.JSON(http.StatusNoContent, nil)
 }
