@@ -28,21 +28,15 @@ func registerUser(suite *TestSuite, username, email, password string) {
 
 func setupTestFollowRelationships(suite *TestSuite) {
 	utilCreateUsersInDatabase(suite)
-
-	body1, _ := json.Marshal(gin.H{"follow": "yennefer"})
-	req1, _ := http.NewRequest(http.MethodPost, followUrl, bytes.NewReader(body1))
-	w1 := suite.sendRequest(req1)
-	body2, _ := json.Marshal(gin.H{"follow": "triss"})
-	req2, _ := http.NewRequest(http.MethodPost, followUrl, bytes.NewReader(body2))
-	w2 := suite.sendRequest(req2)
-
+	w1 := sendAuthRequest(suite, followUrl, gin.H{"follow": "yennefer"})
+	w2 := sendAuthRequest(suite, followUrl, gin.H{"follow": "triss"})
 	assert.Equal(suite.T(), http.StatusNoContent, w1.Code)
 	assert.Equal(suite.T(), http.StatusNoContent, w2.Code)
 }
 
 func sendAuthRequest(suite *TestSuite, url string, body gin.H) *httptest.ResponseRecorder {
 	bodyBytes, _ := json.Marshal(body)
-	req, _ := http.NewRequest(http.MethodPost, followUrl, bytes.NewReader(bodyBytes))
+	req, _ := http.NewRequest(http.MethodPost, url, bytes.NewReader(bodyBytes))
 	req.Header.Set("Authorization", "Basic "+encodeCredentialsToB64("geralt", "123"))
 	return suite.sendRequest(req)
 }
@@ -135,5 +129,11 @@ func (suite *TestSuite) TestFollowPostController_GivenUnfollowAlreadyUnfollowed_
 func (suite *TestSuite) TestFollowPostController_GivenValidFollowAndUnfollow_Returns204() {
 	utilCreateUsersInDatabase(suite)
 	w := sendAuthRequest(suite, followUrl, gin.H{"unfollow": "triss", "follow": "eredin"})
+	assert.Equal(suite.T(), http.StatusNoContent, w.Code)
+}
+
+func (suite *TestSuite) TestFollowPostController_GivenEmptyBody_Returns204() {
+	utilCreateUsersInDatabase(suite)
+	w := sendAuthRequest(suite, followUrl, gin.H{})
 	assert.Equal(suite.T(), http.StatusNoContent, w.Code)
 }

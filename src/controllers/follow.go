@@ -33,8 +33,13 @@ func FollowPostController(c *gin.Context) {
 		return
 	}
 
-	// TODO: check if requestee = username in url. Or ignore requestee and use value from auth
-	// TODO: forbidden if not logged in
+	if authUsername, isAuthenticated := GetAuthState(c); authUsername == "" || !isAuthenticated {
+		c.JSON(http.StatusForbidden, gin.H{"error": "missing or invalid authorization credentials"})
+		return
+	} else if authUsername != urlUsername {
+		c.JSON(http.StatusUnprocessableEntity, gin.H{"error": "the URL username did not match the Authorization header username"})
+		return
+	}
 
 	var followTargetUserId int64
 	if len(body.Follow) > 0 {
