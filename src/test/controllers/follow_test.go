@@ -5,59 +5,85 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
+	"net/http/httptest"
 
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
-
-	"github.com/Devops-2022-Group-R/itu-minitwit/src/database"
-	"github.com/Devops-2022-Group-R/itu-minitwit/src/models"
 )
 
 const followUrl = "/fllws/geralt"
 
 // Unsafe to use unless you are strictly using the username
 func utilCreateUsersInDatabase(suite *TestSuite) {
-	gormDb, _ := database.ConnectDatabase(suite.openDatabase)
-	userRepo := database.NewGormUserRepository(gormDb)
-
-	userRepo.Create(models.User{UserId: 1, Username: "geralt", Email: "geralt@witcher.pl", PasswordHash: "123"})
-	userRepo.Create(models.User{UserId: 2, Username: "yennefer", Email: "yennefer@witcher.pl", PasswordHash: "123"})
-	userRepo.Create(models.User{UserId: 3, Username: "triss", Email: "triss@witcher.pl", PasswordHash: "123"})
+	registerUser(suite, "geralt", "geralt@witcher.pl", "123")
+	registerUser(suite, "yennefer", "yennefer@witcher.pl", "123")
+	registerUser(suite, "triss", "triss@witcher.pl", "123")
+	registerUser(suite, "eredin", "eredin@wildhunt.pl", "123")
 }
 
-func (suite *TestSuite) TestFollowPostController_GivenValidBody_Returns204() {
+func registerUser(suite *TestSuite, username, email, password string) {
+	body, _ := json.Marshal(gin.H{"username": username, "email": email, "password": password})
+	suite.sendRequest(httptest.NewRequest(http.MethodPost, "/register", bytes.NewReader(body)))
+}
+
+func setupTestFollowRelationships(suite *TestSuite) {
 	utilCreateUsersInDatabase(suite)
 
-	body, _ := json.Marshal(gin.H{"follow": "yennefer"})
-	req, _ := http.NewRequest(http.MethodPost, followUrl, bytes.NewReader(body))
-	w := suite.sendRequest(req)
+	body1, _ := json.Marshal(gin.H{"follow": "yennefer"})
+	req1, _ := http.NewRequest(http.MethodPost, followUrl, bytes.NewReader(body1))
+	w1 := suite.sendRequest(req1)
+	body2, _ := json.Marshal(gin.H{"follow": "triss"})
+	req2, _ := http.NewRequest(http.MethodPost, followUrl, bytes.NewReader(body2))
+	w2 := suite.sendRequest(req2)
 
+	assert.Equal(suite.T(), http.StatusNoContent, w1.Code)
+	assert.Equal(suite.T(), http.StatusNoContent, w2.Code)
+}
+
+func sendAuthRequest(suite *TestSuite, url string, body gin.H) *httptest.ResponseRecorder {
+	bodyBytes, _ := json.Marshal(body)
+	req, _ := http.NewRequest(http.MethodPost, followUrl, bytes.NewReader(bodyBytes))
+	req.Header.Set("Authorization", "Basic "+encodeCredentialsToB64("geralt", "123"))
+	return suite.sendRequest(req)
+}
+
+func (suite *TestSuite) TestFollowPostController_GivenValidFollow_Returns204() {
+	utilCreateUsersInDatabase(suite)
+	w := sendAuthRequest(suite, followUrl, gin.H{"follow": "yennefer"})
 	assert.Equal(suite.T(), http.StatusNoContent, w.Code)
 }
 
 func (suite *TestSuite) TestFollowPostController_GivenNonExistingUser_Returns404() {
-	body, _ := json.Marshal(gin.H{"follow": "yennefer"})
-	req, _ := http.NewRequest(http.MethodPost, "/fllws/i-dont-exist", bytes.NewReader(body))
-	w := suite.sendRequest(req)
-
+	w := sendAuthRequest(suite, "/fllws/i-dont-exist", gin.H{"follow": "yennefer"})
 	assert.Equal(suite.T(), http.StatusNotFound, w.Code)
 }
 
 func (suite *TestSuite) TestFollowPostController_GivenFollowANonExistingUser_Returns404() {
 	utilCreateUsersInDatabase(suite)
+	w := sendAuthRequest(suite, followUrl, gin.H{"follow": "vesemir"})
+	assert.Equal(suite.T(), http.StatusNotFound, w.Code)
+}
 
-	body, _ := json.Marshal(gin.H{"follow": "vesemir"})
-	req, _ := http.NewRequest(http.MethodPost, followUrl, bytes.NewReader(body))
+func (suite *TestSuite) TestFollowPostController_GivenWrongUsernameInURL_Returns422() {
+	utilCreateUsersInDatabase(suite)
+	w := sendAuthRequest(suite, "/fllws/eredin", gin.H{"follow": "yennefer"})
+	assert.Equal(suite.T(), http.StatusUnprocessableEntity, w.Code)
+}
+
+func (suite *TestSuite) TestFollowPostController_WithoutLoggedInUser_Returns403() {
+	utilCreateUsersInDatabase(suite)
+
+	body, _ := json.Marshal(gin.H{"follow": "yennefer"})
+	req := httptest.NewRequest(http.MethodPost, followUrl, bytes.NewReader(body))
 	w := suite.sendRequest(req)
 
-	assert.Equal(suite.T(), http.StatusNotFound, w.Code)
+	assert.Equal(suite.T(), http.StatusForbidden, w.Code)
 }
 
 func (suite *TestSuite) TestFollowGetController_GivenUserWithNoFollows_ReturnsEmpty() {
 	utilCreateUsersInDatabase(suite)
 
-	reqBody, _ := json.Marshal(gin.H{"follow": "vesemir"})
-	req, _ := http.NewRequest(http.MethodGet, followUrl, bytes.NewReader(reqBody))
+	req, _ := http.NewRequest(http.MethodGet, followUrl, nil)
 	w := suite.sendRequest(req)
 
 	var resBody []string
@@ -67,23 +93,11 @@ func (suite *TestSuite) TestFollowGetController_GivenUserWithNoFollows_ReturnsEm
 	assert.Empty(suite.T(), resBody)
 }
 
-func (suite *TestSuite) TestFollowGetController_GivenUserWithFollows_ReturnsAllFollowed() {
-	utilCreateUsersInDatabase(suite)
+func (suite *TestSuite) TestFollowGetController_GivenUserWithFollowed_ReturnsAllFollowed() {
+	setupTestFollowRelationships(suite)
 	assert := assert.New(suite.T())
 
-	// Create follow relationships
-	body1, _ := json.Marshal(gin.H{"follow": "yennefer"})
-	req1, _ := http.NewRequest(http.MethodPost, followUrl, bytes.NewReader(body1))
-	w1 := suite.sendRequest(req1)
-	body2, _ := json.Marshal(gin.H{"follow": "triss"})
-	req2, _ := http.NewRequest(http.MethodPost, followUrl, bytes.NewReader(body2))
-	w2 := suite.sendRequest(req2)
-	assert.Equal(http.StatusNoContent, w1.Code)
-	assert.Equal(http.StatusNoContent, w2.Code)
-
-	// Get users
-	reqBody, _ := json.Marshal(gin.H{"follow": "vesemir"})
-	req, _ := http.NewRequest(http.MethodGet, followUrl, bytes.NewReader(reqBody))
+	req, _ := http.NewRequest(http.MethodGet, followUrl, nil)
 	w := suite.sendRequest(req)
 
 	var resBody map[string][]string
@@ -92,4 +106,16 @@ func (suite *TestSuite) TestFollowGetController_GivenUserWithFollows_ReturnsAllF
 
 	assert.Equal(http.StatusOK, w.Code)
 	assert.ElementsMatch([...]string{"yennefer", "triss"}, resBody["follows"])
+}
+
+func (suite *TestSuite) TestFollowPostController_GivenUnfollowANonExistingUser_Returns404() {
+	utilCreateUsersInDatabase(suite)
+	w := sendAuthRequest(suite, followUrl, gin.H{"unfollow": "vesemir"})
+	assert.Equal(suite.T(), http.StatusNotFound, w.Code)
+}
+
+func (suite *TestSuite) TestFollowPostController_GivenValidUnfollow_Returns204() {
+	setupTestFollowRelationships(suite)
+	w := sendAuthRequest(suite, followUrl, gin.H{"unfollow": "triss"})
+	assert.Equal(suite.T(), http.StatusNoContent, w.Code)
 }
