@@ -14,7 +14,7 @@ import (
 type RegisterRequestBody struct {
 	Username string `form:"username" json:"username" binding:"required"`
 	Email    string `form:"email" json:"email" binding:"required"`
-	Password string `form:"password" json:"password" binding:"required"`
+	Password string `form:"pwd" json:"pwd" binding:"required"`
 }
 
 func RegisterController(c *gin.Context) {

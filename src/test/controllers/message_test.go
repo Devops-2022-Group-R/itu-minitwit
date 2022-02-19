@@ -79,6 +79,6 @@ func (suite *TestSuite) Test_PostUserMessage_Given_Empty_Message_Returns_BadRequ
 }
 
 func (suite *TestSuite) registerUser(username, email, password string) {
-	body, _ := json.Marshal(gin.H{"username": username, "email": email, "password": password})
+	body, _ := json.Marshal(gin.H{"username": username, "email": email, "pwd": password})
 	suite.sendRequest(httptest.NewRequest(http.MethodPost, "/register", bytes.NewReader(body)))
 }
