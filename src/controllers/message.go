@@ -34,3 +34,36 @@ func PostMessage(c *gin.Context) {
 
 	c.JSON(http.StatusNoContent, nil)
 }
+
+/*
+// Registers a new message for the user.
+func addMessage(c *gin.Context) {
+	user, userLoggedIn := c.Get("user")
+
+	if !userLoggedIn {
+		c.JSON(401, nil)
+		return
+	}
+
+	err := c.Request.ParseForm()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	form := c.Request.Form
+	text := form.Get("text")
+
+	if text != "" {
+		messageRepository := c.MustGet(messageRepositoryKey).(database.IMessageRepository)
+		messageRepository.Create(models.Message{
+			Author:  user.(models.User),
+			Text:    text,
+			PubDate: time.Now().Unix(),
+		})
+
+		flash(c, "Your message was recorded")
+	}
+
+	c.Redirect(302, timeLineUrl)
+}
+*/

@@ -1,7 +1,7 @@
 package controllers
 
 import (
-	"database/sql"
+	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -12,19 +12,22 @@ import (
 
 // Logs the user in.
 func LoginPost(c *gin.Context) {
-	db := c.MustGet("db").(*sql.DB)
-
 	username, password, hasAuth := c.Request.BasicAuth()
 	if !hasAuth {
 		c.JSON(http.StatusUnauthorized, gin.H{"status": "Couldn't authenticate"})
 		return
 	}
-	users := database.QueryDb(db, "select * from user where username = ?", username)
 
-	if len(users) == 0 {
+	userRepository := c.MustGet(UserRepositoryKey).(database.IUserRepository)
+	user, err := userRepository.GetByUsername(username)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if user == nil {
 		c.JSON(http.StatusNotFound, gin.H{"status": "Invalid username"})
 		return
-	} else if !pwdHash.CheckPasswordHash(password, users[0]["pw_hash"].(string)) {
+	} else if !pwdHash.CheckPasswordHash(password, user.PasswordHash) {
 		c.JSON(http.StatusUnauthorized, gin.H{"status": "password is incorrect"})
 		return
 	}
@@ -32,14 +35,18 @@ func LoginPost(c *gin.Context) {
 }
 
 func IsAuthenticated(c *gin.Context) bool {
-	db := c.MustGet("db").(*sql.DB)
 	username, password, hasAuth := c.Request.BasicAuth()
 	if !hasAuth {
 		return false
 	}
-	users := database.QueryDb(db, "select * from user where username = ?", username)
 
-	if len(users) == 0 || !pwdHash.CheckPasswordHash(password, users[0]["pw_hash"].(string)) {
+	userRepository := c.MustGet(UserRepositoryKey).(database.IUserRepository)
+	user, err := userRepository.GetByUsername(username)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if user == nil || !pwdHash.CheckPasswordHash(password, user.PasswordHash) {
 		return false
 	}
 	return true

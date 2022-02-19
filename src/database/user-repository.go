@@ -35,8 +35,8 @@ func (FollowDTO) TableName() string {
 type IUserRepository interface {
 	Migrate() error
 	Create(users models.User) error
-	GetByID(id int64) (models.User, error)
-	GetByUsername(username string) (models.User, error)
+	GetByID(id int64) (*models.User, error)
+	GetByUsername(username string) (*models.User, error)
 
 	Follow(whoId int64, whomId int64) error
 	Unfollow(whoId int64, whomId int64) error

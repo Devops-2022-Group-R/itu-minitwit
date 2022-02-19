@@ -30,21 +30,21 @@ func (rep *GormUserRepository) Create(user models.User) error {
 	return rep.db.Create(&dto).Error
 }
 
-func (rep *GormUserRepository) GetByID(id int64) (models.User, error) {
+func (rep *GormUserRepository) GetByID(id int64) (*models.User, error) {
 	var dto UserDTO
 	err := rep.db.First(&dto, id).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return models.User{}, nil
+		return nil, nil
 	}
 
 	return userDtoToDomain(dto), err
 }
 
-func (rep *GormUserRepository) GetByUsername(username string) (models.User, error) {
+func (rep *GormUserRepository) GetByUsername(username string) (*models.User, error) {
 	var dto UserDTO
 	err := rep.db.Where("username = ?", username).First(&dto).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return models.User{}, nil
+		return nil, nil
 	}
 
 	return userDtoToDomain(dto), err
@@ -78,8 +78,8 @@ func (rep *GormUserRepository) IsFollowing(whoId int64, whomId int64) (bool, err
 	return true, err
 }
 
-func userDtoToDomain(dto UserDTO) models.User {
-	return models.User{
+func userDtoToDomain(dto UserDTO) *models.User {
+	return &models.User{
 		UserId:       int64(dto.ID),
 		Username:     dto.Username,
 		Email:        dto.Email,
