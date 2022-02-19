@@ -13,6 +13,7 @@ type PostUserMessageRequestBody struct {
 	Content string `form:"content" json:"content" binding:"required"`
 }
 
+// GetMessages returns the latest messages, limited by the number of messages per page.
 func GetMessages(c *gin.Context) {
 	messageRepository := c.MustGet(MessageRepositoryKey).(database.IMessageRepository)
 	messages, err := messageRepository.GetWithLimit(perPage)
@@ -24,6 +25,7 @@ func GetMessages(c *gin.Context) {
 	c.JSON(http.StatusOK, messages)
 }
 
+// GetUserMessages returns the latest messages by the user, limited by the number of messages per page.
 func GetUserMessages(c *gin.Context) {
 	userRepository := c.MustGet(UserRepositoryKey).(database.IUserRepository)
 	messageRepository := c.MustGet(MessageRepositoryKey).(database.IMessageRepository)
@@ -48,6 +50,7 @@ func GetUserMessages(c *gin.Context) {
 	c.JSON(http.StatusOK, messages)
 }
 
+// PostUserMessage posts a non-empty message, with the current UTC time.
 func PostUserMessage(c *gin.Context) {
 	var body PostUserMessageRequestBody
 
