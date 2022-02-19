@@ -12,10 +12,9 @@ import (
 
 // Logs the user in.
 func LoginGet(c *gin.Context) {
-
 	username, password, hasAuth := c.Request.BasicAuth()
 	if !hasAuth {
-		c.JSON(http.StatusUnauthorized, gin.H{"status": "Couldn't authenticate"})
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "missing basic authentication credentials"})
 		return
 	}
 
@@ -26,10 +25,10 @@ func LoginGet(c *gin.Context) {
 	}
 
 	if user == nil {
-		c.JSON(http.StatusNotFound, gin.H{"status": "Invalid username"})
+		c.JSON(http.StatusNotFound, gin.H{"error": "invalid username"})
 		return
 	} else if !pwdHash.CheckPasswordHash(password, user.PasswordHash) {
-		c.JSON(http.StatusUnauthorized, gin.H{"status": "password is incorrect"})
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "password is incorrect"})
 		return
 	}
 
