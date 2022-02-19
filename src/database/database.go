@@ -2,9 +2,7 @@ package database
 
 import (
 	"log"
-	"os"
 
-	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
 
@@ -13,8 +11,10 @@ const (
 	TestDatabasePath = "./minitwit-test.db"
 )
 
-func ConnectDatabase(databasePath string) (*gorm.DB, error) {
-	database, err := gorm.Open(sqlite.Open(databasePath), &gorm.Config{})
+type OpenDatabaseFunc = func() gorm.Dialector
+
+func ConnectDatabase(openDatabase OpenDatabaseFunc) (*gorm.DB, error) {
+	database, err := gorm.Open(openDatabase(), &gorm.Config{})
 
 	if err != nil {
 		return nil, err
@@ -23,18 +23,12 @@ func ConnectDatabase(databasePath string) (*gorm.DB, error) {
 	return database, nil
 }
 
-func InitDatabase(databasePath string) {
-	db, err := ConnectDatabase(databasePath)
+func InitDatabase(openDatabase OpenDatabaseFunc) {
+	db, err := ConnectDatabase(openDatabase)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	NewGormUserRepository(db).Migrate()
 	NewGormMessageRepository(db).Migrate()
-}
-
-func NukeDatabase(databasePath string) {
-	if err := os.Remove(databasePath); err != nil {
-		log.Fatal(err)
-	}
 }

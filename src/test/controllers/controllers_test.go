@@ -5,11 +5,16 @@ import (
 	"testing"
 
 	"github.com/Devops-2022-Group-R/itu-minitwit/src/database"
+	"gorm.io/driver/sqlite"
+	"gorm.io/gorm"
 )
 
+func openDatabase() gorm.Dialector {
+	return sqlite.Open(":memory:")
+}
+
 func TestMain(m *testing.M) {
-	database.InitDatabase(database.TestDatabasePath)
+	database.InitDatabase(openDatabase)
 	exitCode := m.Run()
-	database.NukeDatabase(database.TestDatabasePath)
 	os.Exit(exitCode)
 }

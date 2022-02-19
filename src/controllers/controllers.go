@@ -7,10 +7,10 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func SetupRouter(databasePath string) *gin.Engine {
+func SetupRouter(openDatabase database.OpenDatabaseFunc) *gin.Engine {
 	r := gin.Default()
 
-	r.Use(beforeRequest(databasePath))
+	r.Use(beforeRequest(openDatabase))
 
 	//r.GET("/:username/follow", followUser)
 	//r.GET("/:username/unfollow", unfollowUser)
@@ -25,9 +25,9 @@ func SetupRouter(databasePath string) *gin.Engine {
 
 // Make sure we are connected to the database each request and look
 // up the current user so that we know he's there.
-func beforeRequest(databasePath string) gin.HandlerFunc {
+func beforeRequest(openDatabase database.OpenDatabaseFunc) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		gormDb, err := database.ConnectDatabase(databasePath)
+		gormDb, err := database.ConnectDatabase(openDatabase)
 		if err != nil {
 			log.Fatal(err)
 		}
