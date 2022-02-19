@@ -17,7 +17,7 @@ func SetupRouter(openDatabase database.OpenDatabaseFunc) *gin.Engine {
 	r.GET("/msgs", GetMessages)
 	r.GET("/msgs/:username", GetUserMessages)
 	r.POST("/msgs/:username", PostUserMessage)
-	r.POST(LoginUrl, LoginPost)
+	r.GET(LoginUrl, LoginGet)
 	r.POST("/register", RegisterController)
 
 	return r
