@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/Devops-2022-Group-R/itu-minitwit/src/database"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 )
@@ -40,4 +41,50 @@ func (suite *TestSuite) TestRegisterController_GivenInvalidEmail_Returns422() {
 	w := suite.sendRequest(req)
 
 	assert.Equal(suite.T(), http.StatusUnprocessableEntity, w.Code)
+}
+
+func (suite *TestSuite) TestRegisterController_RunTwiceWithSameUsername_Returns409() {
+	assert := assert.New(suite.T())
+
+	firstRegister, _ := json.Marshal(gin.H{
+		"username": "GeraltLover",
+		"email":    "yennefer@aretuza.wr",
+		"password": "chaosmaster",
+	})
+	secondRegister, _ := json.Marshal(gin.H{
+		"username": "GeraltLover",
+		"email":    "triss@merigold.wr",
+		"password": "peacemaster",
+	})
+
+	req1, _ := http.NewRequest(http.MethodPost, "/register", bytes.NewReader(firstRegister))
+	w1 := suite.sendRequest(req1)
+
+	assert.Equal(http.StatusNoContent, w1.Code)
+
+	req2, _ := http.NewRequest(http.MethodPost, "/register", bytes.NewReader(secondRegister))
+	w2 := suite.sendRequest(req2)
+
+	assert.Equal(http.StatusConflict, w2.Code)
+}
+
+func (suite *TestSuite) TestRegisterController_GivenValidBody_AddsUserToDatabase() {
+	body, _ := json.Marshal(gin.H{
+		"username": "Yennefer of Vengerberg",
+		"email":    "yennefer@aretuza.wr",
+		"password": "chaosmaster",
+	})
+
+	req, _ := http.NewRequest(http.MethodPost, "/register", bytes.NewReader(body))
+	suite.sendRequest(req)
+
+	gormDb, _ := database.ConnectDatabase(suite.openDatabase)
+	userRepo := database.NewGormUserRepository(gormDb)
+	user, err := userRepo.GetByUsername("Yennefer of Vengerberg")
+
+	assert := assert.New(suite.T())
+	assert.Nil(err)
+	assert.Equal("Yennefer of Vengerberg", user.Username)
+	assert.Equal("yennefer@aretuza.wr", user.Email)
+	assert.NotEmpty(user.PasswordHash)
 }
