@@ -41,4 +41,5 @@ type IUserRepository interface {
 	Follow(whoId int64, whomId int64) error
 	Unfollow(whoId int64, whomId int64) error
 	IsFollowing(whoId int64, whomId int64) (bool, error)
+	AllFollowed(whoId int64) ([]*models.User, error)
 }
