@@ -1,7 +1,7 @@
 package controllers
 
 import (
-	"log"
+	"errors"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -10,44 +10,48 @@ import (
 	pwdHash "github.com/Devops-2022-Group-R/itu-minitwit/src/password"
 )
 
+var (
+	ErrInvalidUsername    = errors.New("invalid username")
+	ErrIncorrectPassword  = errors.New("incorrect password")
+	ErrMissingCredentials = errors.New("missing authentication credentials")
+)
+
 // Logs the user in.
-func LoginPost(c *gin.Context) {
+func LoginGet(c *gin.Context) {
+	_, err := GetAuthState(c)
+
+	switch err {
+	case nil:
+		c.JSON(http.StatusNoContent, nil)
+	case ErrInvalidUsername:
+		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+	case ErrIncorrectPassword, ErrMissingCredentials:
+		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+	default:
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	}
+}
+
+func GetAuthState(c *gin.Context) (string, error) {
 	username, password, hasAuth := c.Request.BasicAuth()
+
 	if !hasAuth {
-		c.JSON(http.StatusUnauthorized, gin.H{"status": "Couldn't authenticate"})
-		return
+		return username, ErrMissingCredentials
 	}
 
 	userRepository := c.MustGet(UserRepositoryKey).(database.IUserRepository)
 	user, err := userRepository.GetByUsername(username)
 	if err != nil {
-		log.Fatal(err)
+		return username, err
 	}
 
 	if user == nil {
-		c.JSON(http.StatusNotFound, gin.H{"status": "Invalid username"})
-		return
-	} else if !pwdHash.CheckPasswordHash(password, user.PasswordHash) {
-		c.JSON(http.StatusUnauthorized, gin.H{"status": "password is incorrect"})
-		return
-	}
-	c.JSON(http.StatusNoContent, nil)
-}
-
-func IsAuthenticated(c *gin.Context) bool {
-	username, password, hasAuth := c.Request.BasicAuth()
-	if !hasAuth {
-		return false
+		return username, ErrInvalidUsername
 	}
 
-	userRepository := c.MustGet(UserRepositoryKey).(database.IUserRepository)
-	user, err := userRepository.GetByUsername(username)
-	if err != nil {
-		log.Fatal(err)
+	if !pwdHash.CheckPasswordHash(password, user.PasswordHash) {
+		return username, ErrIncorrectPassword
 	}
 
-	if user == nil || !pwdHash.CheckPasswordHash(password, user.PasswordHash) {
-		return false
-	}
-	return true
+	return username, nil
 }
