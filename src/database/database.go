@@ -6,10 +6,7 @@ import (
 	"gorm.io/gorm"
 )
 
-const (
-	DatabasePath     = "./minitwit.db"
-	TestDatabasePath = "./minitwit-test.db"
-)
+const DatabasePath = "./minitwit.db"
 
 type OpenDatabaseFunc = func() gorm.Dialector
 
