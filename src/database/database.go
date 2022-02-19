@@ -5,6 +5,8 @@ import (
 	"gorm.io/gorm"
 )
 
+var DatabasePath = "./minitwit.db"
+
 func ConnectDatabase(databasePath string) (*gorm.DB, error) {
 	database, err := gorm.Open(sqlite.Open(databasePath), &gorm.Config{})
 

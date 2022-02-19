@@ -9,17 +9,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/gin-contrib/sessions"
-	"github.com/gin-contrib/sessions/cookie"
-	"github.com/gin-gonic/gin"
 	_ "github.com/mattn/go-sqlite3"
 
 	"github.com/Devops-2022-Group-R/itu-minitwit/src/controllers"
 	"github.com/Devops-2022-Group-R/itu-minitwit/src/database"
 	_ "github.com/Devops-2022-Group-R/itu-minitwit/src/password"
 )
-
-var databasePath = "./minitwit.db"
 
 const (
 	debug     = true
@@ -41,31 +36,11 @@ func main() {
 		}
 	}
 
-	setupRouter().Run()
-}
-
-func setupRouter() *gin.Engine {
-	r := gin.Default()
-
-	store := cookie.NewStore([]byte(secretKey))
-	r.Use(sessions.Sessions("mysession", store))
-
-	r.Use(beforeRequest)
-	r.Static("/static", "./src/static")
-
-	//r.GET("/:username/follow", followUser)
-	//r.GET("/:username/unfollow", unfollowUser)
-	r.GET("/msgs", controllers.GetMessages)
-	r.GET("/msgs/:username", controllers.GetUserMessages)
-	r.POST("/msgs/:username", controllers.PostUserMessage)
-	r.POST(controllers.LoginUrl, controllers.LoginPost)
-	r.POST("/register", controllers.RegisterController)
-
-	return r
+	controllers.SetupRouter().Run()
 }
 
 func connectDb() *sql.DB {
-	db, err := sql.Open("sqlite3", databasePath)
+	db, err := sql.Open("sqlite3", database.DatabasePath)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -74,7 +49,7 @@ func connectDb() *sql.DB {
 
 // Creates the database tables.
 func initDb() {
-	db, err := database.ConnectDatabase(databasePath)
+	db, err := database.ConnectDatabase(database.DatabasePath)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -98,28 +73,4 @@ func gravatarUrl(email string, size int) string {
 	hex := fmt.Sprintf("%x", hash.Sum(nil))
 
 	return fmt.Sprintf("http://www.gravatar.com/avatar/%s?d=identicon&s=%d", hex, size)
-}
-
-// Make sure we are connected to the database each request and look
-// up the current user so that we know he's there.
-func beforeRequest(c *gin.Context) {
-	gormDb, err := database.ConnectDatabase(databasePath)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	userRepository := database.NewGormUserRepository(gormDb)
-	c.Set(controllers.UserRepositoryKey, database.NewGormUserRepository(gormDb))
-	c.Set(controllers.MessageRepositoryKey, database.NewGormMessageRepository(gormDb))
-
-	session := sessions.Default(c)
-	if userId := session.Get("user_id"); userId != nil {
-		user, err := userRepository.GetByID(userId.(int64))
-		if err != nil {
-			log.Fatal(err)
-		}
-		c.Set("user", user)
-	}
-
-	c.Next()
 }
