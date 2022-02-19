@@ -86,10 +86,10 @@ func (suite *TestSuite) TestFollowGetController_GivenUserWithFollows_ReturnsAllF
 	req, _ := http.NewRequest(http.MethodGet, followUrl, bytes.NewReader(reqBody))
 	w := suite.sendRequest(req)
 
-	var resBody []string
+	var resBody map[string][]string
 	resBodyBytes, _ := ioutil.ReadAll(w.Result().Body)
 	json.Unmarshal(resBodyBytes, &resBody)
 
 	assert.Equal(http.StatusOK, w.Code)
-	assert.ElementsMatch([...]string{"yennefer", "triss"}, resBody)
+	assert.ElementsMatch([...]string{"yennefer", "triss"}, resBody["follows"])
 }

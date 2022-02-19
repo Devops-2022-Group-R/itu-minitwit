@@ -82,7 +82,7 @@ func (rep *GormUserRepository) AllFollowed(whoId int64) ([]*models.User, error) 
 	var dtos []UserDTO
 
 	followingIds := rep.db.Select("whom_id").Where("who_id = ?", whoId).Table("follower")
-	err := rep.db.Where("id = (?)", followingIds).Table("user").Find(&dtos).Error
+	err := rep.db.Where("id IN (?)", followingIds).Find(&dtos).Error
 
 	users := make([]*models.User, len(dtos))
 	for i, dto := range dtos {

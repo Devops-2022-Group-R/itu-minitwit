@@ -28,7 +28,7 @@ func FollowPostController(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	} else if author == nil {
-		c.JSON(404, gin.H{"error": "the username provided in the URL does not exist"})
+		c.JSON(http.StatusNotFound, gin.H{"error": "the username provided in the URL does not exist"})
 		return
 	}
 
@@ -40,7 +40,7 @@ func FollowPostController(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	} else if target == nil {
-		c.JSON(404, gin.H{"error": "the username to follow does not exist"})
+		c.JSON(http.StatusNotFound, gin.H{"error": "the username to follow does not exist"})
 		return
 	}
 
@@ -58,16 +58,26 @@ func FollowGetController(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	} else if author == nil {
-		c.JSON(404, gin.H{"error": "the username provided in the URL does not exist"})
+		c.JSON(http.StatusNotFound, gin.H{"error": "the username provided in the URL does not exist"})
 		return
 	}
 
 	allFollowed, err := userRepository.AllFollowed(author.UserId)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
 
-	c.JSON(http.StatusOK, allFollowed)
+	usernames := make([]string, len(allFollowed))
+	for i, user := range allFollowed {
+		usernames[i] = user.Username
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"follows": usernames,
+	})
 }
 
-// // Removes the current user as follower of the given user.
 // func UnfollowController(c *gin.Context) {
 // 	userRepository := c.MustGet("userRepository").(database.IUserRepository)
 
