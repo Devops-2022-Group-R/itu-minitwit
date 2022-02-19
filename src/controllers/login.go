@@ -11,7 +11,8 @@ import (
 )
 
 // Logs the user in.
-func LoginPost(c *gin.Context) {
+func LoginGet(c *gin.Context) {
+
 	username, password, hasAuth := c.Request.BasicAuth()
 	if !hasAuth {
 		c.JSON(http.StatusUnauthorized, gin.H{"status": "Couldn't authenticate"})
@@ -31,13 +32,16 @@ func LoginPost(c *gin.Context) {
 		c.JSON(http.StatusUnauthorized, gin.H{"status": "password is incorrect"})
 		return
 	}
+
 	c.JSON(http.StatusNoContent, nil)
+
 }
 
-func IsAuthenticated(c *gin.Context) bool {
+// Returns a pair (username, isAuthenticated) indicating the context's auth state
+func GetAuthState(c *gin.Context) (string, bool) {
 	username, password, hasAuth := c.Request.BasicAuth()
 	if !hasAuth {
-		return false
+		return username, false
 	}
 
 	userRepository := c.MustGet(UserRepositoryKey).(database.IUserRepository)
@@ -47,7 +51,8 @@ func IsAuthenticated(c *gin.Context) bool {
 	}
 
 	if user == nil || !pwdHash.CheckPasswordHash(password, user.PasswordHash) {
-		return false
+		return username, false
 	}
-	return true
+
+	return username, true
 }

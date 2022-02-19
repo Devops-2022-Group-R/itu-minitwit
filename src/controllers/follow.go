@@ -1,53 +1,114 @@
 package controllers
 
-/*
+import (
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+
+	"github.com/Devops-2022-Group-R/itu-minitwit/src/database"
+)
+
+type FollowRequestBody struct {
+	Follow   string `form:"follow" json:"follow"`
+	Unfollow string `form:"unfollow" json:"unfollow"`
+}
+
 // Adds the current user as follower of the given user.
-func followUser(c *gin.Context) {
-	userRepository := c.MustGet("userRepository").(database.IUserRepository)
+func FollowPostController(c *gin.Context) {
+	userRepository := c.MustGet(UserRepositoryKey).(database.IUserRepository)
 
-	username := c.Param("username")
-	whom, err := userRepository.GetByUsername(username)
+	var body FollowRequestBody
+	if err := c.BindJSON(&body); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	urlUsername := c.Param("username")
+	author, err := userRepository.GetByUsername(urlUsername)
 	if err != nil {
-		c.JSON(404, nil)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	} else if author == nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "the username provided in the URL does not exist"})
 		return
 	}
 
-	who, isLoggedIn := c.Get("user")
-
-	if !isLoggedIn {
-		c.JSON(401, nil)
+	if authUsername, isAuthenticated := GetAuthState(c); authUsername == "" || !isAuthenticated {
+		c.JSON(http.StatusForbidden, gin.H{"error": "missing or invalid authorization credentials"})
+		return
+	} else if authUsername != urlUsername {
+		c.JSON(http.StatusUnprocessableEntity, gin.H{"error": "the URL username did not match the Authorization header username"})
 		return
 	}
 
-	userRepository.Follow(who.(models.User).UserId, whom.UserId)
+	var followTargetUserId int64
+	if len(body.Follow) > 0 {
+		followTarget, err := userRepository.GetByUsername(body.Follow)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		} else if followTarget == nil {
+			c.JSON(http.StatusNotFound, gin.H{"error": "the username to follow does not exist"})
+			return
+		}
+		followTargetUserId = followTarget.UserId
+	}
 
-	flash(c, fmt.Sprintf("You are now following %s", username))
+	var unfollowTargetUserId int64
+	if len(body.Unfollow) > 0 {
+		unfollowTarget, err := userRepository.GetByUsername(body.Unfollow)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		} else if unfollowTarget == nil {
+			c.JSON(http.StatusNotFound, gin.H{"error": "the username to unfollow does not exist"})
+			return
+		}
+		unfollowTargetUserId = unfollowTarget.UserId
+	}
 
-	c.Redirect(302, timeLineUrl)
+	if len(body.Follow) > 0 {
+		if err = userRepository.Follow(author.UserId, followTargetUserId); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+	}
+
+	if len(body.Unfollow) > 0 {
+		if err = userRepository.Unfollow(author.UserId, unfollowTargetUserId); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+	}
+
+	c.JSON(http.StatusNoContent, nil)
 }
 
-// Removes the current user as follower of the given user.
-func unfollowUser(c *gin.Context) {
-	userRepository := c.MustGet("userRepository").(database.IUserRepository)
+func FollowGetController(c *gin.Context) {
+	userRepository := c.MustGet(UserRepositoryKey).(database.IUserRepository)
 
-	username := c.Param("username")
-	whom, err := userRepository.GetByUsername(username)
+	urlUsername := c.Param("username")
+	author, err := userRepository.GetByUsername(urlUsername)
 	if err != nil {
-		c.JSON(404, nil)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	} else if author == nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "the username provided in the URL does not exist"})
 		return
 	}
 
-	who, isLoggedIn := c.Get("user")
-
-	if !isLoggedIn {
-		c.JSON(401, nil)
+	allFollowed, err := userRepository.AllFollowed(author.UserId)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	userRepository.Unfollow(who.(models.User).UserId, whom.UserId)
+	usernames := make([]string, len(allFollowed))
+	for i, user := range allFollowed {
+		usernames[i] = user.Username
+	}
 
-	flash(c, fmt.Sprintf("You are no longer following %s", username))
-
-	c.Redirect(302, controllers.TimeLineUrl)
+	c.JSON(http.StatusOK, gin.H{
+		"follows": usernames,
+	})
 }
-*/

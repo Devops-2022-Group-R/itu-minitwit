@@ -20,7 +20,7 @@ func (suite *TestSuite) TestRegisterController_GivenNoBody_Returns400() {
 func (suite *TestSuite) TestRegisterController_GivenMissingField_Returns400() {
 	body, _ := json.Marshal(gin.H{
 		"username": "Yennefer of Vengerberg",
-		"password": "chaosmaster",
+		"pwd":      "chaosmaster",
 	})
 
 	req, _ := http.NewRequest(http.MethodPost, "/register", bytes.NewReader(body))
@@ -33,7 +33,7 @@ func (suite *TestSuite) TestRegisterController_GivenValidRequest_Returns204() {
 	body, _ := json.Marshal(gin.H{
 		"username": "Yennefer of Vengerberg",
 		"email":    "yennefer@aretuza.wr",
-		"password": "chaosmaster",
+		"pwd":      "chaosmaster",
 	})
 
 	req, _ := http.NewRequest(http.MethodPost, "/register", bytes.NewReader(body))
@@ -46,7 +46,7 @@ func (suite *TestSuite) TestRegisterController_GivenInvalidEmail_Returns422() {
 	body, _ := json.Marshal(gin.H{
 		"username": "Yennefer of Vengerberg",
 		"email":    "yenneferaretuza.wr",
-		"password": "chaosmaster",
+		"pwd":      "chaosmaster",
 	})
 
 	req, _ := http.NewRequest(http.MethodPost, "/register", bytes.NewReader(body))
@@ -61,12 +61,12 @@ func (suite *TestSuite) TestRegisterController_RunTwiceWithSameUsername_Returns4
 	firstRegister, _ := json.Marshal(gin.H{
 		"username": "GeraltLover",
 		"email":    "yennefer@aretuza.wr",
-		"password": "chaosmaster",
+		"pwd":      "chaosmaster",
 	})
 	secondRegister, _ := json.Marshal(gin.H{
 		"username": "GeraltLover",
 		"email":    "triss@merigold.wr",
-		"password": "peacemaster",
+		"pwd":      "peacemaster",
 	})
 
 	req1, _ := http.NewRequest(http.MethodPost, "/register", bytes.NewReader(firstRegister))
@@ -84,7 +84,7 @@ func (suite *TestSuite) TestRegisterController_GivenValidBody_AddsUserToDatabase
 	body, _ := json.Marshal(gin.H{
 		"username": "Yennefer of Vengerberg",
 		"email":    "yennefer@aretuza.wr",
-		"password": "chaosmaster",
+		"pwd":      "chaosmaster",
 	})
 
 	req, _ := http.NewRequest(http.MethodPost, "/register", bytes.NewReader(body))
