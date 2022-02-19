@@ -11,7 +11,8 @@ import (
 )
 
 // Logs the user in.
-func LoginPost(c *gin.Context) {
+func LoginGet(c *gin.Context) {
+
 	username, password, hasAuth := c.Request.BasicAuth()
 	if !hasAuth {
 		c.JSON(http.StatusUnauthorized, gin.H{"status": "Couldn't authenticate"})
@@ -31,7 +32,9 @@ func LoginPost(c *gin.Context) {
 		c.JSON(http.StatusUnauthorized, gin.H{"status": "password is incorrect"})
 		return
 	}
+
 	c.JSON(http.StatusNoContent, nil)
+
 }
 
 func IsAuthenticated(c *gin.Context) bool {
