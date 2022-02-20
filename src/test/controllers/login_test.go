@@ -1,16 +1,13 @@
 package controllers_test
 
 import (
-	"bytes"
 	"encoding/base64"
-	"encoding/json"
 	"net/http"
 
-	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 )
 
-func (suite *TestSuite) TestLoginController_GivenNoBody_Returns401() {
+func (suite *TestSuite) TestLoginController_GivenNoHeader_Returns401() {
 	req, _ := http.NewRequest(http.MethodGet, "/login", nil)
 	w := suite.sendRequest(req)
 
