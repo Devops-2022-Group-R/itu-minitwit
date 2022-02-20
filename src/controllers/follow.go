@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"github.com/Devops-2022-Group-R/itu-minitwit/src/database"
+	"github.com/Devops-2022-Group-R/itu-minitwit/src/models"
 )
 
 type FollowRequestBody struct {
@@ -33,10 +34,8 @@ func FollowPostController(c *gin.Context) {
 		return
 	}
 
-	if authUsername, err := GetAuthState(c); authUsername == "" || err != nil {
-		c.JSON(http.StatusForbidden, gin.H{"error": err.Error()})
-		return
-	} else if authUsername != urlUsername {
+	authUser := c.MustGet("user").(*models.User)
+	if authUser.Username != urlUsername {
 		c.JSON(http.StatusUnprocessableEntity, gin.H{"error": "the URL username did not match the Authorization header username"})
 		return
 	}

@@ -41,6 +41,7 @@ func SetupRouter(openDatabase database.OpenDatabaseFunc) *gin.Engine {
 	authed := r.Group("/")
 	authed.Use(AuthRequired())
 	authed.GET("/login", LoginGet)
+	authed.POST("/fllws/:username", FollowPostController)
 
 	return r
 }
