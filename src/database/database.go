@@ -4,6 +4,7 @@ import (
 	"log"
 
 	"github.com/Devops-2022-Group-R/itu-minitwit/src/models"
+	pwdHash "github.com/Devops-2022-Group-R/itu-minitwit/src/password"
 	"gorm.io/gorm"
 )
 
@@ -34,7 +35,7 @@ func InitDatabase(openDatabase OpenDatabaseFunc) {
 	if err = userRepository.Create(models.User{
 		Username:     "simulator",
 		Email:        "unused@email.rip",
-		PasswordHash: "pbkdf2:sha256:260000$MYtvPfLTCXY74kXG$44274a66ed9a6d08471cfc77337ae10497ba3c4a4cb4adec02227305ce663378",
+		PasswordHash: pwdHash.GeneratePasswordHash("super_safe!"),
 	}); err != nil {
 		log.Fatal(err)
 	}
