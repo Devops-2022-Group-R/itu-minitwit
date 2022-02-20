@@ -50,6 +50,35 @@ func GetUserMessages(c *gin.Context) {
 	c.JSON(http.StatusOK, messages)
 }
 
+func GetFeedMessages(c *gin.Context) {
+	userRepository := c.MustGet(UserRepositoryKey).(database.IUserRepository)
+	messageRepository := c.MustGet(MessageRepositoryKey).(database.IMessageRepository)
+
+	authUsername, err := GetAuthState(c)
+	if authUsername == "" || err != nil {
+		c.JSON(http.StatusForbidden, gin.H{"error": err.Error()})
+		return
+	}
+
+	user, err := userRepository.GetByUsername(authUsername)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	if user == nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "user not found"})
+		return
+	}
+
+	messages, err := messageRepository.GetByUserAndItsFollowers(user.UserId, perPage)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, messages)
+}
+
 // PostUserMessage posts a non-empty message, with the current UTC time.
 func PostUserMessage(c *gin.Context) {
 	var body PostUserMessageRequestBody
