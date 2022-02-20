@@ -26,7 +26,17 @@ func (suite *TestSuite) TestLoginController_Given_Bruce_Lee_10000kicks_returns40
 	assert.Equal(suite.T(), http.StatusNotFound, w.Code)
 }
 
-// helper
+
+//helpers
+func addUserToTestDb(suite *TestSuite) {
+	body, _ := json.Marshal(gin.H{
+		"username": "Yennefer of V",
+		"email":    "yennefer@aretuza.wr",
+		"pwd":      "chaosmaster",
+	})
+	req, _ := http.NewRequest(http.MethodPost, "/register", bytes.NewReader(body))
+	suite.sendRequest(req)
+}
 func encodeCredentialsToB64(username string, password string) string {
 	data := username + ":" + password
 	sEnc := base64.StdEncoding.EncodeToString([]byte(data))
