@@ -5,7 +5,7 @@ import (
 	"os"
 	"strings"
 
-	_ "github.com/mattn/go-sqlite3"
+	"gorm.io/driver/postgres"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 
@@ -26,10 +26,6 @@ func main() {
 		log.SetFlags(log.LstdFlags | log.Llongfile)
 	}
 
-	var openDatabase = func() gorm.Dialector {
-		return sqlite.Open("minitwit.db")
-	}
-
 	if len(os.Args) > 1 {
 		input := os.Args[1]
 		if strings.EqualFold("initDb", input) {
@@ -39,4 +35,18 @@ func main() {
 	}
 
 	controllers.SetupRouter(openDatabase).Run()
+}
+
+func openDatabase() gorm.Dialector {
+	env := os.Getenv("ENVIRONMENT")
+	if env == "PRODUCTION" {
+		connString, exists := os.LookupEnv("CONNECTION_STRING")
+		if !exists {
+			log.Fatal("CONNECTION_STRING environment variable not set")
+		}
+
+		return postgres.Open(connString)
+	} else {
+		return sqlite.Open("minitwit.db")
+	}
 }
