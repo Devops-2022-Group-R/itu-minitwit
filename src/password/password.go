@@ -18,7 +18,7 @@ const (
 	keyLength         = 32
 	saltLength        = 16
 	saltChars         = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-	defaultIterations = 260000
+	defaultIterations = 50000
 )
 
 func generateSalt() string {

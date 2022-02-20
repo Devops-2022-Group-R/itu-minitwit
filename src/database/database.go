@@ -3,6 +3,8 @@ package database
 import (
 	"log"
 
+	"github.com/Devops-2022-Group-R/itu-minitwit/src/models"
+	pwdHash "github.com/Devops-2022-Group-R/itu-minitwit/src/password"
 	"gorm.io/gorm"
 )
 
@@ -24,7 +26,17 @@ func InitDatabase(openDatabase OpenDatabaseFunc) {
 		log.Fatal(err)
 	}
 
-	NewGormUserRepository(db).Migrate()
+	userRepository := NewGormUserRepository(db)
+	userRepository.Migrate()
 	NewGormMessageRepository(db).Migrate()
 	NewGormLatestRepository(db).Migrate()
+
+	// The simulator needs to be a default user
+	if err = userRepository.Create(models.User{
+		Username:     "simulator",
+		Email:        "unused@email.rip",
+		PasswordHash: pwdHash.GeneratePasswordHash("super_safe!"),
+	}); err != nil {
+		log.Fatal(err)
+	}
 }
