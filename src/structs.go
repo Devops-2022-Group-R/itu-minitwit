@@ -1,35 +1,23 @@
 package main
 
-type User struct {
-	UserId       int64
-	Username     string
-	Email        string
-	PasswordHash string
-}
-
-type Message struct {
-	Email    string // Email of the user submitting this message
-	Username string // Username of the user submitting this message
-	PubDate  int64  // The publish timestamp as UNIX
-	Text     string // The message itself
-}
+import "github.com/Devops-2022-Group-R/itu-minitwit/src/models"
 
 type LayoutData struct {
 	Flashes []string
-	User    User // Me
+	User    models.User // Me
 }
 
 type DataProvider interface {
 	initLayoutData()
 	setFlashes([]string)
-	setUser(user User)
+	setUser(user models.User)
 }
 
 func (ld *LayoutData) setFlashes(flashes []string) {
 	ld.Flashes = flashes
 }
 
-func (ld *LayoutData) setUser(user User) {
+func (ld *LayoutData) setUser(user models.User) {
 	ld.User = user
 }
 
@@ -41,9 +29,9 @@ type TimelineData struct {
 	IsFollowed       bool // Used if IsMyTimeline is false
 	HasMessages      bool
 
-	ProfileUser User // Used if IsMyTimeline is false, represents the user of the profile you visit
+	ProfileUser models.User // Used if IsMyTimeline is false, represents the user of the profile you visit
 
-	Messages []Message
+	Messages []models.Message
 }
 
 func (t *TimelineData) initLayoutData() {
