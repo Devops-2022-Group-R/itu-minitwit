@@ -15,15 +15,10 @@ const followUrl = "/fllws/geralt"
 
 // Unsafe to use unless you are strictly using the username
 func utilCreateUsersInDatabase(suite *TestSuite) {
-	registerUser(suite, "geralt", "geralt@witcher.pl", "123")
-	registerUser(suite, "yennefer", "yennefer@witcher.pl", "123")
-	registerUser(suite, "triss", "triss@witcher.pl", "123")
-	registerUser(suite, "eredin", "eredin@wildhunt.pl", "123")
-}
-
-func registerUser(suite *TestSuite, username, email, password string) {
-	body, _ := json.Marshal(gin.H{"username": username, "email": email, "pwd": password})
-	suite.sendRequest(httptest.NewRequest(http.MethodPost, "/register", bytes.NewReader(body)))
+	suite.registerUser("geralt", "geralt@witcher.pl", "123")
+	suite.registerUser("yennefer", "yennefer@witcher.pl", "123")
+	suite.registerUser("triss", "triss@witcher.pl", "123")
+	suite.registerUser("eredin", "eredin@wildhunt.pl", "123")
 }
 
 func setupTestFollowRelationships(suite *TestSuite) {

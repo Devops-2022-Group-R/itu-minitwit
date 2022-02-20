@@ -81,22 +81,31 @@ func (suite *TestSuite) Test_PostUserMessage_Given_Empty_Message_Returns_BadRequ
 	assert.Equal(suite.T(), http.StatusBadRequest, w.Code)
 }
 
-func (suite *TestSuite) Test_PostUserMessage_Given_Simulator_Returns_No_Content() {
+func (suite *TestSuite) Test_PostUserMessage_As_Simulator_Returns_No_Content() {
 	// Arrange
 	suite.registerUser("Darrow", "darrow@andromedus.com", "Reaper")
-	suite.registerUser("simulator", "simulator@andromedus.com", "super_safe!")
-	body, _ := json.Marshal(gin.H{"content": ""})
+	suite.registerSimulator()
+
+	body, _ := json.Marshal(gin.H{"content": "Some message"})
 
 	// Act
 	req := httptest.NewRequest(http.MethodPost, "/msgs/Darrow", bytes.NewReader(body))
-	req.Header.Set("Authorization", "Basic "+encodeCredentialsToB64("simulator", "super_safe!"))
-	w := suite.sendRequest(req)
+	w := suite.sendSimulatorRequest(req)
 
 	// Assert
-	assert.Equal(suite.T(), http.StatusBadRequest, w.Code)
+	assert.Equal(suite.T(), http.StatusNoContent, w.Code)
 }
 
-func (suite *TestSuite) registerUser(username, email, password string) {
-	body, _ := json.Marshal(gin.H{"username": username, "email": email, "pwd": password})
-	suite.sendRequest(httptest.NewRequest(http.MethodPost, "/register", bytes.NewReader(body)))
+func (suite *TestSuite) Test_PostUserMessage_As_Simulator_With_Unknown_User_Returns_Not_Found() {
+	// Arrange
+	suite.registerSimulator()
+
+	body, _ := json.Marshal(gin.H{"content": "Some message"})
+
+	// Act
+	req := httptest.NewRequest(http.MethodPost, "/msgs/Darrow", bytes.NewReader(body))
+	w := suite.sendSimulatorRequest(req)
+
+	// Assert
+	assert.Equal(suite.T(), http.StatusNotFound, w.Code)
 }
