@@ -5,4 +5,5 @@ const (
 
 	UserRepositoryKey    = "userRepository"
 	MessageRepositoryKey = "messageRepository"
+	LatestRepositoryKey  = "latestRepository"
 )
