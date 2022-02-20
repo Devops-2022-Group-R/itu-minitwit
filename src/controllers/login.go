@@ -17,19 +17,9 @@ var (
 )
 
 // Logs the user in.
+// Essentially a test of the AuthRequired middleware.
 func LoginGet(c *gin.Context) {
-	_, err := GetAuthState(c)
-
-	switch err {
-	case nil:
-		c.JSON(http.StatusNoContent, nil)
-	case ErrInvalidUsername:
-		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
-	case ErrIncorrectPassword, ErrMissingCredentials:
-		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
-	default:
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-	}
+	c.JSON(http.StatusNoContent, nil)
 }
 
 func GetAuthState(c *gin.Context) (string, error) {
@@ -54,4 +44,36 @@ func GetAuthState(c *gin.Context) (string, error) {
 	}
 
 	return username, nil
+}
+
+func AuthRequired() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		authUsername, err := GetAuthState(c)
+		if authUsername == "" || err != nil {
+			switch err {
+			case ErrInvalidUsername:
+				c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"error": err.Error()})
+			case ErrIncorrectPassword, ErrMissingCredentials:
+				c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+			default:
+				c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			}
+
+			return
+		}
+
+		userRepository := c.MustGet(UserRepositoryKey).(database.IUserRepository)
+		user, err := userRepository.GetByUsername(authUsername)
+		if err != nil {
+			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+		if user == nil {
+			c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"error": "User not found"})
+			return
+		}
+
+		c.Set("user", user)
+		c.Next()
+	}
 }
