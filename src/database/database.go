@@ -10,14 +10,21 @@ import (
 
 type OpenDatabaseFunc = func() gorm.Dialector
 
-func ConnectDatabase(openDatabase OpenDatabaseFunc) (*gorm.DB, error) {
-	database, err := gorm.Open(openDatabase(), &gorm.Config{})
+var Db *gorm.DB
 
+func ConnectDatabase(openDatabase OpenDatabaseFunc) (*gorm.DB, error) {
+	if Db != nil {
+		return Db, nil
+	}
+
+	database, err := gorm.Open(openDatabase(), &gorm.Config{})
 	if err != nil {
 		return nil, err
 	}
 
-	return database, nil
+	Db = database
+
+	return Db, nil
 }
 
 func InitDatabase(openDatabase OpenDatabaseFunc) {

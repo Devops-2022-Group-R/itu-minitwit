@@ -8,7 +8,19 @@ require (
 	github.com/mattn/go-sqlite3 v1.14.11
 	golang.org/x/crypto v0.0.0-20220210151621-f4118a5b28e2
 	gorm.io/driver/sqlite v1.2.6
-	gorm.io/gorm v1.22.5
+	gorm.io/gorm v1.23.1
+)
+
+require (
+	github.com/jackc/chunkreader/v2 v2.0.1 // indirect
+	github.com/jackc/pgconn v1.10.1 // indirect
+	github.com/jackc/pgio v1.0.0 // indirect
+	github.com/jackc/pgpassfile v1.0.0 // indirect
+	github.com/jackc/pgproto3/v2 v2.2.0 // indirect
+	github.com/jackc/pgservicefile v0.0.0-20200714003250-2b9c44734f2b // indirect
+	github.com/jackc/pgtype v1.9.1 // indirect
+	github.com/jackc/pgx/v4 v4.14.1 // indirect
+	gorm.io/driver/postgres v1.3.1 // indirect
 )
 
 require (
