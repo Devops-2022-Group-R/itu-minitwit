@@ -6,8 +6,6 @@ import (
 	"gorm.io/gorm"
 )
 
-const DatabasePath = "./minitwit.db"
-
 type OpenDatabaseFunc = func() gorm.Dialector
 
 func ConnectDatabase(openDatabase OpenDatabaseFunc) (*gorm.DB, error) {

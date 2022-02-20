@@ -25,17 +25,23 @@ func FollowPostController(c *gin.Context) {
 	}
 
 	urlUsername := c.Param("username")
-	author, err := userRepository.GetByUsername(urlUsername)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	} else if author == nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "the username provided in the URL does not exist"})
-		return
-	}
 
-	authUser := c.MustGet(UserKey).(*models.User)
-	if authUser.Username != urlUsername {
+	user := c.MustGet(UserKey).(*models.User)
+	if c.MustGet(IsAdminKey).(bool) {
+		userRepository := c.MustGet(UserRepositoryKey).(database.IUserRepository)
+		var err error
+		user, err = userRepository.GetByUsername(urlUsername)
+
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+
+		if user == nil {
+			c.JSON(http.StatusNotFound, gin.H{"error": "the username provided in the URL does not exist"})
+			return
+		}
+	} else if user.Username != urlUsername {
 		c.JSON(http.StatusUnprocessableEntity, gin.H{"error": "the URL username did not match the Authorization header username"})
 		return
 	}
@@ -67,14 +73,14 @@ func FollowPostController(c *gin.Context) {
 	}
 
 	if len(body.Follow) > 0 {
-		if err = userRepository.Follow(author.UserId, followTargetUserId); err != nil {
+		if err := userRepository.Follow(user.UserId, followTargetUserId); err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
 	}
 
 	if len(body.Unfollow) > 0 {
-		if err = userRepository.Unfollow(author.UserId, unfollowTargetUserId); err != nil {
+		if err := userRepository.Unfollow(user.UserId, unfollowTargetUserId); err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
