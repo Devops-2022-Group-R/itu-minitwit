@@ -5,6 +5,7 @@
 - [ ] Deploy your ITU-MiniTwit in "the cloud" 
 - [ ] Release and deploy your ITU-MiniTwit.
 - [ ] Create GitHub release
+- [ ] Use the private ip for the database on digital ocean
 
 ## API and frontend
 - We will go with Vue - reusable tweet components, popular etc.
