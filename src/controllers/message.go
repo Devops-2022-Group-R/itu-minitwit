@@ -51,24 +51,9 @@ func GetUserMessages(c *gin.Context) {
 }
 
 func GetFeedMessages(c *gin.Context) {
-	userRepository := c.MustGet(UserRepositoryKey).(database.IUserRepository)
 	messageRepository := c.MustGet(MessageRepositoryKey).(database.IMessageRepository)
 
-	authUsername, err := GetAuthState(c)
-	if authUsername == "" || err != nil {
-		c.JSON(http.StatusForbidden, gin.H{"error": err.Error()})
-		return
-	}
-
-	user, err := userRepository.GetByUsername(authUsername)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-	if user == nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "user not found"})
-		return
-	}
+	user := c.MustGet(UserKey).(*models.User)
 
 	messages, err := messageRepository.GetByUserAndItsFollowers(user.UserId, perPage)
 	if err != nil {
@@ -88,20 +73,29 @@ func PostUserMessage(c *gin.Context) {
 		return
 	}
 
-	userRepository := c.MustGet(UserRepositoryKey).(database.IUserRepository)
+	urlUsername := c.Param("username")
+
+	user := c.MustGet(UserKey).(*models.User)
+	if c.MustGet(IsAdminKey).(bool) {
+		userRepository := c.MustGet(UserRepositoryKey).(database.IUserRepository)
+		var err error
+		user, err = userRepository.GetByUsername(urlUsername)
+
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+
+		if user == nil {
+			c.JSON(http.StatusNotFound, gin.H{"error": "user not found"})
+			return
+		}
+	} else if user.Username != urlUsername {
+		c.JSON(http.StatusUnprocessableEntity, gin.H{"error": "the URL username did not match the Authorization header username"})
+		return
+	}
+
 	messageRepository := c.MustGet(MessageRepositoryKey).(database.IMessageRepository)
-
-	user, err := userRepository.GetByUsername(c.Param("username"))
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-
-	if user == nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "user not found"})
-		return
-	}
-
 	messageRepository.Create(models.Message{
 		Author:  *user,
 		Text:    body.Content,

@@ -71,7 +71,7 @@ func (suite *TestSuite) TestFollowPostController_WithoutLoggedInUser_Returns403(
 	req := httptest.NewRequest(http.MethodPost, followUrl, bytes.NewReader(body))
 	w := suite.sendRequest(req)
 
-	assert.Equal(suite.T(), http.StatusForbidden, w.Code)
+	assert.Equal(suite.T(), http.StatusUnauthorized, w.Code)
 }
 
 func (suite *TestSuite) TestFollowGetController_GivenUserWithNoFollows_ReturnsEmpty() {
