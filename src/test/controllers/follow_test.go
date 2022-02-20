@@ -132,3 +132,36 @@ func (suite *TestSuite) TestFollowPostController_GivenEmptyBody_Returns204() {
 	w := sendAuthRequest(suite, followUrl, gin.H{})
 	assert.Equal(suite.T(), http.StatusNoContent, w.Code)
 }
+
+func (suite *TestSuite) TestFollowPostController_AsAdminGivenValidFollow_Returns204() {
+	setupTestFollowRelationships(suite)
+	suite.registerSimulator()
+
+	body, _ := json.Marshal(gin.H{"follow": "triss"})
+	req, _ := http.NewRequest(http.MethodPost, followUrl, bytes.NewReader(body))
+
+	w := suite.sendSimulatorRequest(req)
+	assert.Equal(suite.T(), http.StatusNoContent, w.Code)
+}
+
+func (suite *TestSuite) TestFollowPostController_AsAdminGivenValidUnfollow_Returns204() {
+	setupTestFollowRelationships(suite)
+	suite.registerSimulator()
+
+	body, _ := json.Marshal(gin.H{"unfollow": "triss"})
+	req, _ := http.NewRequest(http.MethodPost, followUrl, bytes.NewReader(body))
+
+	w := suite.sendSimulatorRequest(req)
+	assert.Equal(suite.T(), http.StatusNoContent, w.Code)
+}
+
+func (suite *TestSuite) TestFollowPostController_AsAdminGivenNonExistingUser_Returns404() {
+	setupTestFollowRelationships(suite)
+	suite.registerSimulator()
+
+	body, _ := json.Marshal(gin.H{"follow": "triss"})
+	req, _ := http.NewRequest(http.MethodPost, "/fllws/eskel", bytes.NewReader(body))
+
+	w := suite.sendSimulatorRequest(req)
+	assert.Equal(suite.T(), http.StatusNotFound, w.Code)
+}
