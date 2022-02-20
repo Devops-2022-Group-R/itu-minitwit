@@ -32,7 +32,6 @@ func SetupRouter(openDatabase database.OpenDatabaseFunc) *gin.Engine {
 	r.GET("/fllws/:username", FollowGetController)
 	r.GET("/msgs", GetMessages)
 	r.GET("/msgs/:username", GetUserMessages)
-	r.POST("/msgs/:username", PostUserMessage)
 	r.POST("/register", RegisterController)
 
 	authed := r.Group("/")
@@ -40,6 +39,7 @@ func SetupRouter(openDatabase database.OpenDatabaseFunc) *gin.Engine {
 	authed.GET("/login", LoginGet)
 	authed.GET("/feed", GetFeedMessages)
 	authed.POST("/fllws/:username", FollowPostController)
+	authed.POST("/msgs/:username", PostUserMessage)
 
 	return r
 }
