@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func (suite *TestSuite) TestLatestController_SetLatest123_ReturnsLatest123() {
+func (suite *BaseTestSuite) TestLatestController_SetLatest123_ReturnsLatest123() {
 	req1 := httptest.NewRequest(http.MethodGet, "/msgs?latest=123", nil)
 	// We do not care about the result of this request
 	suite.sendRequest(req1)
@@ -26,7 +26,7 @@ func (suite *TestSuite) TestLatestController_SetLatest123_ReturnsLatest123() {
 	assert.Equal(suite.T(), 123, resBody["latest"])
 }
 
-func (suite *TestSuite) TestLatestController_SetLatestRepeated_ReturnsLastEachTime() {
+func (suite *BaseTestSuite) TestLatestController_SetLatestRepeated_ReturnsLastEachTime() {
 	doLatestCycle := func(value int) {
 		req1 := httptest.NewRequest(http.MethodGet, fmt.Sprintf("/latest?latest=%d", value), nil)
 		suite.sendRequest(req1)
@@ -46,7 +46,7 @@ func (suite *TestSuite) TestLatestController_SetLatestRepeated_ReturnsLastEachTi
 	doLatestCycle(1)
 }
 
-func (suite *TestSuite) TestLatestController_GetLatestBeforeAnySet_Returns500() {
+func (suite *BaseTestSuite) TestLatestController_GetLatestBeforeAnySet_Returns500() {
 	req := httptest.NewRequest(http.MethodGet, "/latest", nil)
 	w := suite.sendRequest(req)
 	assert.Equal(suite.T(), http.StatusInternalServerError, w.Code)

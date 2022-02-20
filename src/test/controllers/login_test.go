@@ -2,18 +2,26 @@ package controllers_test
 
 import (
 	"net/http"
+	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/suite"
 )
 
-func (suite *TestSuite) TestLoginController_GivenNoHeader_Returns401() {
+type LoginTestSuite struct{ BaseTestSuite }
+
+func TestLoginTestSuite(t *testing.T) {
+	suite.Run(t, new(LoginTestSuite))
+}
+
+func (suite *LoginTestSuite) TestLoginController_GivenNoHeader_Returns401() {
 	req, _ := http.NewRequest(http.MethodGet, "/login", nil)
 	w := suite.sendRequest(req)
 
 	assert.Equal(suite.T(), http.StatusUnauthorized, w.Code)
 }
 
-func (suite *TestSuite) TestLoginController_Given_UnknownUser_returns404() {
+func (suite *LoginTestSuite) TestLoginController_Given_UnknownUser_returns404() {
 	req, _ := http.NewRequest(http.MethodGet, "/login", nil)
 	req.Header.Set("Authorization", "Basic "+encodeCredentialsToB64("Bruce Lee", "10000kicks"))
 
@@ -22,7 +30,7 @@ func (suite *TestSuite) TestLoginController_Given_UnknownUser_returns404() {
 	assert.Equal(suite.T(), http.StatusNotFound, w.Code)
 }
 
-func (suite *TestSuite) TestLoginController_Given_ValidUsersCredentials_returns204() {
+func (suite *LoginTestSuite) TestLoginController_Given_ValidUsersCredentials_returns204() {
 	suite.registerUser("Yennefer of V", "yennefer@aretuza.wr", "chaosmaster")
 
 	req, _ := http.NewRequest(http.MethodGet, "/login", nil)
@@ -33,7 +41,7 @@ func (suite *TestSuite) TestLoginController_Given_ValidUsersCredentials_returns2
 	assert.Equal(suite.T(), http.StatusNoContent, w.Code)
 }
 
-func (suite *TestSuite) TestLoginController_Given_ValidUserAndInvalidPassword_returns401() {
+func (suite *LoginTestSuite) TestLoginController_Given_ValidUserAndInvalidPassword_returns401() {
 	suite.registerUser("Yennefer of V", "yennefer@aretuza.wr", "chaosmaster")
 
 	req, _ := http.NewRequest(http.MethodGet, "/login", nil)

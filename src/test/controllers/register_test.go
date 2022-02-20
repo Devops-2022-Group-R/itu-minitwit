@@ -4,20 +4,28 @@ import (
 	"bytes"
 	"encoding/json"
 	"net/http"
+	"testing"
 
 	"github.com/Devops-2022-Group-R/itu-minitwit/src/database"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/suite"
 )
 
-func (suite *TestSuite) TestRegisterController_GivenNoBody_Returns400() {
+type RegisterTestSuite struct{ BaseTestSuite }
+
+func TestRegisterTestSuite(t *testing.T) {
+	suite.Run(t, new(RegisterTestSuite))
+}
+
+func (suite *RegisterTestSuite) TestRegisterController_GivenNoBody_Returns400() {
 	req, _ := http.NewRequest(http.MethodPost, "/register", nil)
 	w := suite.sendRequest(req)
 
 	assert.Equal(suite.T(), http.StatusBadRequest, w.Code)
 }
 
-func (suite *TestSuite) TestRegisterController_GivenMissingField_Returns400() {
+func (suite *RegisterTestSuite) TestRegisterController_GivenMissingField_Returns400() {
 	body, _ := json.Marshal(gin.H{
 		"username": "Yennefer of Vengerberg",
 		"pwd":      "chaosmaster",
@@ -29,7 +37,7 @@ func (suite *TestSuite) TestRegisterController_GivenMissingField_Returns400() {
 	assert.Equal(suite.T(), http.StatusBadRequest, w.Code)
 }
 
-func (suite *TestSuite) TestRegisterController_GivenValidRequest_Returns204() {
+func (suite *RegisterTestSuite) TestRegisterController_GivenValidRequest_Returns204() {
 	body, _ := json.Marshal(gin.H{
 		"username": "Yennefer of Vengerberg",
 		"email":    "yennefer@aretuza.wr",
@@ -42,7 +50,7 @@ func (suite *TestSuite) TestRegisterController_GivenValidRequest_Returns204() {
 	assert.Equal(suite.T(), http.StatusNoContent, w.Code)
 }
 
-func (suite *TestSuite) TestRegisterController_GivenInvalidEmail_Returns422() {
+func (suite *RegisterTestSuite) TestRegisterController_GivenInvalidEmail_Returns422() {
 	body, _ := json.Marshal(gin.H{
 		"username": "Yennefer of Vengerberg",
 		"email":    "yenneferaretuza.wr",
@@ -55,7 +63,7 @@ func (suite *TestSuite) TestRegisterController_GivenInvalidEmail_Returns422() {
 	assert.Equal(suite.T(), http.StatusUnprocessableEntity, w.Code)
 }
 
-func (suite *TestSuite) TestRegisterController_RunTwiceWithSameUsername_Returns409() {
+func (suite *RegisterTestSuite) TestRegisterController_RunTwiceWithSameUsername_Returns409() {
 	assert := assert.New(suite.T())
 
 	firstRegister, _ := json.Marshal(gin.H{
@@ -80,7 +88,7 @@ func (suite *TestSuite) TestRegisterController_RunTwiceWithSameUsername_Returns4
 	assert.Equal(http.StatusConflict, w2.Code)
 }
 
-func (suite *TestSuite) TestRegisterController_GivenValidBody_AddsUserToDatabase() {
+func (suite *RegisterTestSuite) TestRegisterController_GivenValidBody_AddsUserToDatabase() {
 	body, _ := json.Marshal(gin.H{
 		"username": "Yennefer of Vengerberg",
 		"email":    "yennefer@aretuza.wr",
