@@ -84,12 +84,12 @@ func (suite *TestSuite) Test_PostUserMessage_Given_Empty_Message_Returns_BadRequ
 func (suite *TestSuite) Test_PostUserMessage_Given_Simulator_Returns_No_Content() {
 	// Arrange
 	suite.registerUser("Darrow", "darrow@andromedus.com", "Reaper")
-	suite.registerUser("simulator", "simulator@andromedus.com", "super_safe")
+	suite.registerUser("simulator", "simulator@andromedus.com", "super_safe!")
 	body, _ := json.Marshal(gin.H{"content": ""})
 
 	// Act
 	req := httptest.NewRequest(http.MethodPost, "/msgs/Darrow", bytes.NewReader(body))
-	req.Header.Set("Authorization", "Basic "+encodeCredentialsToB64("simulator", "super_safe"))
+	req.Header.Set("Authorization", "Basic "+encodeCredentialsToB64("simulator", "super_safe!"))
 	w := suite.sendRequest(req)
 
 	// Assert

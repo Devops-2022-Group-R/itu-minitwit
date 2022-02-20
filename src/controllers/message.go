@@ -76,7 +76,7 @@ func PostUserMessage(c *gin.Context) {
 	urlUsername := c.Param("username")
 
 	user := c.MustGet(UserKey).(*models.User)
-	if user.Username == "simulator" {
+	if c.MustGet(IsAdminKey).(bool) {
 		userRepository := c.MustGet(UserRepositoryKey).(database.IUserRepository)
 		var err error
 		user, err = userRepository.GetByUsername(urlUsername)

