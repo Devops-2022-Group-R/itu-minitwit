@@ -29,18 +29,16 @@ func SetupRouter(openDatabase database.OpenDatabaseFunc) *gin.Engine {
 	r.Use(CORSMiddleware())
 	r.Use(beforeRequest(openDatabase))
 
-	r.POST("/fllws/:username", FollowPostController)
 	r.GET("/fllws/:username", FollowGetController)
-	r.GET("/feed", GetFeedMessages)
 	r.GET("/msgs", GetMessages)
 	r.GET("/msgs/:username", GetUserMessages)
 	r.POST("/msgs/:username", PostUserMessage)
-	r.GET("/login", LoginGet)
 	r.POST("/register", RegisterController)
 
 	authed := r.Group("/")
 	authed.Use(AuthRequired())
 	authed.GET("/login", LoginGet)
+	authed.GET("/feed", GetFeedMessages)
 	authed.POST("/fllws/:username", FollowPostController)
 
 	return r
