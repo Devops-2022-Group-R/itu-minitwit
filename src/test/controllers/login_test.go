@@ -26,16 +26,26 @@ func (suite *TestSuite) TestLoginController_Given_Bruce_Lee_10000kicks_returns40
 	assert.Equal(suite.T(), http.StatusNotFound, w.Code)
 }
 
+func (suite *TestSuite) TestLoginController_Given_ValidUsersCredentials_returns204() {
+	addUserToTestDb(suite)
+	req, _ := http.NewRequest(http.MethodGet, "/login", nil)
+	encodedCredentials := encodeCredentialsToB64("Yennefer of V", "chaosmaster")
+	req = setHeaderContent(req, encodedCredentials)
 
-//helpers
-func addUserToTestDb(suite *TestSuite) {
-	body, _ := json.Marshal(gin.H{
-		"username": "Yennefer of V",
-		"email":    "yennefer@aretuza.wr",
-		"pwd":      "chaosmaster",
-	})
-	req, _ := http.NewRequest(http.MethodPost, "/register", bytes.NewReader(body))
-	suite.sendRequest(req)
+	w := suite.sendRequest(req)
+
+	assert.Equal(suite.T(), http.StatusNoContent, w.Code)
+}
+
+func (suite *TestSuite) TestLoginController_Given_ValidUserAndInvalidPassword_returns401() {
+	addUserToTestDb(suite)
+	req, _ := http.NewRequest(http.MethodGet, "/login", nil)
+	encodedCredentials := encodeCredentialsToB64("Yennefer of V", "chaos")
+	req = setHeaderContent(req, encodedCredentials)
+
+	w := suite.sendRequest(req)
+
+	assert.Equal(suite.T(), http.StatusUnauthorized, w.Code)
 }
 func encodeCredentialsToB64(username string, password string) string {
 	data := username + ":" + password
