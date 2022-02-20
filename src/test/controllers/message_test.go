@@ -8,7 +8,6 @@ import (
 	"testing"
 
 	"github.com/gin-gonic/gin"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 )
 
@@ -24,7 +23,7 @@ func (suite *MessageTestSuite) Test_GetMessages_Returns_OK() {
 	w := suite.sendRequest(req)
 
 	// Assert
-	assert.Equal(suite.T(), http.StatusOK, w.Code)
+	suite.Equal(http.StatusOK, w.Code)
 }
 
 func (suite *MessageTestSuite) Test_GetUserMessages_Returns_OK() {
@@ -36,7 +35,7 @@ func (suite *MessageTestSuite) Test_GetUserMessages_Returns_OK() {
 	w := suite.sendRequest(req)
 
 	// Assert
-	assert.Equal(suite.T(), http.StatusOK, w.Code)
+	suite.Equal(http.StatusOK, w.Code)
 }
 
 func (suite *MessageTestSuite) Test_GetUserMessages_Given_NonExistent_User_Returns_NotFound() {
@@ -45,48 +44,43 @@ func (suite *MessageTestSuite) Test_GetUserMessages_Given_NonExistent_User_Retur
 	w := suite.sendRequest(req)
 
 	// Assert
-	assert.Equal(suite.T(), http.StatusNotFound, w.Code)
+	suite.Equal(http.StatusNotFound, w.Code)
 }
 
 func (suite *MessageTestSuite) Test_PostUserMessage_Returns_NoContent() {
 	// Arrange
 	suite.registerUser("Darrow", "darrow@andromedus.com", "Reaper")
-	body, _ := json.Marshal(gin.H{"content": "Omnis vir lupus."})
 
 	// Act
+	body, _ := json.Marshal(gin.H{"content": "Omnis vir lupus."})
 	req := httptest.NewRequest(http.MethodPost, "/msgs/Darrow", bytes.NewReader(body))
-	req.Header.Set("Authorization", "Basic "+encodeCredentialsToB64("Darrow", "Reaper"))
-	w := suite.sendRequest(req)
+	w := suite.sendAuthedRequest(req, "Darrow", "Reaper")
 
 	// Assert
-	assert.Equal(suite.T(), http.StatusNoContent, w.Code)
+	suite.Equal(http.StatusNoContent, w.Code)
 }
 
 func (suite *MessageTestSuite) Test_PostUserMessage_Given_NonExistent_User_Returns_NotFound() {
-	// Arrange
-	body, _ := json.Marshal(gin.H{"content": "Omnis vir lupus."})
-
 	// Act
+	body, _ := json.Marshal(gin.H{"content": "Omnis vir lupus."})
 	req := httptest.NewRequest(http.MethodPost, "/msgs/Darrow", bytes.NewReader(body))
-	req.Header.Set("Authorization", "Basic "+encodeCredentialsToB64("Darrow", "Reaper"))
-	w := suite.sendRequest(req)
+	w := suite.sendAuthedRequest(req, "Darrow", "Reaper")
 
 	// Assert
-	assert.Equal(suite.T(), http.StatusNotFound, w.Code)
+	suite.Equal(http.StatusNotFound, w.Code)
 }
 
 func (suite *MessageTestSuite) Test_PostUserMessage_Given_Empty_Message_Returns_BadRequest() {
 	// Arrange
 	suite.registerUser("Darrow", "darrow@andromedus.com", "Reaper")
-	body, _ := json.Marshal(gin.H{"content": ""})
 
 	// Act
+	body, _ := json.Marshal(gin.H{"content": ""})
 	req := httptest.NewRequest(http.MethodPost, "/msgs/Darrow", bytes.NewReader(body))
-	req.Header.Set("Authorization", "Basic "+encodeCredentialsToB64("Darrow", "Reaper"))
-	w := suite.sendRequest(req)
+	w := suite.sendAuthedRequest(req, "Darrow", "Reaper")
 
 	// Assert
-	assert.Equal(suite.T(), http.StatusBadRequest, w.Code)
+	suite.Equal(http.StatusBadRequest, w.Code)
 }
 
 func (suite *MessageTestSuite) Test_PostUserMessage_As_Simulator_Returns_No_Content() {
@@ -94,26 +88,24 @@ func (suite *MessageTestSuite) Test_PostUserMessage_As_Simulator_Returns_No_Cont
 	suite.registerUser("Darrow", "darrow@andromedus.com", "Reaper")
 	suite.registerSimulator()
 
-	body, _ := json.Marshal(gin.H{"content": "Some message"})
-
 	// Act
+	body, _ := json.Marshal(gin.H{"content": "Some message"})
 	req := httptest.NewRequest(http.MethodPost, "/msgs/Darrow", bytes.NewReader(body))
 	w := suite.sendSimulatorRequest(req)
 
 	// Assert
-	assert.Equal(suite.T(), http.StatusNoContent, w.Code)
+	suite.Equal(http.StatusNoContent, w.Code)
 }
 
 func (suite *MessageTestSuite) Test_PostUserMessage_As_Simulator_With_Unknown_User_Returns_Not_Found() {
 	// Arrange
 	suite.registerSimulator()
 
-	body, _ := json.Marshal(gin.H{"content": "Some message"})
-
 	// Act
+	body, _ := json.Marshal(gin.H{"content": "Some message"})
 	req := httptest.NewRequest(http.MethodPost, "/msgs/Darrow", bytes.NewReader(body))
 	w := suite.sendSimulatorRequest(req)
 
 	// Assert
-	assert.Equal(suite.T(), http.StatusNotFound, w.Code)
+	suite.Equal(http.StatusNotFound, w.Code)
 }

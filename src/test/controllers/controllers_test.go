@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/base64"
 	"encoding/json"
+	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -73,6 +74,11 @@ func (suite *BaseTestSuite) registerUser(username, email, password string) {
 
 func (suite *BaseTestSuite) registerSimulator() {
 	suite.registerUser("simulator", "simulator@simulator.dk", "super_safe!")
+}
+
+func (suite *BaseTestSuite) readBody(w *httptest.ResponseRecorder, target interface{}) {
+	bodyBytes, _ := ioutil.ReadAll(w.Result().Body)
+	json.Unmarshal(bodyBytes, target)
 }
 
 func encodeCredentialsToB64(username string, password string) string {

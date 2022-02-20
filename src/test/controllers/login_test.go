@@ -4,7 +4,6 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 )
 
@@ -18,7 +17,7 @@ func (suite *LoginTestSuite) TestLoginController_GivenNoHeader_Returns401() {
 	req, _ := http.NewRequest(http.MethodGet, "/login", nil)
 	w := suite.sendRequest(req)
 
-	assert.Equal(suite.T(), http.StatusUnauthorized, w.Code)
+	suite.Equal(http.StatusUnauthorized, w.Code)
 }
 
 func (suite *LoginTestSuite) TestLoginController_Given_UnknownUser_returns404() {
@@ -27,7 +26,7 @@ func (suite *LoginTestSuite) TestLoginController_Given_UnknownUser_returns404() 
 
 	w := suite.sendRequest(req)
 
-	assert.Equal(suite.T(), http.StatusNotFound, w.Code)
+	suite.Equal(http.StatusNotFound, w.Code)
 }
 
 func (suite *LoginTestSuite) TestLoginController_Given_ValidUsersCredentials_returns204() {
@@ -38,7 +37,7 @@ func (suite *LoginTestSuite) TestLoginController_Given_ValidUsersCredentials_ret
 
 	w := suite.sendRequest(req)
 
-	assert.Equal(suite.T(), http.StatusNoContent, w.Code)
+	suite.Equal(http.StatusNoContent, w.Code)
 }
 
 func (suite *LoginTestSuite) TestLoginController_Given_ValidUserAndInvalidPassword_returns401() {
@@ -49,5 +48,5 @@ func (suite *LoginTestSuite) TestLoginController_Given_ValidUserAndInvalidPasswo
 
 	w := suite.sendRequest(req)
 
-	assert.Equal(suite.T(), http.StatusUnauthorized, w.Code)
+	suite.Equal(http.StatusUnauthorized, w.Code)
 }
