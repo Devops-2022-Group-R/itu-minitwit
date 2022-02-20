@@ -38,6 +38,10 @@ func SetupRouter(openDatabase database.OpenDatabaseFunc) *gin.Engine {
 	r.GET("/login", LoginGet)
 	r.POST("/register", RegisterController)
 
+	authed := r.Group("/")
+	authed.Use(AuthRequired())
+	authed.GET("/login", LoginGet)
+
 	return r
 }
 
