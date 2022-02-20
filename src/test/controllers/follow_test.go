@@ -105,7 +105,7 @@ func (suite *FollowTestSuite) TestFollowGetController_GivenUserWithNoFollows_Ret
 	// Arrange
 	utilCreateUsersInDatabase(suite)
 
-	// act
+	// Act
 	req, _ := http.NewRequest(http.MethodGet, followUrl, nil)
 	w := suite.sendRequest(req)
 
