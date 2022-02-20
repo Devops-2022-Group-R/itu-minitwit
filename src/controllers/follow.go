@@ -34,7 +34,7 @@ func FollowPostController(c *gin.Context) {
 		return
 	}
 
-	authUser := c.MustGet("user").(*models.User)
+	authUser := c.MustGet(UserKey).(*models.User)
 	if authUser.Username != urlUsername {
 		c.JSON(http.StatusUnprocessableEntity, gin.H{"error": "the URL username did not match the Authorization header username"})
 		return

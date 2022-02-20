@@ -53,7 +53,7 @@ func GetUserMessages(c *gin.Context) {
 func GetFeedMessages(c *gin.Context) {
 	messageRepository := c.MustGet(MessageRepositoryKey).(database.IMessageRepository)
 
-	user := c.MustGet("user").(*models.User)
+	user := c.MustGet(UserKey).(*models.User)
 
 	messages, err := messageRepository.GetByUserAndItsFollowers(user.UserId, perPage)
 	if err != nil {
