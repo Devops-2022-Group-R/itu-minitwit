@@ -28,4 +28,5 @@ func InitDatabase(openDatabase OpenDatabaseFunc) {
 
 	NewGormUserRepository(db).Migrate()
 	NewGormMessageRepository(db).Migrate()
+	NewGormLatestRepository(db).Migrate()
 }

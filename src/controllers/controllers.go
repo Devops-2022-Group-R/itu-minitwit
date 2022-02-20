@@ -28,11 +28,13 @@ func SetupRouter(openDatabase database.OpenDatabaseFunc) *gin.Engine {
 
 	r.Use(CORSMiddleware())
 	r.Use(beforeRequest(openDatabase))
+	r.Use(UpdateLatestMiddleware)
 
 	r.GET("/fllws/:username", FollowGetController)
 	r.GET("/msgs", GetMessages)
 	r.GET("/msgs/:username", GetUserMessages)
 	r.POST("/register", RegisterController)
+	r.GET("/latest", LatestController)
 
 	authed := r.Group("/")
 	authed.Use(AuthRequired())
@@ -55,6 +57,7 @@ func beforeRequest(openDatabase database.OpenDatabaseFunc) gin.HandlerFunc {
 
 		c.Set(UserRepositoryKey, database.NewGormUserRepository(gormDb))
 		c.Set(MessageRepositoryKey, database.NewGormMessageRepository(gormDb))
+		c.Set(LatestRepositoryKey, database.NewGormLatestRepository(gormDb))
 
 		c.Next()
 	}

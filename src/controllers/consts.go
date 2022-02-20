@@ -7,4 +7,5 @@ const (
 	IsAdminKey           = "isAdmin"
 	UserRepositoryKey    = "userRepository"
 	MessageRepositoryKey = "messageRepository"
+	LatestRepositoryKey  = "latestRepository"
 )
