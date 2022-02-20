@@ -21,19 +21,19 @@ func utilCreateUsersInDatabase(suite *TestSuite) {
 	suite.registerUser("eredin", "eredin@wildhunt.pl", "123")
 }
 
+func sendAuthRequest(suite *TestSuite, url string, body gin.H) *httptest.ResponseRecorder {
+	bodyBytes, _ := json.Marshal(body)
+	req, _ := http.NewRequest(http.MethodPost, url, bytes.NewReader(bodyBytes))
+
+	return suite.sendAuthedRequest(req, "geralt", "123")
+}
+
 func setupTestFollowRelationships(suite *TestSuite) {
 	utilCreateUsersInDatabase(suite)
 	w1 := sendAuthRequest(suite, followUrl, gin.H{"follow": "yennefer"})
 	w2 := sendAuthRequest(suite, followUrl, gin.H{"follow": "triss"})
 	assert.Equal(suite.T(), http.StatusNoContent, w1.Code)
 	assert.Equal(suite.T(), http.StatusNoContent, w2.Code)
-}
-
-func sendAuthRequest(suite *TestSuite, url string, body gin.H) *httptest.ResponseRecorder {
-	bodyBytes, _ := json.Marshal(body)
-	req, _ := http.NewRequest(http.MethodPost, url, bytes.NewReader(bodyBytes))
-	req.Header.Set("Authorization", "Basic "+encodeCredentialsToB64("geralt", "123"))
-	return suite.sendRequest(req)
 }
 
 func (suite *TestSuite) TestFollowPostController_GivenValidFollow_Returns204() {
