@@ -18,8 +18,6 @@ end
 
 def virtual_box_network(config, ip, guestPort=nil, hostPort=nil)
   config.vm.provider "virtualbox" do |vb, override|
-    p "Setting up network with ip: #{ip} and ports: #{guestPort} and #{hostPort}"
-
     override.vm.network "private_network", ip: ip
     
     if guestPort != nil && hostPort != nil
