@@ -316,4 +316,5 @@ $RECYCLE.BIN/
 *.lnk
 
 # End of https://www.toptal.com/developers/gitignore/api/git,python,visualstudiocode,windows,linux,macos,c
-.vagrant/
+.vagrant*/
+!.infrastructure/build/
