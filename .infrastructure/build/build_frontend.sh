@@ -1,3 +1,5 @@
+#!/bin/bash
+
 curl -fsSL https://deb.nodesource.com/setup_17.x | sudo -E bash -
 
 sudo apt-get update
@@ -18,3 +20,5 @@ sudo ufw allow 'Apache'
 
 echo "Copy frontend to apache"
 sudo cp -r $HOME/frontend/dist/* /var/www/html
+sudo cp /vagrant/.infrastructure/build/frontend_apache.conf /etc/apache2/sites-available/000-default.conf
+sudo service apache2 restart
