@@ -43,10 +43,13 @@ jobs:
 
       - run: |
           TAG=0.1.$CIRCLE_BUILD_NUM
-          LABEL=$DOCKER_USERNAME/itu-minitwit-server:$TAG
-          docker build -t $LABEL .
+          IMAGE_PATH=$DOCKER_USERNAME/itu-minitwit-server
+
+          docker build -t $IMAGE_PATH:$TAG .
+          docker tag $IMAGE_PATH:$TAG $IMAGE_PATH:latest
+
           echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
-          docker push $LABEL
+          docker image push --all-tags $IMAGE_PATH
 
   # redeploy_azure:
   #   # branches:
