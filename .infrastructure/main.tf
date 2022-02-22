@@ -48,3 +48,9 @@ resource "azurerm_app_service" "backend_as" {
     "DOCKER_REGISTRY_SERVER_URL"          = "https://registry.hub.docker.com"
   }
 }
+
+resource "azurerm_app_service_custom_hostname_binding" "backend_custom_domain" {
+  hostname            = "api.rhododevdron.swuwu.dk"
+  app_service_name    = azurerm_app_service.backend_as.name
+  resource_group_name = azurerm_resource_group.rg.name
+}
