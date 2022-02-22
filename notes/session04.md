@@ -8,3 +8,7 @@
 If azure says multiple accounts with same username, run `az account clear`.
 
 Subscription ID: `2df7cef3-7027-4cfd-9818-49eab2ef376a`.
+
+To deploy current Terraform:
+1. `cd .infrastructure`.
+2. `terraform apply -var-file .tfvars`.
