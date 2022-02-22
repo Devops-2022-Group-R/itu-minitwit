@@ -1,5 +1,8 @@
 version: 2.1
 
+# orbs:
+#   azure-cli: circleci/azure-cli@1.2.0
+
 jobs:
   build_and_test:
     working_directory: ~/repo
@@ -25,7 +28,7 @@ jobs:
       - store_test_results:
           path: /tmp/test-reports
 
-  deploy:
+  push_to_docker_hub:
     # branches:
     #   only:
     #     - master
@@ -45,10 +48,24 @@ jobs:
           echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
           docker push $LABEL
 
+  # redeploy_azure:
+  #   # branches:
+  #   #   only:
+  #   #     - master
+  #   executor: azure-cli/default
+  #   steps:
+  #     - azure-cli/install
+  #     - run:
+  #         command: az -v
+  #         name: Verify Azure CLI is installed
+
 workflows:
   build_test_deploy:
     jobs:
       - build_and_test
-      - deploy:
+      - push_to_docker_hub:
           requires:
             - build_and_test
+      # - redeploy_azure:
+      #     requires:
+      #       - push_to_docker_hub
