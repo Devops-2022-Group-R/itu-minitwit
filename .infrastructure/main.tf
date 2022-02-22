@@ -54,3 +54,13 @@ resource "azurerm_app_service_custom_hostname_binding" "backend_custom_domain" {
   app_service_name    = azurerm_app_service.backend_as.name
   resource_group_name = azurerm_resource_group.rg.name
 }
+
+resource "azurerm_app_service_managed_certificate" "backend_managed_certificate" {
+  custom_hostname_binding_id = azurerm_app_service_custom_hostname_binding.backend_custom_domain.id
+}
+
+resource "azurerm_app_service_certificate_binding" "backend_certificate_binding" {
+  hostname_binding_id = azurerm_app_service_custom_hostname_binding.backend_custom_domain.id
+  certificate_id      = azurerm_app_service_managed_certificate.backend_managed_certificate.id
+  ssl_state           = "SniEnabled"
+}
