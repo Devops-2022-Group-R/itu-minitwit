@@ -1,6 +1,7 @@
+require_relative './.infrastructure/http.rb'
+
 defaults = './.infrastructure/Vagrantfile.defaults'
 load defaults if File.exists?(defaults)
-
 
 $ip_file = "db_ip.txt"
 
@@ -36,10 +37,11 @@ Vagrant.configure("2") do |config|
         trigger.info =  "Writing dbserver's IP to file with digitalocean..."
 
         trigger.ruby do |env,machine|
-          p "Writing with digitalocean"
-          remote_ip = machine.instance_variable_get(:@communicator).instance_variable_get(:@connection_ssh_info)[:host]
-          File.write($ip_file, remote_ip)
-        end 
+          drop = droplet(machine.id, ENV["DIGITAL_OCEAN_TOKEN"])
+          private_network = drop['networks']['v4'].find { |network| network['type'] == 'private' }
+
+          File.write($ip_file, private_network['ip_address'])
+        end
       end
     end
   end
