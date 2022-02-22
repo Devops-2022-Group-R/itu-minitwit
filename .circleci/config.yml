@@ -49,7 +49,8 @@ jobs:
           docker tag $IMAGE_PATH:$TAG $IMAGE_PATH:latest
 
           echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
-          docker image push --all-tags $IMAGE_PATH
+          docker push $IMAGE_PATH:$TAG
+          docker push $IMAGE_PATH:latest
 
   # redeploy_azure:
   #   # branches:
