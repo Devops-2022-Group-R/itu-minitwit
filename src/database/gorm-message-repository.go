@@ -56,7 +56,7 @@ func (rep *GormMessageRepository) GetByUserAndItsFollowers(userId int64, limit i
 	var dtos []MessageDTO
 
 	subQuery := rep.db.Table("follower").Select("whom_id").Where("who_id = ?", userId)
-	err := rep.db.Order("pub_date desc").Preload("Author").Where("flagged = 0 AND (author_id = ? OR author_id = (?))", userId, subQuery).Limit(limit).Find(&dtos).Error
+	err := rep.db.Order("pub_date desc").Preload("Author").Where("flagged IS FALSE AND (author_id = ? OR author_id = (?))", userId, subQuery).Limit(limit).Find(&dtos).Error
 
 	messages := make([]models.Message, len(dtos))
 	for i, dto := range dtos {
