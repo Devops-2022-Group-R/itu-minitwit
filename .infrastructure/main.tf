@@ -48,6 +48,7 @@ resource "azurerm_app_service" "backend_as" {
     "WEBSITES_ENABLE_APP_SERVICE_STORAGE" = "false"
     "DOCKER_REGISTRY_SERVER_URL"          = "https://registry.hub.docker.com"
     "DOCKER_ENABLE_CI"                    = "true"
+    "ENVIRONMENT"                         = "PRODUCTION"
   }
 
   connection_string {
