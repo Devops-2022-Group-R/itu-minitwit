@@ -12,6 +12,7 @@ import (
 	"github.com/Devops-2022-Group-R/itu-minitwit/src/controllers"
 	"github.com/Devops-2022-Group-R/itu-minitwit/src/database"
 	_ "github.com/Devops-2022-Group-R/itu-minitwit/src/password"
+	"github.com/denisenkom/go-mssqldb/azuread"
 )
 
 const (
@@ -46,6 +47,10 @@ func openDatabase() gorm.Dialector {
 		}
 		
 		log.Printf("Connstring: %s\n", connString)
+		sqlserver.New(sqlserver.Config{
+			DSN:        connString,
+			DriverName: azuread.DriverName,
+		})
 		return sqlserver.Open(connString)
 	} else {
 		return sqlite.Open("minitwit.db")
