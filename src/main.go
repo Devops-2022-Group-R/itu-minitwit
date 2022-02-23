@@ -40,12 +40,13 @@ func main() {
 
 func openDatabase() gorm.Dialector {
 	env := os.Getenv("ENVIRONMENT")
+	log.Printf("Environment: %s", env)
 	if env == "PRODUCTION" {
 		connString, exists := os.LookupEnv("SQLCONNSTR_CONNECTION_STRING")
 		if !exists {
 			log.Fatal("SQLCONNSTR_CONNECTION_STRING environment variable not set")
 		}
-		
+
 		log.Printf("Connstring: %s\n", connString)
 		sqlserver.New(sqlserver.Config{
 			DSN:        connString,
