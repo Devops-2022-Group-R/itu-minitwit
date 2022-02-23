@@ -49,6 +49,16 @@ resource "azurerm_app_service" "backend_as" {
     "DOCKER_REGISTRY_SERVER_URL"          = "https://registry.hub.docker.com"
     "DOCKER_ENABLE_CI"                    = "true"
   }
+
+  connection_string {
+    name  = "CONNECTION_STRING"
+    type  = "SQLServer"
+    value = "Server=${var.database_server_name},1433;Initial Catalog=${var.database_db_name};Authentication=Active Directory Managed Identity"
+  }
+
+  identity {
+    type = "SystemAssigned"
+  }
 }
 
 resource "azurerm_app_service_custom_hostname_binding" "backend_custom_domain" {
@@ -65,4 +75,41 @@ resource "azurerm_app_service_certificate_binding" "backend_certificate_binding"
   hostname_binding_id = azurerm_app_service_custom_hostname_binding.backend_custom_domain.id
   certificate_id      = azurerm_app_service_managed_certificate.backend_managed_certificate.id
   ssl_state           = "SniEnabled"
+}
+
+resource "azurerm_mssql_server" "database_mssql_server" {
+  name                = var.database_server_name
+  resource_group_name = azurerm_resource_group.rg.name
+  location            = azurerm_resource_group.rg.location
+  version             = "12.0"
+
+  administrator_login          = var.database_admin_username
+  administrator_login_password = var.database_admin_password
+
+  minimum_tls_version = "1.2"
+
+  azuread_administrator {
+    login_username              = "admin_StudioGoose.onmicrosoft.com#EXT#@rhododevdron.onmicrosoft.com"
+    object_id                   = "03840f88-7876-45d7-a13b-a8d4ca662b3d"
+    azuread_authentication_only = true
+  }
+
+  identity {
+    type = "SystemAssigned"
+  }
+}
+
+resource "azurerm_mssql_firewall_rule" "database_firewall_rule" {
+  name             = "${var.prefix}-allow-azure-ips"
+  server_id        = azurerm_mssql_server.database_mssql_server.id
+  start_ip_address = "0.0.0.0"
+  end_ip_address   = "0.0.0.0"
+}
+
+resource "azurerm_mssql_database" "database_mssql_database" {
+  name         = var.database_db_name
+  server_id    = azurerm_mssql_server.database_mssql_server.id
+  license_type = "LicenseIncluded"
+  max_size_gb  = 2
+  sku_name     = "Basic"
 }
