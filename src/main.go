@@ -5,8 +5,8 @@ import (
 	"os"
 	"strings"
 
-	"gorm.io/driver/postgres"
 	"gorm.io/driver/sqlite"
+	"gorm.io/driver/sqlserver"
 	"gorm.io/gorm"
 
 	"github.com/Devops-2022-Group-R/itu-minitwit/src/controllers"
@@ -45,7 +45,7 @@ func openDatabase() gorm.Dialector {
 			log.Fatal("CONNECTION_STRING environment variable not set")
 		}
 
-		return postgres.Open(connString)
+		return sqlserver.Open(connString)
 	} else {
 		return sqlite.Open("minitwit.db")
 	}
