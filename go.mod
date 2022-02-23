@@ -10,15 +10,20 @@ require (
 )
 
 require (
-	github.com/denisenkom/go-mssqldb v0.12.0 // indirect
+	github.com/Azure/azure-sdk-for-go/sdk/azcore v0.19.0 // indirect
+	github.com/Azure/azure-sdk-for-go/sdk/azidentity v0.11.0 // indirect
+	github.com/Azure/azure-sdk-for-go/sdk/internal v0.7.0 // indirect
 	github.com/golang-sql/civil v0.0.0-20190719163853-cb61b32ac6fe // indirect
 	github.com/golang-sql/sqlexp v0.0.0-20170517235910-f1bb20e5a188 // indirect
 	github.com/mattn/go-sqlite3 v1.14.11 // indirect
+	github.com/pkg/browser v0.0.0-20180916011732-0a3d74bf9ce4 // indirect
+	golang.org/x/net v0.0.0-20211112202133-69e39bad7dc2 // indirect
 	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
 )
 
 require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
+	github.com/denisenkom/go-mssqldb v0.12.0
 	github.com/gin-contrib/sse v0.1.0 // indirect
 	github.com/go-playground/locales v0.14.0 // indirect
 	github.com/go-playground/universal-translator v0.18.0 // indirect
