@@ -53,7 +53,7 @@ resource "azurerm_app_service" "backend_as" {
   connection_string {
     name  = "CONNECTION_STRING"
     type  = "SQLServer"
-    value = "Server=${var.database_server_name},1433;Initial Catalog=${var.database_db_name};Authentication=Active Directory Managed Identity"
+    value = "Server=${var.database_server_name}.database.windows.net,1433;Initial Catalog=${var.database_db_name};Authentication=Active Directory Managed Identity"
   }
 
   identity {
