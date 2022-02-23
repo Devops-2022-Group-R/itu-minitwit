@@ -5,6 +5,8 @@ FROM golang:1.17
 RUN apt-get update \
     && apt-get install -y sqlite3 libsqlite3-dev
 
+ENV ENVIRONMENT=PRODUCTION
+
 WORKDIR /app
 COPY . /app
 
