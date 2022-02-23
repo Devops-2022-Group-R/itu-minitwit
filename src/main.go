@@ -44,7 +44,8 @@ func openDatabase() gorm.Dialector {
 		if !exists {
 			log.Fatal("SQLCONNSTR_CONNECTION_STRING environment variable not set")
 		}
-
+		
+		log.Printf("Connstring: %s\n", connString)
 		return sqlserver.Open(connString)
 	} else {
 		return sqlite.Open("minitwit.db")
