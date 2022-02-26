@@ -12,6 +12,7 @@ import (
 	"github.com/Devops-2022-Group-R/itu-minitwit/src/controllers"
 	"github.com/Devops-2022-Group-R/itu-minitwit/src/database"
 	_ "github.com/Devops-2022-Group-R/itu-minitwit/src/password"
+	"github.com/denisenkom/go-mssqldb/azuread"
 )
 
 const (
@@ -39,13 +40,18 @@ func main() {
 
 func openDatabase() gorm.Dialector {
 	env := os.Getenv("ENVIRONMENT")
+	log.Printf("Environment: %s", env)
 	if env == "PRODUCTION" {
 		connString, exists := os.LookupEnv("SQLCONNSTR_CONNECTION_STRING")
 		if !exists {
 			log.Fatal("SQLCONNSTR_CONNECTION_STRING environment variable not set")
 		}
 
-		return sqlserver.Open(connString)
+		log.Printf("Connstring: %s\n", connString)
+		return sqlserver.New(sqlserver.Config{
+			DSN:        connString,
+			DriverName: azuread.DriverName,
+		})
 	} else {
 		return sqlite.Open("minitwit.db")
 	}
