@@ -39,3 +39,9 @@ ALTER ROLE db_ddladmin ADD MEMBER [AzureSqlDbAccess];
 GO
 ```
 Need to get the above query automated.
+
+### Database
+Changes necessary for the azure deployment in terms of the database:
+- When opening a database connection we run the migrations and check if the simulator user exists, if it doesn't create it
+- Switch to [microsoft sql server driver](https://github.com/go-gorm/sqlserver)
+- To use azure managed identity it was necessary to use azuread package in the microsoft sql server driver, [documentation here](https://github.com/denisenkom/go-mssqldb#azure-active-directory-authentication)
