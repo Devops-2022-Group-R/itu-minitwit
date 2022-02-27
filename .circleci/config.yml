@@ -73,21 +73,12 @@ jobs:
 
             terraform init
 
-            terraform plan \
-              -out=tfplan \
+            terraform apply \
               -var "prefix=itu-minitwit" \
               -var "database_admin_username=$DB_ADMIN_USERNAME" \
               -var "database_admin_password=$DB_ADMIN_PASSWORD" \
               -var "database_server_name=$DB_SERVER_NAME" \
               -var "database_db_name=$DB_NAME"
-
-            count=$(terraform show tfplan | grep -c "Your infrastructure matches the configuration") || true
-            if [ $count -gt 0 ]; then
-              echo "No changes, infrastructure is up to date";
-            else 
-              echo "Terraform plan requires changes to be applied, will proceed";
-              terraform apply tfplan
-            fi
 
 workflows:
   build_test_deploy:
