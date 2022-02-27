@@ -110,7 +110,6 @@ resource "azurerm_mssql_firewall_rule" "database_firewall_rule" {
 resource "azurerm_mssql_database" "database_mssql_database" {
   name         = var.database_db_name
   server_id    = azurerm_mssql_server.database_mssql_server.id
-  license_type = "LicenseIncluded"
   max_size_gb  = 2
   sku_name     = "Basic"
 }
