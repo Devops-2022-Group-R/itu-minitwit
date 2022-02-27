@@ -89,8 +89,9 @@ resource "azurerm_mssql_server" "database_mssql_server" {
   minimum_tls_version = "1.2"
 
   azuread_administrator {
-    login_username              = "admin_StudioGoose.onmicrosoft.com#EXT#@rhododevdron.onmicrosoft.com"
-    object_id                   = "03840f88-7876-45d7-a13b-a8d4ca662b3d"
+    # Security group that should be made in Azure to provide access
+    login_username              = "Admins"
+    object_id                   = "fa37a2f2-6d36-45e6-8b20-fa037e932ac6"
     azuread_authentication_only = true
   }
 
