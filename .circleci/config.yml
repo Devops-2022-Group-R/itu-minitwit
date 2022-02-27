@@ -1,18 +1,10 @@
-# Use the latest 2.1 version of CircleCI pipeline process engine.
-# See: https://circleci.com/docs/2.0/configuration-reference
 version: 2.1
 
-# Define a job to be invoked later in a workflow.
-# See: https://circleci.com/docs/2.0/configuration-reference/#jobs
 jobs:
-  build:
+  build_and_test:
     working_directory: ~/repo
-    # Specify the execution environment. You can specify an image from Dockerhub or use one of our Convenience Images from CircleCI's Developer Hub.
-    # See: https://circleci.com/docs/2.0/configuration-reference/#docker-machine-macos-windows-executor
     docker:
       - image: circleci/golang:1.17-buster
-    # Add steps to the job
-    # See: https://circleci.com/docs/2.0/configuration-reference/#steps
     steps:
       - checkout
       - restore_cache:
@@ -33,10 +25,72 @@ jobs:
       - store_test_results:
           path: /tmp/test-reports
 
-# Invoke jobs via workflows
-# See: https://circleci.com/docs/2.0/configuration-reference/#workflows
+  push_to_docker_hub:
+    docker:
+      - image: circleci/golang:1.17-buster
+    steps:
+      - checkout
+
+      - setup_remote_docker:
+          version: 20.10.11
+          docker_layer_caching: true
+
+      - run: |
+          TAG=0.1.$CIRCLE_BUILD_NUM
+          IMAGE_PATH=$DOCKER_USERNAME/itu-minitwit-server
+
+          docker build -t $IMAGE_PATH:$TAG .
+          docker tag $IMAGE_PATH:$TAG $IMAGE_PATH:latest
+
+          echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
+          docker push $IMAGE_PATH:$TAG
+          docker push $IMAGE_PATH:latest
+
+  # Based on: http://www.tiernok.com/posts/2021/integrating-terraform-into-circleci-aspnet-azure-pipeline/
+  apply_infrastructure:
+    docker:
+      - image: zenika/terraform-azure-cli:latest
+    steps:
+      - checkout
+
+      - run:
+          name: terraform apply
+          command: |
+            cd .infrastructure
+
+            # Adding these variables authenticates us with Azure as a service principal.
+            # Reference: https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/guides/service_principal_client_secret
+            export ARM_CLIENT_ID=$AZURE_SP_APPID
+            export ARM_CLIENT_SECRET=$AZURE_SP_PASSWORD
+            export ARM_SUBSCRIPTION_ID=$AZURE_SUBSCRIPTION_ID
+            export ARM_TENANT_ID=$AZURE_TENANT
+
+            terraform init
+
+            terraform apply \
+              -var "prefix=itu-minitwit" \
+              -var "database_admin_username=$DB_ADMIN_USERNAME" \
+              -var "database_admin_password=$DB_ADMIN_PASSWORD" \
+              -var "database_server_name=$DB_SERVER_NAME" \
+              -var "database_db_name=$DB_NAME"
+
 workflows:
-  sample: # This is the name of the workflow, feel free to change it to better match your workflow.
-    # Inside the workflow, you define the jobs you want to run.
+  build_test_deploy:
     jobs:
-      - build
+      - build_and_test
+
+      - push_to_docker_hub:
+          requires:
+            - build_and_test
+          filters:
+            branches:
+              only:
+                - master
+
+      - apply_infrastructure:
+          requires:
+            - push_to_docker_hub
+          filters:
+            branches:
+              only:
+                - master

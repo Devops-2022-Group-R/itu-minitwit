@@ -36,7 +36,9 @@ func RegisterController(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	} else if user != nil {
-		c.JSON(http.StatusConflict, gin.H{"error": "the username is already taken"})
+		// We changed this from Conflict to Bad Request because the simulator
+		// expects error code 400
+		c.JSON(http.StatusBadRequest, gin.H{"error": "the username is already taken"})
 		return
 	}
 

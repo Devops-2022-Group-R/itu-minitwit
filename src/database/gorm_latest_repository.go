@@ -17,14 +17,14 @@ func (rep *GormLatestRepository) Migrate() error {
 }
 
 func (rep *GormLatestRepository) Set(newLatest int) error {
-	var hasLatest bool
-	err := rep.db.Select("COUNT(*) > 0").Table("latest").Find(&hasLatest).Error
+	var latestCount int64
+	err := rep.db.Model(&LatestDTO{}).Count(&latestCount).Error
 	if err != nil {
 		return err
 	}
 
 	dto := LatestDTO{Id: 1, Value: newLatest}
-	if !hasLatest {
+	if latestCount == 0 {
 		err = rep.db.Create(&dto).Error
 	} else {
 		err = rep.db.Select("*").Updates(dto).Error

@@ -67,7 +67,7 @@ func (suite *RegisterTestSuite) TestRegisterController_GivenInvalidEmail_Returns
 	suite.Equal(http.StatusUnprocessableEntity, w.Code)
 }
 
-func (suite *RegisterTestSuite) TestRegisterController_RunTwiceWithSameUsername_Returns409() {
+func (suite *RegisterTestSuite) TestRegisterController_RunTwiceWithSameUsername_Returns400() {
 	// Act
 	firstRegister, _ := json.Marshal(gin.H{
 		"username": "GeraltLover",
@@ -86,7 +86,7 @@ func (suite *RegisterTestSuite) TestRegisterController_RunTwiceWithSameUsername_
 	w2 := suite.sendRequest(req2)
 
 	suite.Equal(http.StatusNoContent, w1.Code)
-	suite.Equal(http.StatusConflict, w2.Code)
+	suite.Equal(http.StatusBadRequest, w2.Code)
 }
 
 func (suite *RegisterTestSuite) TestRegisterController_GivenValidBody_AddsUserToDatabase() {

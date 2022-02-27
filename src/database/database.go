@@ -24,6 +24,8 @@ func ConnectDatabase(openDatabase OpenDatabaseFunc) (*gorm.DB, error) {
 
 	Db = database
 
+	InitDatabase(openDatabase)
+
 	return Db, nil
 }
 
@@ -38,12 +40,19 @@ func InitDatabase(openDatabase OpenDatabaseFunc) {
 	NewGormMessageRepository(db).Migrate()
 	NewGormLatestRepository(db).Migrate()
 
-	// The simulator needs to be a default user
-	if err = userRepository.Create(models.User{
-		Username:     "simulator",
-		Email:        "unused@email.rip",
-		PasswordHash: pwdHash.GeneratePasswordHash("super_safe!"),
-	}); err != nil {
+	user, err := userRepository.GetByUsername("simulator")
+	if err != nil {
 		log.Fatal(err)
+	}
+
+	if user == nil {
+		// The simulator needs to be a default user
+		if err = userRepository.Create(models.User{
+			Username:     "simulator",
+			Email:        "unused@email.rip",
+			PasswordHash: pwdHash.GeneratePasswordHash("super_safe!"),
+		}); err != nil {
+			log.Fatal(err)
+		}
 	}
 }
