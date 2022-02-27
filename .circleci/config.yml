@@ -74,6 +74,7 @@ jobs:
             terraform init
 
             terraform plan \
+              -out=tfplan \
               -var "prefix=itu-minitwit" \
               -var "database_admin_username=$DB_ADMIN_USERNAME" \
               -var "database_admin_password=$DB_ADMIN_PASSWORD" \
