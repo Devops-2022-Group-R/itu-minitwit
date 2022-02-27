@@ -82,6 +82,7 @@ workflows:
       - push_to_docker_hub:
           requires:
             - build_and_test
+          context: ITU MiniTwit
           filters:
             branches:
               only:
@@ -90,6 +91,7 @@ workflows:
       - apply_infrastructure:
           requires:
             - push_to_docker_hub
+          context: ITU MiniTwit
           filters:
             branches:
               only:
