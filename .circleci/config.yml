@@ -26,9 +26,6 @@ jobs:
           path: /tmp/test-reports
 
   push_to_docker_hub:
-    # branches:
-    #   only:
-    #     - master
     docker:
       - image: circleci/golang:1.17-buster
     steps:
@@ -51,9 +48,6 @@ jobs:
 
   # Based on: http://www.tiernok.com/posts/2021/integrating-terraform-into-circleci-aspnet-azure-pipeline/
   apply_infrastructure:
-    # branches:
-    #   only:
-    #     - master
     docker:
       - image: zenika/terraform-azure-cli:latest
     steps:
@@ -84,9 +78,19 @@ workflows:
   build_test_deploy:
     jobs:
       - build_and_test
+
       - push_to_docker_hub:
           requires:
             - build_and_test
+          filters:
+            branches:
+              only:
+                - master
+
       - apply_infrastructure:
           requires:
             - push_to_docker_hub
+          filters:
+            branches:
+              only:
+                - master
