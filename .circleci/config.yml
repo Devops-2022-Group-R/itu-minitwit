@@ -64,7 +64,12 @@ jobs:
           command: |
             cd .infrastructure
 
-            az login --service-principal -u $AZURE_SP_APPID -p $AZURE_SP_PASSWORD --tenant $AZURE_TENANT
+            # Adding these variables authenticates us with Azure as a service principal.
+            # Reference: https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/guides/service_principal_client_secret
+            export ARM_CLIENT_ID=$AZURE_SP_APPID
+            export ARM_CLIENT_SECRET=$AZURE_SP_PASSWORD
+            export ARM_SUBSCRIPTION_ID=$AZURE_SUBSCRIPTION_ID
+            export ARM_TENANT_ID=$AZURE_TENANT
 
             terraform init
             terraform apply -auto-approve \
