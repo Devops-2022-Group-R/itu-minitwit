@@ -26,9 +26,6 @@ jobs:
           path: /tmp/test-reports
 
   push_to_docker_hub:
-    # branches:
-    #   only:
-    #     - master
     docker:
       - image: circleci/golang:1.17-buster
     steps:
@@ -49,10 +46,51 @@ jobs:
           docker push $IMAGE_PATH:$TAG
           docker push $IMAGE_PATH:latest
 
+  # Based on: http://www.tiernok.com/posts/2021/integrating-terraform-into-circleci-aspnet-azure-pipeline/
+  apply_infrastructure:
+    docker:
+      - image: zenika/terraform-azure-cli:latest
+    steps:
+      - checkout
+
+      - run:
+          name: terraform apply
+          command: |
+            cd .infrastructure
+
+            # Adding these variables authenticates us with Azure as a service principal.
+            # Reference: https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/guides/service_principal_client_secret
+            export ARM_CLIENT_ID=$AZURE_SP_APPID
+            export ARM_CLIENT_SECRET=$AZURE_SP_PASSWORD
+            export ARM_SUBSCRIPTION_ID=$AZURE_SUBSCRIPTION_ID
+            export ARM_TENANT_ID=$AZURE_TENANT
+
+            terraform init
+
+            terraform apply \
+              -var "prefix=itu-minitwit" \
+              -var "database_admin_username=$DB_ADMIN_USERNAME" \
+              -var "database_admin_password=$DB_ADMIN_PASSWORD" \
+              -var "database_server_name=$DB_SERVER_NAME" \
+              -var "database_db_name=$DB_NAME"
+
 workflows:
   build_test_deploy:
     jobs:
       - build_and_test
+
       - push_to_docker_hub:
           requires:
             - build_and_test
+          filters:
+            branches:
+              only:
+                - master
+
+      - apply_infrastructure:
+          requires:
+            - push_to_docker_hub
+          filters:
+            branches:
+              only:
+                - master
