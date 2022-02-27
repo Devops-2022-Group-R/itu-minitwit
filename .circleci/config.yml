@@ -83,11 +83,10 @@ jobs:
 workflows:
   build_test_deploy:
     jobs:
-      - apply_infrastructure
-      # - build_and_test
-      # - push_to_docker_hub:
-      #     requires:
-      #       - build_and_test
-      # - apply_infrastructure:
-          # requires:
-            # - push_to_docker_hub
+      - build_and_test
+      - push_to_docker_hub:
+          requires:
+            - build_and_test
+      - apply_infrastructure:
+          requires:
+            - push_to_docker_hub
