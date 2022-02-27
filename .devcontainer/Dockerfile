@@ -6,4 +6,12 @@ FROM mcr.microsoft.com/vscode/devcontainers/go:0-${VARIANT}
 RUN apt-get update \
     && apt-get install -y sqlite3 libsqlite3-dev
 
+# Install Terraform: https://learn.hashicorp.com/tutorials/terraform/install-cli?in=terraform/azure-get-started
+RUN sudo apt-get install -y gnupg software-properties-common curl \
+    && curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo apt-key add - \
+    && sudo apt-add-repository "deb [arch=amd64] https://apt.releases.hashicorp.com $(lsb_release -cs) main" \
+    && sudo apt-get update && sudo apt-get install terraform \
+    # Install Azure CLI: https://docs.microsoft.com/en-us/cli/azure/install-azure-cli-linux?pivots=apt
+    && curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
+
 RUN git config --global core.autocrlf true
