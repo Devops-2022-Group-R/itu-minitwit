@@ -7,6 +7,17 @@ terraform {
     }
   }
 
+  # Terraform state is managed in Azure - create a storage container to use:
+  #   az group create -n core-rg -l northeurope
+  #   az storage account create -n <account-name> -g core-rg -l northeurope --sku Standard_LRS
+  #   az storage container create -n <container-name> --account-name <account-name> --account-key <key-from-created-account> 
+  backend "azurerm" {
+    resource_group_name  = "core-rg"
+    storage_account_name = "minitwitterraformstate"
+    container_name       = "terraformstate"
+    key                  = "terraform.tfstate"
+  }
+
   required_version = ">= 1.1.0"
 }
 
