@@ -101,7 +101,7 @@ jobs:
 workflows:
   build_test_deploy:
     jobs:
-      - publish_github_release
+      - publish_github_release:
           context: ITU MiniTwit
       # - build_and_test
 
