@@ -84,6 +84,7 @@ jobs:
           command: |
             go install github.com/Devops-2022-Group-R/bump-tool@latest
 
+            echo "Token: $GITHUB_TOKEN"
             echo "Creating release from PR: $CIRCLE_PULL_REQUEST"
             VERSION=$(bump-tool --token $GITHUB_TOKEN --url $CIRCLE_PULL_REQUEST)
             echo "Will create release with version $VERSION"
