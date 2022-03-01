@@ -53,12 +53,12 @@ jobs:
 
             echo "Building docker image $IMAGE_PATH:$TAG"
 
-            # docker build -t $IMAGE_PATH:$TAG .
-            # docker tag $IMAGE_PATH:$TAG $IMAGE_PATH:latest
+            docker build -t $IMAGE_PATH:$TAG .
+            docker tag $IMAGE_PATH:$TAG $IMAGE_PATH:latest
 
-            # echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
-            # docker push $IMAGE_PATH:$TAG
-            # docker push $IMAGE_PATH:latest
+            echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
+            docker push $IMAGE_PATH:$TAG
+            docker push $IMAGE_PATH:latest
 
   # Based on: http://www.tiernok.com/posts/2021/integrating-terraform-into-circleci-aspnet-azure-pipeline/
   apply_infrastructure:
@@ -97,44 +97,38 @@ jobs:
       - checkout
 
       - run:
-          name: "Generate new release version"
+          name: "Create a new GitHub release"
           command: |
             go install github.com/Devops-2022-Group-R/bump-tool@latest
 
             GIT_COMMIT_DESC=$(git log --format=oneline -n 1 $CIRCLE_SHA1)
 
-            # echo "Creating release the folloing info:"
-            # echo "  - Commit message: $GIT_COMMIT_DESC"
-            # echo "  - Owner:          $CIRCLE_PROJECT_USERNAME"
-            # echo "  - Repository:     $CIRCLE_PROJECT_REPONAME"
-            # VERSION=$(
-            #   bump-tool \
-            #     --token ${GITHUB_TOKEN} \
-            #     --owner ${CIRCLE_PROJECT_USERNAME} \
-            #     --repo ${CIRCLE_PROJECT_REPONAME} \
-            #     --commitMsg "$GIT_COMMIT_DESC" \
-            #     --shouldLog=false
-            # )
-            VERSION=4.2.0
+            echo "Creating release the folloing info:"
+            echo "  - Commit message: $GIT_COMMIT_DESC"
+            echo "  - Owner:          $CIRCLE_PROJECT_USERNAME"
+            echo "  - Repository:     $CIRCLE_PROJECT_REPONAME"
+            VERSION=$(
+              bump-tool \
+                --token ${GITHUB_TOKEN} \
+                --owner ${CIRCLE_PROJECT_USERNAME} \
+                --repo ${CIRCLE_PROJECT_REPONAME} \
+                --commitMsg "$GIT_COMMIT_DESC" \
+                --shouldLog=false
+            )
 
-            echo "Bumped version: $VERSION"
             mkdir -p workspace
             echo "export VERSION=$VERSION" >> workspace/shared_vars
-
-      - run:
-          name: "Create a new GitHub release"
-          command: |
             echo "Will create release with version $VERSION"
 
-            # go install github.com/tcnksm/ghr@latest
+            go install github.com/tcnksm/ghr@latest
 
-            # ghr \
-            #   -t ${GITHUB_TOKEN} \
-            #   -u ${CIRCLE_PROJECT_USERNAME} \
-            #   -r ${CIRCLE_PROJECT_REPONAME} \
-            #   -c ${CIRCLE_SHA1} \
-            #   -delete \
-            #   ${VERSION}
+            ghr \
+              -t ${GITHUB_TOKEN} \
+              -u ${CIRCLE_PROJECT_USERNAME} \
+              -r ${CIRCLE_PROJECT_REPONAME} \
+              -c ${CIRCLE_SHA1} \
+              -delete \
+              ${VERSION}
 
       - persist_to_workspace:
           root: workspace
