@@ -35,6 +35,7 @@ func SetupRouter(openDatabase database.OpenDatabaseFunc) *gin.Engine {
 	r.GET("/msgs/:username", GetUserMessages)
 	r.POST("/register", RegisterController)
 	r.GET("/latest", LatestController)
+	r.GET("/flag_tool/:msgid", GetMessageById)
 
 	authed := r.Group("/")
 	authed.Use(AuthRequired())
