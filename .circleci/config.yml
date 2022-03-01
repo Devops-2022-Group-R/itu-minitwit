@@ -148,14 +148,13 @@ workflows:
           #   branches:
           #     only:
           #       - master
-          requires:
-            - var_test
+          # requires:
+            # - build_and_test
 
       # - build_and_test
 
       - push_to_docker_hub:
           requires:
-            # - build_and_test
             - publish_github_release
           context: ITU MiniTwit
           # filters:
