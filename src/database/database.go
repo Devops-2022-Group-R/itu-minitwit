@@ -2,6 +2,7 @@ package database
 
 import (
 	"log"
+	"time"
 
 	"github.com/Devops-2022-Group-R/itu-minitwit/src/models"
 	pwdHash "github.com/Devops-2022-Group-R/itu-minitwit/src/password"
@@ -21,6 +22,18 @@ func ConnectDatabase(openDatabase OpenDatabaseFunc) (*gorm.DB, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	sqlDb, err := database.DB()
+	if err != nil {
+		return nil, err
+	}
+
+	// Arbitrarily picked numbers
+	sqlDb.SetMaxIdleConns(10)
+	sqlDb.SetMaxOpenConns(50)
+
+	// Microsoft sql server timeouts after 30 seconds
+	sqlDb.SetConnMaxIdleTime(time.Second * 29)
 
 	Db = database
 
