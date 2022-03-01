@@ -102,7 +102,7 @@ jobs:
             )
             echo "Will create release with version $VERSION"
 
-            go get github.com/tcnksm/ghr
+            go install github.com/tcnksm/ghr@latest
 
             ghr \
               -t ${GITHUB_TOKEN} \
