@@ -1,5 +1,8 @@
 version: 2.1
 
+defaults: &defaults
+  working_directory: /tmp/workdir
+
 jobs:
   build_and_test:
     working_directory: ~/repo
@@ -26,10 +29,15 @@ jobs:
           path: /tmp/test-reports
 
   push_to_docker_hub:
+    <<: *defaults
     docker:
       - image: circleci/golang:1.17-buster
     steps:
       - checkout
+
+      - attach_workspace:
+          at: /tmp/workdir/workspace
+      - run: cat workspace/shared_vars >> $BASH_ENV
 
       - setup_remote_docker:
           version: 20.10.11
@@ -75,21 +83,31 @@ jobs:
               -var "database_db_name=$DB_NAME"
 
   var_test:
+    <<: *defaults
     docker:
       - image: circleci/golang:1.17-buster
     steps:
       - run:
           name: "pass var to other job"
           command: |
-            echo 'export TEST_VAR=my_value_here' >> $BASH_ENV
+            mkdir -p workspace
+
+            echo 'export TEST_VAR=my_value_here' >> workspace/shared_vars
+      - persist_to_workspace:
+          root: workspace
+          paths:
+              - workspace/shared_vars
 
   # Based on: https://circleci.com/blog/publishing-to-github-releases-via-circleci/
   publish_github_release:
+    <<: *defaults
     docker:
       - image: circleci/golang:1.17-buster
     steps:
       - checkout
-
+      - attach_workspace:
+          at: /tmp/workdir/workspace
+      - run: cat workspace/shared_vars >> $BASH_ENV
       - run:
           name: "Create a new GitHub release"
           command: |
