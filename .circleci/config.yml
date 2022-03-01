@@ -74,6 +74,13 @@ jobs:
               -var "database_server_name=$DB_SERVER_NAME" \
               -var "database_db_name=$DB_NAME"
 
+  var_test:
+    steps:
+      - run:
+          name: "pass var to other job"
+          command: |
+            echo 'export TEST_VAR=my_value_here' >> $BASH_ENV
+
   # Based on: https://circleci.com/blog/publishing-to-github-releases-via-circleci/
   publish_github_release:
     docker:
@@ -84,6 +91,8 @@ jobs:
       - run:
           name: "Create a new GitHub release"
           command: |
+            echo $TEST_VAR
+            exit 0
             go install github.com/Devops-2022-Group-R/bump-tool@latest
 
             GIT_COMMIT_DESC=$(git log --format=oneline -n 1 $CIRCLE_SHA1)
@@ -115,12 +124,15 @@ jobs:
 workflows:
   build_test_deploy:
     jobs:
+      - var_test
       - publish_github_release:
           context: ITU MiniTwit
-          filters:
-            branches:
-              only:
-                - master
+          # filters:
+          #   branches:
+          #     only:
+          #       - master
+          requires:
+            - var_test
 
       # - build_and_test
 
