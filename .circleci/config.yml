@@ -84,8 +84,20 @@ jobs:
           command: |
             go install github.com/Devops-2022-Group-R/bump-tool@latest
 
-            echo "Creating release from PR: $CIRCLE_PULL_REQUEST"
-            VERSION=$(bump-tool --token $GITHUB_TOKEN --url $CIRCLE_PULL_REQUEST --shouldLog=false)
+            GIT_COMMIT_DESC=$(git log --format=oneline -n 1 $CIRCLE_SHA1)
+
+            echo "Creating release the folloing info:"
+            echo "  - Commit message: $GIT_COMMIT_DESC"
+            echo "  - Owner:          $CIRCLE_PROJECT_USERNAME"
+            echo "  - Repository:     $CIRCLE_PROJECT_REPONAME"
+            VERSION=$(
+              bump-tool \
+                --token ${GITHUB_TOKEN} \
+                --owner ${CIRCLE_PROJECT_USERNAME} \
+                --repo ${CIRCLE_PROJECT_REPONAME} \
+                --commitMsg ${GIT_COMMIT_DESC} \
+                --shouldLog=false
+            )
             echo "Will create release with version $VERSION"
 
             go get github.com/tcnksm/ghr
@@ -103,10 +115,10 @@ workflows:
     jobs:
       - publish_github_release:
           context: ITU MiniTwit
-          filters:
-            branches:
-              only:
-                - master
+          # filters:
+          #   branches:
+          #     only:
+          #       - master
 
       # - build_and_test
 
