@@ -96,7 +96,7 @@ jobs:
       - persist_to_workspace:
           root: workspace
           paths:
-              - workspace/shared_vars
+              - shared_vars
 
   # Based on: https://circleci.com/blog/publishing-to-github-releases-via-circleci/
   publish_github_release:
