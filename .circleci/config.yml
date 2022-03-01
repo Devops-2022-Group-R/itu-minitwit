@@ -36,7 +36,7 @@ jobs:
       - checkout
 
       - attach_workspace:
-          at: /tmp/workdir
+          at: /tmp/workdir/workspace
       - run: cat workspace/shared_vars >> $BASH_ENV
 
       - setup_remote_docker:
@@ -106,7 +106,7 @@ jobs:
     steps:
       - checkout
       - attach_workspace:
-          at: /tmp/workdir
+          at: /tmp/workdir/workspace
       - run: cat workspace/shared_vars >> $BASH_ENV
       - run: cat workspace/shared_vars
       - run:
