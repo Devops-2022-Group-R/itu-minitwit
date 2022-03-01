@@ -38,25 +38,27 @@ jobs:
       - attach_workspace:
           at: /tmp/workspace
       - run:
-          name: "import variables from other jobs"
+          name: Import variables from other jobs
           command: cat /tmp/workspace/shared_vars >> $BASH_ENV
 
       - setup_remote_docker:
           version: 20.10.11
           docker_layer_caching: true
 
-      - run: |
-          TAG=$VERSION
-          IMAGE_PATH=$DOCKER_USERNAME/itu-minitwit-server
+      - run:
+          name: Build and push image
+          command: |
+            TAG=$VERSION
+            IMAGE_PATH=$DOCKER_USERNAME/itu-minitwit-server
 
-          echo "Building docker image $IMAGE_PATH:$TAG"
+            echo "Building docker image $IMAGE_PATH:$TAG"
 
-          # docker build -t $IMAGE_PATH:$TAG .
-          # docker tag $IMAGE_PATH:$TAG $IMAGE_PATH:latest
+            # docker build -t $IMAGE_PATH:$TAG .
+            # docker tag $IMAGE_PATH:$TAG $IMAGE_PATH:latest
 
-          # echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
-          # docker push $IMAGE_PATH:$TAG
-          # docker push $IMAGE_PATH:latest
+            # echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
+            # docker push $IMAGE_PATH:$TAG
+            # docker push $IMAGE_PATH:latest
 
   # Based on: http://www.tiernok.com/posts/2021/integrating-terraform-into-circleci-aspnet-azure-pipeline/
   apply_infrastructure:
