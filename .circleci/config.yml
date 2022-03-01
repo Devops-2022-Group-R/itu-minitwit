@@ -74,25 +74,56 @@ jobs:
               -var "database_server_name=$DB_SERVER_NAME" \
               -var "database_db_name=$DB_NAME"
 
+  # Based on: https://circleci.com/blog/publishing-to-github-releases-via-circleci/
+  publish_github_release:
+    docker:
+      - image: circleci/golang:1.17-buster
+    steps:
+      - run:
+          name: "Create a new GitHub release"
+          command: |
+            go install github.com/Devops-2022-Group-R/bump-tool@latest
+
+            echo "Creating release from PR: $CIRCLE_PULL_REQUEST"
+            VERSION=$(bump-tool --token $GITHUB_TOKEN --url $CIRCLE_PULL_REQUEST --shouldLog=false)
+            echo "Will create release with version $VERSION"
+
+            go get github.com/tcnksm/ghr
+
+            ghr \
+              -t ${GITHUB_TOKEN} \
+              -u ${CIRCLE_PROJECT_USERNAME} \
+              -r ${CIRCLE_PROJECT_REPONAME} \
+              -c ${CIRCLE_SHA1} \
+              -delete \
+              ${VERSION}
+
 workflows:
   build_test_deploy:
     jobs:
-      - build_and_test
-
-      - push_to_docker_hub:
-          requires:
-            - build_and_test
+      - publish_github_release:
           context: ITU MiniTwit
           filters:
             branches:
               only:
                 - master
 
-      - apply_infrastructure:
-          requires:
-            - push_to_docker_hub
-          context: ITU MiniTwit
-          filters:
-            branches:
-              only:
-                - master
+      # - build_and_test
+
+      # - push_to_docker_hub:
+      #     requires:
+      #       - build_and_test
+      #     context: ITU MiniTwit
+      #     filters:
+      #       branches:
+      #         only:
+      #           - master
+
+      # - apply_infrastructure:
+      #     requires:
+      #       - push_to_docker_hub
+      #     context: ITU MiniTwit
+      #     filters:
+      #       branches:
+      #         only:
+      #           - master
