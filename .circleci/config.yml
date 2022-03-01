@@ -101,7 +101,7 @@ jobs:
 workflows:
   build_test_deploy:
     jobs:
-      - publish-github-release
+      - publish_github_release
       # - build_and_test
 
       # - push_to_docker_hub:
