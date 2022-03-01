@@ -117,10 +117,10 @@ workflows:
     jobs:
       - publish_github_release:
           context: ITU MiniTwit
-          # filters:
-          #   branches:
-          #     only:
-          #       - master
+          filters:
+            branches:
+              only:
+                - master
 
       # - build_and_test
 
