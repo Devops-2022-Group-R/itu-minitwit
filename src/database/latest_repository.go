@@ -1,7 +1,7 @@
 package database
 
 type LatestDTO struct {
-	Id    int `gorm:"primaryKey"`
+	Id    int `gorm:"primaryKey,autoIncrement"`
 	Value int `gorm:"not null"`
 }
 
