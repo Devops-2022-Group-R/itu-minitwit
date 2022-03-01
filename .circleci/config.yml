@@ -75,6 +75,8 @@ jobs:
               -var "database_db_name=$DB_NAME"
 
   var_test:
+    docker:
+      - image: circleci/golang:1.17-buster
     steps:
       - run:
           name: "pass var to other job"
