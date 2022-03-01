@@ -39,7 +39,7 @@ jobs:
           at: /tmp/workspace
       - run:
           name: "import variables from other jobs"
-          command: cat workspace/shared_vars >> $BASH_ENV
+          command: cat /tmp/workspace/shared_vars >> $BASH_ENV
 
       - setup_remote_docker:
           version: 20.10.11
