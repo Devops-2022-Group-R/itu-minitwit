@@ -106,9 +106,9 @@ jobs:
     steps:
       - checkout
       - attach_workspace:
-          at: /tmp/workdir/workspace
-      - run: cat /tmp/workdir/workspace/shared_vars >> $BASH_ENV
-      - run: cat /tmp/workdir/workspace/shared_vars
+          at: /tmp/workspace
+      - run: cat /tmp/workspace/shared_vars >> $BASH_ENV
+      - run: cat /tmp/workspace/shared_vars
       - run:
           name: "Create a new GitHub release"
           command: |
