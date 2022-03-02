@@ -1,5 +1,8 @@
 version: 2.1
 
+defaults: &defaults
+  working_directory: /tmp/workdir
+
 jobs:
   build_and_test:
     working_directory: ~/repo
@@ -26,25 +29,36 @@ jobs:
           path: /tmp/test-reports
 
   push_to_docker_hub:
+    <<: *defaults
     docker:
       - image: circleci/golang:1.17-buster
     steps:
       - checkout
 
+      - attach_workspace:
+          at: /tmp/workspace
+      - run:
+          name: Import variables from other jobs
+          command: cat /tmp/workspace/shared_vars >> $BASH_ENV
+
       - setup_remote_docker:
           version: 20.10.11
           docker_layer_caching: true
 
-      - run: |
-          TAG=0.1.$CIRCLE_BUILD_NUM
-          IMAGE_PATH=$DOCKER_USERNAME/itu-minitwit-server
+      - run:
+          name: Build and push image
+          command: |
+            TAG=$VERSION
+            IMAGE_PATH=$DOCKER_USERNAME/itu-minitwit-server
 
-          docker build -t $IMAGE_PATH:$TAG .
-          docker tag $IMAGE_PATH:$TAG $IMAGE_PATH:latest
+            echo "Building docker image $IMAGE_PATH:$TAG"
 
-          echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
-          docker push $IMAGE_PATH:$TAG
-          docker push $IMAGE_PATH:latest
+            docker build -t $IMAGE_PATH:$TAG .
+            docker tag $IMAGE_PATH:$TAG $IMAGE_PATH:latest
+
+            echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
+            docker push $IMAGE_PATH:$TAG
+            docker push $IMAGE_PATH:latest
 
   # Based on: http://www.tiernok.com/posts/2021/integrating-terraform-into-circleci-aspnet-azure-pipeline/
   apply_infrastructure:
@@ -76,6 +90,7 @@ jobs:
 
   # Based on: https://circleci.com/blog/publishing-to-github-releases-via-circleci/
   publish_github_release:
+    <<: *defaults
     docker:
       - image: circleci/golang:1.17-buster
     steps:
@@ -100,9 +115,12 @@ jobs:
                 --commitMsg "$GIT_COMMIT_DESC" \
                 --shouldLog=false
             )
+
+            mkdir -p workspace
+            echo "export VERSION=$VERSION" >> workspace/shared_vars
             echo "Will create release with version $VERSION"
 
-            go get github.com/tcnksm/ghr
+            go install github.com/tcnksm/ghr@latest
 
             ghr \
               -t ${GITHUB_TOKEN} \
@@ -112,32 +130,39 @@ jobs:
               -delete \
               ${VERSION}
 
+      - persist_to_workspace:
+          root: workspace
+          paths:
+              - shared_vars
+
 workflows:
   build_test_deploy:
     jobs:
+      - build_and_test
+
       - publish_github_release:
           context: ITU MiniTwit
           filters:
             branches:
               only:
                 - master
+          requires:
+            - build_and_test
 
-      # - build_and_test
+      - push_to_docker_hub:
+          requires:
+            - publish_github_release
+          context: ITU MiniTwit
+          filters:
+            branches:
+              only:
+                - master
 
-      # - push_to_docker_hub:
-      #     requires:
-      #       - build_and_test
-      #     context: ITU MiniTwit
-      #     filters:
-      #       branches:
-      #         only:
-      #           - master
-
-      # - apply_infrastructure:
-      #     requires:
-      #       - push_to_docker_hub
-      #     context: ITU MiniTwit
-      #     filters:
-      #       branches:
-      #         only:
-      #           - master
+      - apply_infrastructure:
+          requires:
+            - push_to_docker_hub
+          context: ITU MiniTwit
+          filters:
+            branches:
+              only:
+                - master
