@@ -22,7 +22,7 @@ func FlagMessageById(c *gin.Context) {
 
 func GetAllMessages(c *gin.Context) {
 	messageRepository := c.MustGet(MessageRepositoryKey).(database.IMessageRepository)
-	messages, err := messageRepository.GetWithLimit(perPage)
+	messages, err := messageRepository.GetWithLimit(-1)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
