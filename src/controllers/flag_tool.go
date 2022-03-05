@@ -10,8 +10,12 @@ import (
 
 func FlagMessageById(c *gin.Context) {
 	messageRepository := c.MustGet(MessageRepositoryKey).(database.IMessageRepository)
-	msgId, _ := strconv.Atoi(c.Param("msgid"))
-	err := messageRepository.FlagByMsgId(msgId)
+	msgId, err := strconv.Atoi(c.Param("msgid"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "not an message id"})
+		return
+	}
+	err = messageRepository.FlagByMsgId(msgId)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
