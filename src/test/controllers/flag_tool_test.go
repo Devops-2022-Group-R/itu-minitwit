@@ -50,7 +50,7 @@ func (suite *FlagToolTestSuite) Test_GetAllMessages_Returns_AllMessages() {
 	}
 
 	// 	Act
-	req := httptest.NewRequest(http.MethodGet, "/flag_tool/msgs", nil)
+	req := httptest.NewRequest(http.MethodPut, "/flag_tool/msgs", nil)
 	w := suite.sendRequest(req)
 
 	var resBody []models.Message

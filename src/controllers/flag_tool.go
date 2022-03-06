@@ -15,13 +15,13 @@ func FlagMessageById(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "not an message id"})
 		return
 	}
-	err = messageRepository.FlagByMsgId(msgId)
+	message, err := messageRepository.FlagByMsgId(msgId)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusOK, nil)
+	c.JSON(http.StatusOK, message)
 }
 
 func GetAllMessages(c *gin.Context) {
