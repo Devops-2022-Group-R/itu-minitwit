@@ -69,7 +69,7 @@ func (rep *GormMessageRepository) GetByUserAndItsFollowers(userId int64, limit i
 func (rep *GormMessageRepository) FlagByMsgId(msgId int) (models.Message, error) {
 	var dto MessageDTO
 
-	err := rep.db.Order("pub_date desc").Preload("Author").Where("author_id = ?", msgId).First(&dto).Error
+	err := rep.db.First(&dto, msgId).Error
 	if err == nil {
 		dto.Flagged = true
 		rep.db.Save(dto)
