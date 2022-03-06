@@ -36,7 +36,7 @@ func SetupRouter(openDatabase database.OpenDatabaseFunc) *gin.Engine {
 	r.POST("/register", RegisterController)
 	r.GET("/latest", LatestController)
 
-	r.GET("/flag_tool/:msgid", FlagMessageById)
+	r.PUT("/flag_tool/:msgid", FlagMessageById)
 	r.GET("/flag_tool/msgs", GetAllMessages)
 
 	authed := r.Group("/")

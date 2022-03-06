@@ -21,7 +21,7 @@ func TestFlagToolTestSuite(t *testing.T) {
 func (suite *FlagToolTestSuite) Test_FlagMessageById_Given_hello_Returns_BadRequest() {
 
 	// Act
-	req := httptest.NewRequest(http.MethodGet, "/flag_tool/hello", nil)
+	req := httptest.NewRequest(http.MethodPut, "/flag_tool/hello", nil)
 	w := suite.sendRequest(req)
 
 	// Assert
