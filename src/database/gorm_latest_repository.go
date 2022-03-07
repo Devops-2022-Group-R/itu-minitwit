@@ -1,6 +1,8 @@
 package database
 
 import (
+	"errors"
+
 	"gorm.io/gorm"
 )
 
@@ -17,24 +19,28 @@ func (rep *GormLatestRepository) Migrate() error {
 }
 
 func (rep *GormLatestRepository) Set(newLatest int) error {
-	var latestCount int64
-	err := rep.db.Model(&LatestDTO{}).Count(&latestCount).Error
+	var latest LatestDTO
+	err := rep.db.Last(&latest).Error
+
 	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			latest = LatestDTO{Value: newLatest}
+			return rep.db.Create(&latest).Error
+		}
+
 		return err
 	}
 
-	dto := LatestDTO{Id: 1, Value: newLatest}
-	if latestCount == 0 {
-		err = rep.db.Create(&dto).Error
-	} else {
-		err = rep.db.Select("*").Updates(dto).Error
-	}
-
-	return err
+	latest.Value = newLatest
+	return rep.db.Save(&latest).Error
 }
 
 func (rep *GormLatestRepository) GetCurrent() (int, error) {
 	var dto LatestDTO
 	err := rep.db.Take(&dto).Error
+	if err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
+		return -1, nil
+	}
+
 	return dto.Value, err
 }
