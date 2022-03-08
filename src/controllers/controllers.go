@@ -5,6 +5,8 @@ import (
 
 	"github.com/Devops-2022-Group-R/itu-minitwit/src/database"
 	"github.com/gin-gonic/gin"
+
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 func CORSMiddleware() gin.HandlerFunc {
@@ -25,6 +27,8 @@ func CORSMiddleware() gin.HandlerFunc {
 
 func SetupRouter(openDatabase database.OpenDatabaseFunc) *gin.Engine {
 	r := gin.Default()
+
+	r.GET("/metrics", gin.WrapH(promhttp.Handler()))
 
 	r.Use(CORSMiddleware())
 	r.Use(beforeRequest(openDatabase))
