@@ -97,6 +97,21 @@ func (l *Log) Println(message string) {
 	l.print(l.formatStringLn(Info, message))
 }
 
+func (l *Log) Fatalf(format string, args ...interface{}) {
+	l.print(l.formatStringF(Fatal, format, args...))
+	os.Exit(0)
+}
+
+func (l *Log) Fatal(v ...interface{}) {
+	l.print(l.formatString(Fatal, v...))
+	os.Exit(0)
+}
+
+func (l *Log) Fatalln(message string) {
+	l.print(l.formatStringLn(Fatal, message))
+	os.Exit(0)
+}
+
 func (l *Log) Warnf(format string, args ...interface{}) {
 	l.print(l.formatStringF(Warn, format, args...))
 }
@@ -121,19 +136,19 @@ func (l *Log) LogMode(level logger.LogLevel) logger.Interface {
 
 func (l *Log) Info(_ context.Context, msg string, data ...interface{}) {
 	if l.logLevel >= Info {
-		l.print(l.formatStringF(Info, msg, data...))
+		l.print("[GORM]" + l.formatStringF(Info, msg, data...))
 	}
 }
 
 func (l *Log) Warn(_ context.Context, msg string, data ...interface{}) {
 	if l.logLevel >= Warn {
-		l.print(l.formatStringF(Warn, msg, data...))
+		l.print("[GORM]" + l.formatStringF(Warn, msg, data...))
 	}
 }
 
 func (l *Log) Error(_ context.Context, msg string, data ...interface{}) {
 	if l.logLevel >= Error {
-		l.print(l.formatStringF(Error, msg, data...))
+		l.print("[GORM]" + l.formatStringF(Error, msg, data...))
 	}
 }
 
@@ -145,9 +160,9 @@ func (l *Log) Trace(ctx context.Context, begin time.Time, fc func() (string, int
 
 	elapsed := time.Since(begin)
 
-	traceStr := "%s\n[%.3fms] [rows:%v] %s"
-	traceErrStr := "%s %s\n[%.3fms] [rows:%v] %s"
-	traceWarnStr := "%s %s\n[%.3fms] [rows:%v] %s"
+	traceStr := "[GORM] %s\n[%.3fms] [rows:%v] %s"
+	traceErrStr := "[GORM] %s %s\n[%.3fms] [rows:%v] %s"
+	traceWarnStr := "[GORM] %s %s\n[%.3fms] [rows:%v] %s"
 
 	SlowThreshold := 200 * time.Millisecond
 	switch {
