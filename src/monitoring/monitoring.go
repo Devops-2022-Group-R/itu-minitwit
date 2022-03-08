@@ -1,12 +1,14 @@
-package controllers
+package monitoring
 
-import "github.com/prometheus/client_golang/prometheus"
+import (
+	"github.com/prometheus/client_golang/prometheus"
+)
 
 var cpuTemp = prometheus.NewGauge(prometheus.GaugeOpts{
 	Name: "cpu_temperature_celsius",
 	Help: "Current temperature of the CPU.",
 })
 
-func init() {
+func Initialise() {
 	prometheus.MustRegister(cpuTemp)
 }

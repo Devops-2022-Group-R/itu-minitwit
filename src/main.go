@@ -11,6 +11,7 @@ import (
 
 	"github.com/Devops-2022-Group-R/itu-minitwit/src/controllers"
 	"github.com/Devops-2022-Group-R/itu-minitwit/src/database"
+	"github.com/Devops-2022-Group-R/itu-minitwit/src/monitoring"
 	_ "github.com/Devops-2022-Group-R/itu-minitwit/src/password"
 	"github.com/denisenkom/go-mssqldb/azuread"
 )
@@ -21,6 +22,10 @@ const (
 )
 
 type Row = map[string]interface{}
+
+func init() {
+	monitoring.Initialise()
+}
 
 func main() {
 	if debug {
