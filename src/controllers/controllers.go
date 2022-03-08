@@ -2,8 +2,10 @@ package controllers
 
 import (
 	"log"
+	"time"
 
 	"github.com/Devops-2022-Group-R/itu-minitwit/src/database"
+	"github.com/Devops-2022-Group-R/itu-minitwit/src/internal"
 	"github.com/gin-gonic/gin"
 )
 
@@ -23,9 +25,46 @@ func CORSMiddleware() gin.HandlerFunc {
 	}
 }
 
-func SetupRouter(openDatabase database.OpenDatabaseFunc) *gin.Engine {
-	r := gin.Default()
+func LoggingMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		// Start timer
+		start := time.Now()
+		path := c.Request.URL.Path
+		raw := c.Request.URL.RawQuery
 
+		if raw != "" {
+			path = path + "?" + raw
+		}
+
+		// Process request
+		c.Next()
+
+		// Stop timer
+		end := time.Now()
+		latency := end.Sub(start)
+
+		clientIP := c.ClientIP()
+		method := c.Request.Method
+		statusCode := c.Writer.Status()
+		comment := c.Errors.ByType(gin.ErrorTypePrivate).String()
+
+		// Log request
+		internal.Logger.Printf("[GIN][%3d][%13v][IP: %15s][%-7s][%s] %s\n",
+			statusCode,
+			latency,
+			clientIP,
+			method,
+			path,
+			comment,
+		)
+	}
+}
+
+func SetupRouter(openDatabase database.OpenDatabaseFunc) *gin.Engine {
+	r := gin.New()
+
+	r.Use(gin.Recovery())
+	r.Use(LoggingMiddleware())
 	r.Use(CORSMiddleware())
 	r.Use(beforeRequest(openDatabase))
 	r.Use(UpdateLatestMiddleware)
