@@ -4,6 +4,7 @@ import (
 	"log"
 	"time"
 
+	"github.com/Devops-2022-Group-R/itu-minitwit/src/internal"
 	"github.com/Devops-2022-Group-R/itu-minitwit/src/models"
 	pwdHash "github.com/Devops-2022-Group-R/itu-minitwit/src/password"
 	"gorm.io/gorm"
@@ -18,7 +19,9 @@ func ConnectDatabase(openDatabase OpenDatabaseFunc) (*gorm.DB, error) {
 		return Db, nil
 	}
 
-	database, err := gorm.Open(openDatabase(), &gorm.Config{})
+	database, err := gorm.Open(openDatabase(), &gorm.Config{
+		Logger: internal.Logger,
+	})
 	if err != nil {
 		return nil, err
 	}
