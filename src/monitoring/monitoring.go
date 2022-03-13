@@ -8,10 +8,10 @@ import (
 	"github.com/shirou/gopsutil/cpu"
 )
 
-var cpuLoad = prometheus.NewGauge(prometheus.GaugeOpts{
+var cpuLoad = prometheus.NewGaugeFunc(prometheus.GaugeOpts{
 	Name: "minitwit_cpu_load_percentage",
 	Help: "Current cpu load in percentage",
-})
+}, getCpuLoad)
 
 var responsesSent = prometheus.NewCounter(prometheus.CounterOpts{
 	Name: "minitwit_responses_sent",
@@ -28,13 +28,6 @@ func Initialise() {
 	prometheus.MustRegister(responsesSent)
 	prometheus.MustRegister(requestDurationHistogram)
 	prometheus.MustRegister(cpuLoad)
-
-	go func() {
-		for {
-			updateLoad()
-			time.Sleep(time.Millisecond * 500)
-		}
-	}()
 }
 
 func UpdateResponseSent(c *gin.Context) {
@@ -43,9 +36,9 @@ func UpdateResponseSent(c *gin.Context) {
 	c.Next()
 }
 
-func updateLoad() {
+func getCpuLoad() float64 {
 	cpuLoadTemp, _ := cpu.Percent(time.Second, false)
-	cpuLoad.Set(cpuLoadTemp[0])
+	return cpuLoadTemp[0]
 }
 
 func RequestDuration(c *gin.Context) {
