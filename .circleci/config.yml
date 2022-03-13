@@ -80,6 +80,7 @@ jobs:
       - run:
           name: Build and push image
           command: |
+            VERSION=test-version
             TAG=$VERSION
             PROMETHEUS_IMAGE_PATH=$DOCKER_USERNAME/itu-minitwit-monitoring-prometheus
             GRAFANA_IMAGE_PATH=$DOCKER_USERNAME/itu-minitwit-monitoring-grafana
@@ -196,7 +197,7 @@ workflows:
       #         only:
       #           - master
 
-      - push_to_docker_hub:
+      - push_monitoring_to_docker_hub:
           # requires:
           #   - publish_github_release
           context: ITU MiniTwit
