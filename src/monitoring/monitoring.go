@@ -21,7 +21,7 @@ var responsesSent = prometheus.NewCounter(prometheus.CounterOpts{
 var requestDurationHistogram = prometheus.NewHistogram(prometheus.HistogramOpts{
 	Name:    "minitwit_request_duration",
 	Help:    "Request duration in Milliseconds",
-	Buckets: []float64{.05, .1, .2, .3, .5, 1.0, 2.0, 3},
+	Buckets: []float64{50.0, 100.0, 200.0, 500.0, 1000.0},
 })
 
 func Initialise() {
@@ -53,6 +53,6 @@ func RequestDuration(c *gin.Context) {
 
 	c.Next()
 
-	duration := time.Since(startTime)
+	duration := time.Since(startTime).Milliseconds()
 	requestDurationHistogram.Observe(float64(duration))
 }
