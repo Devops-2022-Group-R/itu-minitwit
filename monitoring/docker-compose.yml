@@ -1,14 +1,14 @@
 version: "3.9"
 
 services:
-  prometheus:
-    image: kongborup/itu-minitwit-monitoring-prometheus
-    ports:
-      - "8080:9090"
-
   grafana:
     image: kongborup/itu-minitwit-monitoring-grafana
     environment:
       PROMETHEUS_HOST: prometheus:9090
     ports:
       - "80:3000"
+
+  prometheus:
+    image: kongborup/itu-minitwit-monitoring-prometheus
+    ports:
+      - "8080:9090"
