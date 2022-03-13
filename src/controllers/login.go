@@ -50,7 +50,6 @@ func AuthRequired() gin.HandlerFunc {
 		authUsername, err := GetAuthState(c)
 		if authUsername == "" || err != nil {
 			AbortWithError(c, err)
-
 			return
 		}
 
