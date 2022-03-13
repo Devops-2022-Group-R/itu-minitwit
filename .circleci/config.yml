@@ -60,6 +60,44 @@ jobs:
             docker push $IMAGE_PATH:$TAG
             docker push $IMAGE_PATH:latest
 
+  push_monitoring_to_docker_hub:
+    <<: *defaults
+    docker:
+      - image: circleci/golang:1.17-buster
+    steps:
+      - checkout
+
+      - attach_workspace:
+          at: /tmp/workspace
+      - run:
+          name: Import variables from other jobs
+          command: cat /tmp/workspace/shared_vars >> $BASH_ENV
+
+      - setup_remote_docker:
+          version: 20.10.11
+          docker_layer_caching: true
+
+      - run:
+          name: Build and push image
+          command: |
+            TAG=$VERSION
+            PROMETHEUS_IMAGE_PATH=$DOCKER_USERNAME/itu-minitwit-monitoring-prometheus
+            GRAFANA_IMAGE_PATH=$DOCKER_USERNAME/itu-minitwit-monitoring-grafana
+
+            echo "Building docker image $PROMETHEUS_IMAGE_PATH:$TAG"
+            docker build -t $PROMETHEUS_IMAGE_PATH:$TAG .
+            docker tag $PROMETHEUS_IMAGE_PATH:$TAG $PROMETHEUS_IMAGE_PATH:latest
+
+            echo "Building docker image $GRAFANA_IMAGE_PATH:$TAG"
+            docker build -t $GRAFANA_IMAGE_PATH:$TAG .
+            docker tag $GRAFANA_IMAGE_PATH:$TAG $GRAFANA_IMAGE_PATH:latest
+
+            echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
+            docker push $PROMETHEUS_IMAGE_PATH:$TAG
+            docker push $PROMETHEUS_IMAGE_PATH:latest
+            docker push $GRAFANA_IMAGE_PATH:$TAG
+            docker push $GRAFANA_IMAGE_PATH:latest
+
   # Based on: http://www.tiernok.com/posts/2021/integrating-terraform-into-circleci-aspnet-azure-pipeline/
   apply_infrastructure:
     docker:
@@ -138,31 +176,40 @@ jobs:
 workflows:
   build_test_deploy:
     jobs:
-      - build_and_test
+      # - build_and_test
 
-      - publish_github_release:
-          context: ITU MiniTwit
-          filters:
-            branches:
-              only:
-                - master
-          requires:
-            - build_and_test
+      # - publish_github_release:
+      #     context: ITU MiniTwit
+      #     filters:
+      #       branches:
+      #         only:
+      #           - master
+      #     requires:
+      #       - build_and_test
+
+      # - push_to_docker_hub:
+      #     requires:
+      #       - publish_github_release
+      #     context: ITU MiniTwit
+      #     filters:
+      #       branches:
+      #         only:
+      #           - master
 
       - push_to_docker_hub:
-          requires:
-            - publish_github_release
+          # requires:
+          #   - publish_github_release
           context: ITU MiniTwit
-          filters:
-            branches:
-              only:
-                - master
+          # filters:
+          #   branches:
+          #     only:
+          #       - master
 
-      - apply_infrastructure:
-          requires:
-            - push_to_docker_hub
-          context: ITU MiniTwit
-          filters:
-            branches:
-              only:
-                - master
+      # - apply_infrastructure:
+      #     requires:
+      #       - push_to_docker_hub
+      #     context: ITU MiniTwit
+      #     filters:
+      #       branches:
+      #         only:
+      #           - master
