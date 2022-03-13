@@ -2,16 +2,12 @@ version: "3.9"
 
 services:
   prometheus:
-    build:
-      context: ./prometheus
-      args:
-        APP_HOST: api.rhododevdron.swuwu.dk
+    image: kongborup/itu-minitwit-monitoring-prometheus
     ports:
       - "9090:8080"
 
   grafana:
-    build:
-      context: ./grafana
+    image: kongborup/itu-minitwit-monitoring-grafana
     environment:
       PROMETHEUS_HOST: prometheus:8080
     ports:
