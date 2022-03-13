@@ -50,6 +50,12 @@ func (rep *GormUserRepository) GetByUsername(username string) (*models.User, err
 	return userDtoToDomain(dto), err
 }
 
+func (rep *GormUserRepository) NumUsers() (int64, error) {
+	var numUsers int64
+	err := rep.db.Table(userTable).Count(&numUsers).Error
+	return numUsers, err
+}
+
 func (rep *GormUserRepository) Follow(whoId int64, whomId int64) error {
 	dto := FollowDTO{
 		WhoId:  whoId,
