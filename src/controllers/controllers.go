@@ -29,6 +29,7 @@ func SetupRouter(openDatabase database.OpenDatabaseFunc) *gin.Engine {
 	r.Use(CORSMiddleware())
 	r.Use(beforeRequest(openDatabase))
 	r.Use(UpdateLatestMiddleware)
+	r.Use(ErrorHandleMiddleware())
 
 	r.GET("/fllws/:username", FollowGetController)
 	r.GET("/msgs", GetMessages)
@@ -63,5 +64,47 @@ func beforeRequest(openDatabase database.OpenDatabaseFunc) gin.HandlerFunc {
 		c.Set(LatestRepositoryKey, database.NewGormLatestRepository(gormDb))
 
 		c.Next()
+	}
+}
+
+type returnedErr struct {
+	Err        string `json:"error"`
+	RelatedErr error  `json:"related_error"`
+	Code       int    `json:"code"`
+}
+
+func ErrorHandleMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		c.Next()
+		responseCode := 0
+
+		if len(c.Errors) > 1 {
+			errors := make([]returnedErr, 0)
+
+			for _, err := range c.Errors {
+				switch err.Err.(type) {
+				case HttpError:
+					httpErr := err.Err.(HttpError)
+					log.Printf("Http error (%d): %s, %s\n", httpErr.StatusCode, httpErr.Message, httpErr.RelatedErr)
+
+					if !httpErr.Hidden {
+						if httpErr.StatusCode > responseCode {
+							responseCode = httpErr.StatusCode
+						}
+
+						errors = append(errors, returnedErr{httpErr.Message, httpErr.RelatedErr, httpErr.StatusCode})
+					}
+				default:
+					log.Println("Internal server error: ", err)
+					responseCode = 500
+					errors = append(errors, returnedErr{"Internal server error", nil, 500})
+				}
+
+			}
+
+			c.JSON(responseCode, gin.H{
+				"errors": errors,
+			})
+		}
 	}
 }

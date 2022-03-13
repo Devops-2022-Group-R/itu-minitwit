@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"errors"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -11,9 +10,9 @@ import (
 )
 
 var (
-	ErrInvalidUsername    = errors.New("invalid username")
-	ErrIncorrectPassword  = errors.New("incorrect password")
-	ErrMissingCredentials = errors.New("missing authentication credentials")
+	ErrInvalidUsername    = NewHttpError(http.StatusNotFound, "invalid username")
+	ErrIncorrectPassword  = NewHttpError(http.StatusUnauthorized, "incorrect password")
+	ErrMissingCredentials = NewHttpError(http.StatusUnauthorized, "missing authentication credentials")
 )
 
 // Logs the user in.
@@ -50,14 +49,7 @@ func AuthRequired() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		authUsername, err := GetAuthState(c)
 		if authUsername == "" || err != nil {
-			switch err {
-			case ErrInvalidUsername:
-				c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"error": err.Error()})
-			case ErrIncorrectPassword, ErrMissingCredentials:
-				c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
-			default:
-				c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-			}
+			AbortWithError(c, err)
 
 			return
 		}
@@ -65,11 +57,11 @@ func AuthRequired() gin.HandlerFunc {
 		userRepository := c.MustGet(UserRepositoryKey).(database.IUserRepository)
 		user, err := userRepository.GetByUsername(authUsername)
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			AbortWithError(c, NewInternalServerError(err))
 			return
 		}
 		if user == nil {
-			c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"error": "User not found"})
+			AbortWithError(c, ErrUserNotFound)
 			return
 		}
 
