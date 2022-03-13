@@ -69,7 +69,7 @@ func beforeRequest(openDatabase database.OpenDatabaseFunc) gin.HandlerFunc {
 
 type returnedErr struct {
 	Err        string `json:"error"`
-	RelatedErr error  `json:"related_error"`
+	RelatedErr error  `json:"-"`
 	Code       int    `json:"code"`
 }
 
