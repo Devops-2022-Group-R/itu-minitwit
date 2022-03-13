@@ -150,12 +150,6 @@ resource "azurerm_app_service" "monitoring_as" {
     linux_fx_version = "COMPOSE|${filebase64("../monitoring/docker-compose.yml")}"
   }
 
-  lifecycle {
-    ignore_changes = [
-      site_config.0.linux_fx_version
-    ]
-  }
-
   app_settings = {
     "WEBSITES_ENABLE_APP_SERVICE_STORAGE" = "false"
   }
