@@ -67,11 +67,11 @@ jobs:
     steps:
       - checkout
 
-      # - attach_workspace:
-      #     at: /tmp/workspace
-      # - run:
-      #     name: Import variables from other jobs
-      #     command: cat /tmp/workspace/shared_vars >> $BASH_ENV
+      - attach_workspace:
+          at: /tmp/workspace
+      - run:
+          name: Import variables from other jobs
+          command: cat /tmp/workspace/shared_vars >> $BASH_ENV
 
       - setup_remote_docker:
           version: 20.10.11
@@ -80,7 +80,6 @@ jobs:
       - run:
           name: Build and push image
           command: |
-            VERSION=test-version
             TAG=$VERSION
             PROMETHEUS_IMAGE_PATH=$DOCKER_USERNAME/itu-minitwit-monitoring-prometheus
             GRAFANA_IMAGE_PATH=$DOCKER_USERNAME/itu-minitwit-monitoring-grafana
@@ -177,40 +176,40 @@ jobs:
 workflows:
   build_test_deploy:
     jobs:
-      # - build_and_test
+      - build_and_test
 
-      # - publish_github_release:
-      #     context: ITU MiniTwit
-      #     filters:
-      #       branches:
-      #         only:
-      #           - master
-      #     requires:
-      #       - build_and_test
+      - publish_github_release:
+          context: ITU MiniTwit
+          filters:
+            branches:
+              only:
+                - master
+          requires:
+            - build_and_test
 
-      # - push_to_docker_hub:
-      #     requires:
-      #       - publish_github_release
-      #     context: ITU MiniTwit
-      #     filters:
-      #       branches:
-      #         only:
-      #           - master
+      - push_to_docker_hub:
+          requires:
+            - publish_github_release
+          context: ITU MiniTwit
+          filters:
+            branches:
+              only:
+                - master
 
       - push_monitoring_to_docker_hub:
-          # requires:
-          #   - publish_github_release
+          requires:
+            - publish_github_release
           context: ITU MiniTwit
-          # filters:
-          #   branches:
-          #     only:
-          #       - master
+          filters:
+            branches:
+              only:
+                - master
 
-      # - apply_infrastructure:
-      #     requires:
-      #       - push_to_docker_hub
-      #     context: ITU MiniTwit
-      #     filters:
-      #       branches:
-      #         only:
-      #           - master
+      - apply_infrastructure:
+          requires:
+            - push_to_docker_hub
+          context: ITU MiniTwit
+          filters:
+            branches:
+              only:
+                - master
