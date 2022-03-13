@@ -5,7 +5,7 @@ docker run -it --rm -p 9090:9090 -v ${pwd}/prometheus.yml:/etc/prometheus/promet
 
 Running the Grafana server:
 ```ps1
-docker run -it --rm -p 3000:3000 grafana/grafana
+docker run -it --rm -p 3000:3000 --name=grafana -v ${pwd}/monitoring/grafana/provisioning:/etc/grafana/provisioning grafana/grafana
 ```
 
 Creating the data source in Grafana, set the URL to `http://host.docker.internal:9090`.
