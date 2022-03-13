@@ -31,8 +31,7 @@ func Initialise() {
 }
 
 func UpdateResponseSent(c *gin.Context) {
-	responsesSent.Add(1)
-
+	responsesSent.Inc()
 	c.Next()
 }
 
