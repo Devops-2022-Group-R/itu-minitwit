@@ -25,7 +25,7 @@ const (
 type Row = map[string]interface{}
 
 func init() {
-	monitoring.Initialise()
+	monitoring.Initialise(openDatabase)
 }
 
 func main() {
