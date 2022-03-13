@@ -3,5 +3,7 @@ scrape_configs:
 
     scrape_interval: 15s
 
+    scheme: https
+
     static_configs:
       - targets: ["api.rhododevdron.swuwu.dk"]
