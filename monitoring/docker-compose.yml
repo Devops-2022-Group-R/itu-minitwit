@@ -7,12 +7,12 @@ services:
       args:
         APP_HOST: api.rhododevdron.swuwu.dk
     ports:
-      - "9090:9090"
+      - "9090:8080"
 
   grafana:
     build:
       context: ./grafana
     environment:
-      PROMETHEUS_HOST: prometheus:9090
+      PROMETHEUS_HOST: prometheus:8080
     ports:
-      - "3000:3000"
+      - "3000:80"
