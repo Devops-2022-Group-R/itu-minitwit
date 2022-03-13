@@ -20,7 +20,6 @@ func SetupRouter(openDatabase database.OpenDatabaseFunc) *gin.Engine {
 	r.Use(CORSMiddleware())
 	r.Use(beforeRequest(openDatabase))
 	r.Use(UpdateLatestMiddleware)
-
 	r.Use(monitoring.RequestDuration)
 	r.Use(monitoring.UpdateResponseSent)
 	r.GET("/metrics", gin.WrapH(promhttp.Handler()))
