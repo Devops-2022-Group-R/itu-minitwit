@@ -11,6 +11,36 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
+func SetupRouter(openDatabase database.OpenDatabaseFunc) *gin.Engine {
+	r := gin.New()
+
+	r.Use(gin.Recovery())
+	r.Use(LoggingMiddleware())
+	r.Use(CORSMiddleware())
+	r.Use(beforeRequest(openDatabase))
+	r.Use(UpdateLatestMiddleware)
+
+	r.GET("/metrics", gin.WrapH(promhttp.Handler()))
+
+	r.GET("/fllws/:username", FollowGetController)
+	r.GET("/msgs", GetMessages)
+	r.GET("/msgs/:username", GetUserMessages)
+	r.POST("/register", RegisterController)
+	r.GET("/latest", LatestController)
+
+	r.PUT("/flag_tool/:msgid", FlagMessageById)
+	r.GET("/flag_tool/msgs", GetAllMessages)
+
+	authed := r.Group("/")
+	authed.Use(AuthRequired())
+	authed.GET("/login", LoginGet)
+	authed.GET("/feed", GetFeedMessages)
+	authed.POST("/fllws/:username", FollowPostController)
+	authed.POST("/msgs/:username", PostUserMessage)
+
+	return r
+}
+
 func CORSMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
@@ -60,36 +90,6 @@ func LoggingMiddleware() gin.HandlerFunc {
 			comment,
 		)
 	}
-}
-
-func SetupRouter(openDatabase database.OpenDatabaseFunc) *gin.Engine {
-	r := gin.New()
-
-	r.Use(gin.Recovery())
-	r.Use(LoggingMiddleware())
-	r.Use(CORSMiddleware())
-	r.Use(beforeRequest(openDatabase))
-	r.Use(UpdateLatestMiddleware)
-
-	r.GET("/metrics", gin.WrapH(promhttp.Handler()))
-
-	r.GET("/fllws/:username", FollowGetController)
-	r.GET("/msgs", GetMessages)
-	r.GET("/msgs/:username", GetUserMessages)
-	r.POST("/register", RegisterController)
-	r.GET("/latest", LatestController)
-
-	r.PUT("/flag_tool/:msgid", FlagMessageById)
-	r.GET("/flag_tool/msgs", GetAllMessages)
-
-	authed := r.Group("/")
-	authed.Use(AuthRequired())
-	authed.GET("/login", LoginGet)
-	authed.GET("/feed", GetFeedMessages)
-	authed.POST("/fllws/:username", FollowPostController)
-	authed.POST("/msgs/:username", PostUserMessage)
-
-	return r
 }
 
 // Make sure we are connected to the database each request and look
