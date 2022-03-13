@@ -26,10 +26,10 @@ func CORSMiddleware() gin.HandlerFunc {
 func SetupRouter(openDatabase database.OpenDatabaseFunc) *gin.Engine {
 	r := gin.Default()
 
+	r.Use(ErrorHandleMiddleware())
 	r.Use(CORSMiddleware())
 	r.Use(beforeRequest(openDatabase))
 	r.Use(UpdateLatestMiddleware)
-	r.Use(ErrorHandleMiddleware())
 
 	r.GET("/fllws/:username", FollowGetController)
 	r.GET("/msgs", GetMessages)
@@ -78,7 +78,7 @@ func ErrorHandleMiddleware() gin.HandlerFunc {
 		c.Next()
 		responseCode := 0
 
-		if len(c.Errors) > 1 {
+		if len(c.Errors) >= 1 {
 			errors := make([]returnedErr, 0)
 
 			for _, err := range c.Errors {
