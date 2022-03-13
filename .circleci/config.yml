@@ -86,7 +86,7 @@ jobs:
             GRAFANA_IMAGE_PATH=$DOCKER_USERNAME/itu-minitwit-monitoring-grafana
 
             echo "Building docker image $PROMETHEUS_IMAGE_PATH:$TAG"
-            docker build -t $PROMETHEUS_IMAGE_PATH:$TAG --build-arg prometheus-prod.yml ./monitoring/prometheus
+            docker build -t $PROMETHEUS_IMAGE_PATH:$TAG --build-arg PROMETHEUS_YML=prometheus-prod.yml ./monitoring/prometheus
             docker tag $PROMETHEUS_IMAGE_PATH:$TAG $PROMETHEUS_IMAGE_PATH:latest
 
             echo "Building docker image $GRAFANA_IMAGE_PATH:$TAG"
