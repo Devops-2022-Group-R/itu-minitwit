@@ -25,4 +25,5 @@ type IMessageRepository interface {
 	GetWithLimit(limit int) ([]models.Message, error)
 	GetByUserId(userId int64, limit int) ([]models.Message, error)
 	GetByUserAndItsFollowers(userId int64, limit int) ([]models.Message, error)
+	FlagByMsgId(msgId int) (models.Message, error)
 }

@@ -66,6 +66,17 @@ func (rep *GormMessageRepository) GetByUserAndItsFollowers(userId int64, limit i
 	return messages, err
 }
 
+func (rep *GormMessageRepository) FlagByMsgId(msgId int) (models.Message, error) {
+	var dto MessageDTO
+
+	err := rep.db.First(&dto, msgId).Error
+	if err == nil {
+		dto.Flagged = true
+		rep.db.Save(dto)
+	}
+	return messageDtoToDomain(dto), err
+}
+
 func messageDtoToDomain(dto MessageDTO) models.Message {
 	return models.Message{
 		Author: models.User{
