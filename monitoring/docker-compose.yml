@@ -1,0 +1,18 @@
+version: "3.9"
+
+services:
+  prometheus:
+    build:
+      context: ./prometheus
+      args:
+        APP_HOST: api.rhododevdron.swuwu.dk
+    ports:
+      - "9090:9090"
+
+  grafana:
+    build:
+      context: ./grafana
+    environment:
+      PROMETHEUS_HOST: prometheus:9090
+    ports:
+      - "3000:3000"
