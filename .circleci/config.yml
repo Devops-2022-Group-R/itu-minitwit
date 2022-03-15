@@ -1,5 +1,8 @@
 version: 2.1
 
+orbs:
+  snyk: snyk/snyk@x.y.z
+
 defaults: &defaults
   working_directory: /tmp/workdir
 
@@ -189,8 +192,6 @@ jobs:
             gocyclo src/ > log
             echo "Create cyclomatic log in $log"
 
-orbs:
-  snyk: snyk/snyk@x.y.z
 jobs:
   build_snyk:
     docker:
