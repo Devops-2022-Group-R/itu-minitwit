@@ -213,7 +213,6 @@ jobs:
           target-file: Dockerfile
           token-variable: SNYK_TOKEN
 
-
 workflows:
   build_test_deploy:
     jobs:
