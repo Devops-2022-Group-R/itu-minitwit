@@ -199,13 +199,22 @@ jobs:
       IMAGE_NAME: itu-minitwit-server
     steps:
       - checkout
-      - setup_remote_docker
+
+      - attach_workspace:
+          at: /tmp/workspace
+      - run:
+          name: Import variables from other jobs
+          command: cat /tmp/workspace/shared_vars >> $BASH_ENV
+
+      - setup_remote_docker:
+          version: 20.10.11
+          docker_layer_caching: true
 
       - run:
-          command: 'docker build -t $IMAGE_NAME:latest .'
+          command: 'docker build -t itu-minitwit-server:latest .'
           name: Build Docker image
       - snyk/scan:
-          docker-image-name: '$IMAGE_NAME:latest'
+          docker-image-name: 'itu-minitwit-server:latest'
           fail-on-issues: false
           monitor-on-build: true
           project: '${CIRCLE_PROJECT_REPONAME}/${CIRCLE_BRANCH}-container'
