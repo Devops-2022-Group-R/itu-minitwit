@@ -7,7 +7,6 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// TODO: Move to a different file
 type HttpError struct {
 	StatusCode int
 	Message    string
