@@ -23,14 +23,14 @@ func SetupRouter(openDatabase database.OpenDatabaseFunc) *gin.Engine {
 
 	p.Use(r)
 
+	r.Use(monitoring.RequestDuration)
+	r.Use(monitoring.UpdateResponseSent)
+
 	r.Use(gin.Recovery())
 	r.Use(LoggingMiddleware())
 	r.Use(CORSMiddleware())
 	r.Use(beforeRequest(openDatabase))
 	r.Use(UpdateLatestMiddleware)
-
-	r.Use(monitoring.RequestDuration)
-	r.Use(monitoring.UpdateResponseSent)
 
 	r.GET("/fllws/:username", FollowGetController)
 	r.GET("/msgs", GetMessages)
