@@ -129,8 +129,8 @@ func ErrorHandleMiddleware() gin.HandlerFunc {
 
 			for _, err := range c.Errors {
 				switch err.Err.(type) {
-				case HttpError:
-					httpErr := err.Err.(HttpError)
+				case internal.HttpError:
+					httpErr := err.Err.(internal.HttpError)
 					log.Printf("Http error (%d): %s, %s\n", httpErr.StatusCode, httpErr.Message, httpErr.RelatedErr)
 
 					if !httpErr.Hidden {
