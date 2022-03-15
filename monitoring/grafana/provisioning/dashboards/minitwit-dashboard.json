@@ -219,7 +219,7 @@
       },
       "id": 16,
       "panels": [],
-      "title": "Performance",
+      "title": "Infrastructure performance",
       "type": "row"
     },
     {
@@ -301,7 +301,7 @@
           "exemplar": true,
           "expr": "minitwit_cpu_load_percentage",
           "interval": "",
-          "legendFormat": "",
+          "legendFormat": "API server",
           "refId": "A"
         }
       ],
@@ -455,7 +455,32 @@
             ]
           }
         },
-        "overrides": []
+        "overrides": [
+          {
+            "__systemRef": "hideSeriesFrom",
+            "matcher": {
+              "id": "byNames",
+              "options": {
+                "mode": "exclude",
+                "names": [
+                  "minitwit_user_count{instance=\"host.docker.internal:8080\", job=\"prometheus\"}"
+                ],
+                "prefix": "All except:",
+                "readOnly": true
+              }
+            },
+            "properties": [
+              {
+                "id": "custom.hideFrom",
+                "value": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": true
+                }
+              }
+            ]
+          }
+        ]
       },
       "gridPos": {
         "h": 9,
@@ -484,7 +509,7 @@
           "exemplar": true,
           "expr": "minitwit_user_count",
           "interval": "",
-          "legendFormat": "",
+          "legendFormat": "API server",
           "refId": "A"
         }
       ],
@@ -569,7 +594,7 @@
           "exemplar": true,
           "expr": "minitwit_responses_sent",
           "interval": "",
-          "legendFormat": "",
+          "legendFormat": "API server",
           "refId": "A"
         }
       ],
