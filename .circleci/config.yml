@@ -173,6 +173,24 @@ jobs:
           paths:
               - shared_vars
 
+  build_and_run_static_analysis_tools:
+    working_directory: ~/repo
+    docker:
+      - image: circleci/golang:1.17-buster
+    steps:
+      - checkout
+
+      - run
+        name: "Check cyclomatic complexity"
+        command: |
+          go install github.com/fzipp/gocyclo/cmd/gocyclo@latest
+
+          log=$cycloComplexity.txt
+          gocyclo src/ > log
+          echo "Create cylcomatic log in $log"
+
+        name: ""
+
 workflows:
   build_test_deploy:
     jobs:
