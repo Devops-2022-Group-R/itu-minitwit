@@ -16,11 +16,11 @@ func SetupRouter(openDatabase database.OpenDatabaseFunc) *gin.Engine {
 	r := gin.New()
 
 	r.Use(gin.Recovery())
+	r.Use(ErrorHandleMiddleware())
 	r.Use(LoggingMiddleware())
 	r.Use(CORSMiddleware())
 	r.Use(beforeRequest(openDatabase))
 	r.Use(UpdateLatestMiddleware)
-	r.Use(ErrorHandleMiddleware())
 
 	r.GET("/metrics", gin.WrapH(promhttp.Handler()))
 	r.Use(monitoring.RequestDuration)
@@ -115,7 +115,7 @@ func beforeRequest(openDatabase database.OpenDatabaseFunc) gin.HandlerFunc {
 
 type returnedErr struct {
 	Err        string `json:"error"`
-	RelatedErr error  `json:"related_error"`
+	RelatedErr error  `json:"-"`
 	Code       int    `json:"code"`
 }
 
@@ -124,7 +124,7 @@ func ErrorHandleMiddleware() gin.HandlerFunc {
 		c.Next()
 		responseCode := 0
 
-		if len(c.Errors) > 1 {
+		if len(c.Errors) >= 1 {
 			errors := make([]returnedErr, 0)
 
 			for _, err := range c.Errors {
