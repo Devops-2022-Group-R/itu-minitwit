@@ -2,34 +2,29 @@ package controllers
 
 import (
 	"log"
+	"time"
 
 	"github.com/Devops-2022-Group-R/itu-minitwit/src/database"
+	"github.com/Devops-2022-Group-R/itu-minitwit/src/internal"
+	"github.com/Devops-2022-Group-R/itu-minitwit/src/monitoring"
 	"github.com/gin-gonic/gin"
+
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
-func CORSMiddleware() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
-		c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
-		c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, accept, origin, Cache-Control, X-Requested-With")
-		c.Writer.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS, GET, PUT")
-
-		if c.Request.Method == "OPTIONS" {
-			c.AbortWithStatus(204)
-			return
-		}
-
-		c.Next()
-	}
-}
-
 func SetupRouter(openDatabase database.OpenDatabaseFunc) *gin.Engine {
-	r := gin.Default()
+	r := gin.New()
 
+	r.Use(gin.Recovery())
+	r.Use(LoggingMiddleware())
 	r.Use(CORSMiddleware())
 	r.Use(beforeRequest(openDatabase))
 	r.Use(UpdateLatestMiddleware)
 	r.Use(ErrorHandleMiddleware())
+
+	r.GET("/metrics", gin.WrapH(promhttp.Handler()))
+	r.Use(monitoring.RequestDuration)
+	r.Use(monitoring.UpdateResponseSent)
 
 	r.GET("/fllws/:username", FollowGetController)
 	r.GET("/msgs", GetMessages)
@@ -48,6 +43,57 @@ func SetupRouter(openDatabase database.OpenDatabaseFunc) *gin.Engine {
 	authed.POST("/msgs/:username", PostUserMessage)
 
 	return r
+}
+
+func CORSMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
+		c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
+		c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, accept, origin, Cache-Control, X-Requested-With")
+		c.Writer.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS, GET, PUT")
+
+		if c.Request.Method == "OPTIONS" {
+			c.AbortWithStatus(204)
+			return
+		}
+
+		c.Next()
+	}
+}
+
+func LoggingMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		// Start timer
+		start := time.Now()
+		path := c.Request.URL.Path
+		raw := c.Request.URL.RawQuery
+
+		if raw != "" {
+			path = path + "?" + raw
+		}
+
+		// Process request
+		c.Next()
+
+		// Stop timer
+		end := time.Now()
+		latency := end.Sub(start)
+
+		clientIP := c.ClientIP()
+		method := c.Request.Method
+		statusCode := c.Writer.Status()
+		comment := c.Errors.ByType(gin.ErrorTypePrivate).String()
+
+		// Log request
+		internal.Logger.Printf("[GIN][%3d][%13v][IP: %15s][%-7s][%s] %s\n",
+			statusCode,
+			latency,
+			clientIP,
+			method,
+			path,
+			comment,
+		)
+	}
 }
 
 // Make sure we are connected to the database each request and look

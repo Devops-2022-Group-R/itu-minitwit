@@ -8,6 +8,7 @@ import (
 
 	"github.com/Devops-2022-Group-R/itu-minitwit/src/database"
 	"github.com/Devops-2022-Group-R/itu-minitwit/src/models"
+	"github.com/Devops-2022-Group-R/itu-minitwit/src/monitoring"
 	pwdHash "github.com/Devops-2022-Group-R/itu-minitwit/src/password"
 )
 
@@ -52,6 +53,8 @@ func RegisterController(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
+
+	monitoring.UserCount.Inc()
 
 	c.JSON(http.StatusNoContent, nil)
 }

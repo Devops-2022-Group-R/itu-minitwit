@@ -5,6 +5,8 @@ import (
 	"gorm.io/gorm"
 )
 
+const userTable = "user"
+
 type UserDTO struct {
 	gorm.Model
 
@@ -17,7 +19,7 @@ type UserDTO struct {
 }
 
 func (UserDTO) TableName() string {
-	return "user"
+	return userTable
 }
 
 type FollowDTO struct {
@@ -37,6 +39,7 @@ type IUserRepository interface {
 	Create(users models.User) error
 	GetByID(id int64) (*models.User, error)
 	GetByUsername(username string) (*models.User, error)
+	NumUsers() (int64, error)
 
 	Follow(whoId int64, whomId int64) error
 	Unfollow(whoId int64, whomId int64) error
