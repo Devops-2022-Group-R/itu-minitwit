@@ -181,13 +181,13 @@ jobs:
       - checkout
 
       - run:
-        name: Check cyclomatic complexity
-        command: |
-          go install github.com/fzipp/gocyclo/cmd/gocyclo@latest
+          name: "Check cyclomatic complexity"
+          command: |
+            go install github.com/fzipp/gocyclo/cmd/gocyclo@latest
 
-          log=$cycloComplexity.txt
-          gocyclo src/ > log
-          echo "Create cyclomatic log in $log"
+            log=$cycloComplexity.txt
+            gocyclo src/ > log
+            echo "Create cyclomatic log in $log"
 
 orbs:
   snyk: snyk/snyk@x.y.z
