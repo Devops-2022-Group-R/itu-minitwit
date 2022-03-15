@@ -183,17 +183,10 @@ jobs:
     steps:
       - checkout
 
-<<<<<<< HEAD
       - run:
           name: "Check cyclomatic complexity"
           command: |
             go install github.com/fzipp/gocyclo/cmd/gocyclo@latest
-=======
-      - run
-        name: Check cyclomatic complexity
-        command: |
-          go install github.com/fzipp/gocyclo/cmd/gocyclo@latest
->>>>>>> 74f0211bef01b49d604362276d4b795339f9e674
 
             log=$cycloComplexity.txt
             gocyclo src/ > log
@@ -226,15 +219,12 @@ workflows:
   build_test_deploy:
     jobs:
       - build_and_test
-<<<<<<< HEAD
 
       - build_snyk
         requires:
           - build_and_test
         context: ITU MiniTwit
 
-=======
->>>>>>> 74f0211bef01b49d604362276d4b795339f9e674
       - build_and_run_static_analysis_tools
         requires:
           - build_and_test
