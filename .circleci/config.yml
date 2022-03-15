@@ -192,7 +192,6 @@ jobs:
             gocyclo src/ > log
             echo "Create cyclomatic log in $log"
 
-jobs:
   build_snyk:
     docker:
       - image: '$DOCKER_USERNAME/itu-minitwit-server'
@@ -218,17 +217,20 @@ jobs:
 workflows:
   build_test_deploy:
     jobs:
-      - build_and_test
+      - build_and_test:
 
-      - build_snyk
-        requires:
-          - build_and_test
-        context: ITU MiniTwit
+      - build_snyk:
+          requires:
+            - build_and_test
+          context: ITU MiniTwit
 
-      - build_and_run_static_analysis_tools
-        requires:
-          - build_and_test
-        context: ITU MiniTwit
+        
+
+      - build_and_run_static_analysis_tools:
+          context: ITU MiniTwit
+          requires:
+            - build_and_test
+
 
       # - publish_github_release:
       #     context: ITU MiniTwit
