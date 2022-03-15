@@ -63,7 +63,7 @@ func ErrorHandleMiddleware() gin.HandlerFunc {
 		c.Next()
 		responseCode := 0
 
-		if len(c.Errors) >= 1 {
+		if len(c.Errors) > 0 {
 			errors := make([]returnedErr, 0)
 
 			for _, err := range c.Errors {

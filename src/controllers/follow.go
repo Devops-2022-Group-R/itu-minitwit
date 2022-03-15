@@ -7,7 +7,6 @@ import (
 
 	"github.com/Devops-2022-Group-R/itu-minitwit/src/database"
 	"github.com/Devops-2022-Group-R/itu-minitwit/src/internal"
-	"github.com/Devops-2022-Group-R/itu-minitwit/src/models"
 )
 
 type FollowRequestBody struct {
@@ -25,25 +24,9 @@ func FollowPostController(c *gin.Context) {
 		return
 	}
 
-	urlUsername := c.Param("username")
-
-	user := c.MustGet(UserKey).(*models.User)
-	if c.MustGet(IsAdminKey).(bool) {
-		userRepository := c.MustGet(UserRepositoryKey).(database.IUserRepository)
-		var err error
-		user, err = userRepository.GetByUsername(urlUsername)
-
-		if err != nil {
-			internal.AbortWithError(c, internal.NewInternalServerError(err))
-			return
-		}
-
-		if user == nil {
-			internal.AbortWithError(c, internal.ErrUserNotFound)
-			return
-		}
-	} else if user.Username != urlUsername {
-		internal.AbortWithError(c, internal.ErrUrlUsernameNotMatchHeader)
+	user, err := GetUserOrAdmin(c, userRepository)
+	if err != (internal.HttpError{}) {
+		internal.AbortWithError(c, err)
 		return
 	}
 
