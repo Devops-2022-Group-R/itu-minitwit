@@ -220,17 +220,14 @@ workflows:
       - build_and_test
 
       - build_snyk:
+          context: ITU MiniTwit
           requires:
             - build_and_test
-          context: ITU MiniTwit
-
-        
 
       - build_and_run_static_analysis_tools:
           context: ITU MiniTwit
           requires:
             - build_and_test
-
 
       # - publish_github_release:
       #     context: ITU MiniTwit
