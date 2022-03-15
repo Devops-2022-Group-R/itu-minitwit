@@ -181,7 +181,7 @@ jobs:
       - checkout
 
       - run
-        name: "Check cyclomatic complexity"
+        name: Check cyclomatic complexity
         command: |
           go install github.com/fzipp/gocyclo/cmd/gocyclo@latest
 
@@ -194,12 +194,13 @@ orbs:
 jobs:
   build_snyk:
     docker:
-      - image: 'circleci/buildpack-deps:stretch'
+      - image: '$DOCKER_USERNAME/itu-minitwit-server'
     environment:
-      IMAGE_NAME: $DOCKER_USERNAME/itu-minitwit-server
+      IMAGE_NAME: itu-minitwit-server
     steps:
       - checkout
       - setup_remote_docker
+
       - run:
           command: 'docker build -t $IMAGE_NAME:latest .'
           name: Build Docker image
@@ -212,43 +213,48 @@ jobs:
           target-file: Dockerfile
           token-variable: SNYK_TOKEN
 
+
 workflows:
   build_test_deploy:
     jobs:
       - build_and_test
+      - build_and_run_static_analysis_tools
+        requires:
+          - build_and_test
+        context: ITU MiniTwit
 
-      - publish_github_release:
-          context: ITU MiniTwit
-          filters:
-            branches:
-              only:
-                - master
-          requires:
-            - build_and_test
+      # - publish_github_release:
+      #     context: ITU MiniTwit
+      #     filters:
+      #       branches:
+      #         only:
+      #           - master
+      #     requires:
+      #       - build_and_test
 
-      - push_to_docker_hub:
-          requires:
-            - publish_github_release
-          context: ITU MiniTwit
-          filters:
-            branches:
-              only:
-                - master
+      # - push_to_docker_hub:
+      #     requires:
+      #       - publish_github_release
+      #     context: ITU MiniTwit
+      #     filters:
+      #       branches:
+      #         only:
+      #           - master
 
-      - push_monitoring_to_docker_hub:
-          requires:
-            - publish_github_release
-          context: ITU MiniTwit
-          filters:
-            branches:
-              only:
-                - master
+      # - push_monitoring_to_docker_hub:
+      #     requires:
+      #       - publish_github_release
+      #     context: ITU MiniTwit
+      #     filters:
+      #       branches:
+      #         only:
+      #           - master
 
-      - apply_infrastructure:
-          requires:
-            - push_to_docker_hub
-          context: ITU MiniTwit
-          filters:
-            branches:
-              only:
-                - master
+      # - apply_infrastructure:
+      #     requires:
+      #       - push_to_docker_hub
+      #     context: ITU MiniTwit
+      #     filters:
+      #       branches:
+      #         only:
+      #           - master
