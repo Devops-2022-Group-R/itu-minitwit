@@ -1,7 +1,6 @@
 package main
 
 import (
-	"log"
 	"os"
 	"strings"
 
@@ -17,19 +16,11 @@ import (
 	"github.com/denisenkom/go-mssqldb/azuread"
 )
 
-const (
-	debug = true
-)
-
 func init() {
 	monitoring.Initialise(openDatabase)
 }
 
 func main() {
-	if debug {
-		log.SetFlags(log.LstdFlags | log.Llongfile)
-	}
-
 	if len(os.Args) > 1 {
 		input := os.Args[1]
 		if strings.EqualFold("initDb", input) {
