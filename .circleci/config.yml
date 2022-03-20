@@ -227,38 +227,38 @@ workflows:
 
       - check_snyk
 
-      # - publish_github_release:
-      #     context: ITU MiniTwit
-      #     filters:
-      #       branches:
-      #         only:
-      #           - master
-      #     requires:
-      #       - build_and_test
+      - publish_github_release:
+          context: ITU MiniTwit
+          filters:
+            branches:
+              only:
+                - master
+          requires:
+            - build_and_test
 
-      # - push_to_docker_hub:
-      #     requires:
-      #       - publish_github_release
-      #     context: ITU MiniTwit
-      #     filters:
-      #       branches:
-      #         only:
-      #           - master
+      - push_to_docker_hub:
+          requires:
+            - publish_github_release
+          context: ITU MiniTwit
+          filters:
+            branches:
+              only:
+                - master
 
-      # - push_monitoring_to_docker_hub:
-      #     requires:
-      #       - publish_github_release
-      #     context: ITU MiniTwit
-      #     filters:
-      #       branches:
-      #         only:
-      #           - master
+      - push_monitoring_to_docker_hub:
+          requires:
+            - publish_github_release
+          context: ITU MiniTwit
+          filters:
+            branches:
+              only:
+                - master
 
-      # - apply_infrastructure:
-      #     requires:
-      #       - push_to_docker_hub
-      #     context: ITU MiniTwit
-      #     filters:
-      #       branches:
-      #         only:
-      #           - master
+      - apply_infrastructure:
+          requires:
+            - push_to_docker_hub
+          context: ITU MiniTwit
+          filters:
+            branches:
+              only:
+                - master
