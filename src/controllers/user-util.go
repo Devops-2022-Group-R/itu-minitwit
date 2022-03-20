@@ -26,5 +26,5 @@ func GetUserOrAdmin(c *gin.Context, userRepository database.IUserRepository) (*m
 		return nil, custom.ErrUrlUsernameNotMatchHeader
 	}
 
-	return user, custom.HttpError{}
+	return user, nil
 }

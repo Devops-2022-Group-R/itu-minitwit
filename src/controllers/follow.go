@@ -5,8 +5,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/Devops-2022-Group-R/itu-minitwit/src/database"
 	"github.com/Devops-2022-Group-R/itu-minitwit/src/custom"
+	"github.com/Devops-2022-Group-R/itu-minitwit/src/database"
 )
 
 type FollowRequestBody struct {
@@ -25,7 +25,7 @@ func FollowPostController(c *gin.Context) {
 	}
 
 	user, err := GetUserOrAdmin(c, userRepository)
-	if err != (custom.HttpError{}) {
+	if err != nil {
 		custom.AbortWithError(c, err)
 		return
 	}
