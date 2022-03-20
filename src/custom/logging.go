@@ -1,4 +1,4 @@
-package internal
+package custom
 
 import (
 	"bufio"
@@ -153,7 +153,7 @@ func (l *Log) Error(_ context.Context, msg string, data ...interface{}) {
 }
 
 // Trace print sql message
-func (l *Log) Trace(ctx context.Context, begin time.Time, fc func() (string, int64), err error) {
+func (l *Log) Trace(_ context.Context, begin time.Time, fc func() (string, int64), err error) {
 	if l.logLevel <= Silent {
 		return
 	}
@@ -173,7 +173,7 @@ func (l *Log) Trace(ctx context.Context, begin time.Time, fc func() (string, int
 		} else {
 			l.Printf(traceErrStr, utils.FileWithLineNum(), err, float64(elapsed.Nanoseconds())/1e6, rows, sql)
 		}
-	case elapsed > SlowThreshold && SlowThreshold != 0 && l.logLevel >= Warn:
+	case elapsed > SlowThreshold && l.logLevel >= Warn:
 		sql, rows := fc()
 		slowLog := fmt.Sprintf("SLOW SQL >= %v", SlowThreshold)
 		if rows == -1 {

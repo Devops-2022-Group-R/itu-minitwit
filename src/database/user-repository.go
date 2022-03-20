@@ -10,7 +10,7 @@ const userTable = "user"
 type UserDTO struct {
 	gorm.Model
 
-	Username     string `gorm:"not null"`
+	Username     string `gorm:"not null;index"`
 	Email        string `gorm:"not null"`
 	PasswordHash string `gorm:"not null"`
 

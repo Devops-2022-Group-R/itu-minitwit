@@ -1,29 +1,36 @@
 package controllers
 
 import (
-	"log"
 	"time"
 
 	"github.com/Devops-2022-Group-R/itu-minitwit/src/database"
-	"github.com/Devops-2022-Group-R/itu-minitwit/src/internal"
+	"github.com/Devops-2022-Group-R/itu-minitwit/src/custom"
 	"github.com/Devops-2022-Group-R/itu-minitwit/src/monitoring"
 	"github.com/gin-gonic/gin"
 
-	"github.com/prometheus/client_golang/prometheus/promhttp"
+	ginprometheus "github.com/zsais/go-gin-prometheus"
 )
 
 func SetupRouter(openDatabase database.OpenDatabaseFunc) *gin.Engine {
 	r := gin.New()
 
+	p := ginprometheus.NewPrometheus("gin")
+
+	p.ReqCntURLLabelMappingFn = func(c *gin.Context) string {
+		return c.FullPath()
+	}
+
+	p.Use(r)
+
+	r.Use(monitoring.RequestDuration)
+	r.Use(monitoring.UpdateResponseSent)
+
 	r.Use(gin.Recovery())
 	r.Use(LoggingMiddleware())
+	r.Use(custom.ErrorHandleMiddleware())
 	r.Use(CORSMiddleware())
 	r.Use(beforeRequest(openDatabase))
 	r.Use(UpdateLatestMiddleware)
-
-	r.GET("/metrics", gin.WrapH(promhttp.Handler()))
-	r.Use(monitoring.RequestDuration)
-	r.Use(monitoring.UpdateResponseSent)
 
 	r.GET("/fllws/:username", FollowGetController)
 	r.GET("/msgs", GetMessages)
@@ -84,7 +91,7 @@ func LoggingMiddleware() gin.HandlerFunc {
 		comment := c.Errors.ByType(gin.ErrorTypePrivate).String()
 
 		// Log request
-		internal.Logger.Printf("[GIN][%3d][%13v][IP: %15s][%-7s][%s] %s\n",
+		custom.Logger.Printf("[GIN][%3d][%13v][IP: %15s][%-7s][%s] %s\n",
 			statusCode,
 			latency,
 			clientIP,
@@ -101,7 +108,7 @@ func beforeRequest(openDatabase database.OpenDatabaseFunc) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		gormDb, err := database.ConnectDatabase(openDatabase)
 		if err != nil {
-			log.Fatal(err)
+			custom.AbortWithError(c, custom.NewInternalServerError(err))
 		}
 
 		c.Set(UserRepositoryKey, database.NewGormUserRepository(gormDb))
