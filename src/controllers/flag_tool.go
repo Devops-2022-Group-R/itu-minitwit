@@ -5,19 +5,24 @@ import (
 	"strconv"
 
 	"github.com/Devops-2022-Group-R/itu-minitwit/src/database"
+	"github.com/Devops-2022-Group-R/itu-minitwit/src/internal"
 	"github.com/gin-gonic/gin"
+)
+
+var (
+	ErrInvalidMessageId = internal.NewBadRequestError("invalid message id")
 )
 
 func FlagMessageById(c *gin.Context) {
 	messageRepository := c.MustGet(MessageRepositoryKey).(database.IMessageRepository)
 	msgId, err := strconv.Atoi(c.Param("msgid"))
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "not an message id"})
+		internal.AbortWithError(c, ErrInvalidMessageId)
 		return
 	}
 	message, err := messageRepository.FlagByMsgId(msgId)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		internal.AbortWithError(c, internal.NewInternalServerError(err))
 		return
 	}
 
@@ -28,7 +33,7 @@ func GetAllMessages(c *gin.Context) {
 	messageRepository := c.MustGet(MessageRepositoryKey).(database.IMessageRepository)
 	messages, err := messageRepository.GetWithLimit(-1)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		internal.AbortWithError(c, internal.NewInternalServerError(err))
 		return
 	}
 

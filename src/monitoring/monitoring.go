@@ -22,11 +22,11 @@ var responsesSent = prometheus.NewCounter(prometheus.CounterOpts{
 	Help: "Count responses sent",
 })
 
-var requestDurationHistogram = prometheus.NewHistogram(prometheus.HistogramOpts{
-	Name:    "minitwit_request_duration",
+var endpointLatencies = prometheus.NewHistogramVec(prometheus.HistogramOpts{
+	Name:    "minitwit_endpoint_latencies",
 	Help:    "Request duration in Milliseconds",
-	Buckets: []float64{50.0, 100.0, 200.0, 500.0, 1000.0},
-})
+	Buckets: []float64{10.0, 25.0, 50.0, 100.0, 200.0, 500.0, 1000.0},
+}, []string{"url"})
 
 var UserCount = prometheus.NewGauge(prometheus.GaugeOpts{
 	Name: "minitwit_user_count",
@@ -35,7 +35,7 @@ var UserCount = prometheus.NewGauge(prometheus.GaugeOpts{
 
 func Initialise(openDatabase database.OpenDatabaseFunc) {
 	prometheus.MustRegister(responsesSent)
-	prometheus.MustRegister(requestDurationHistogram)
+	prometheus.MustRegister(endpointLatencies)
 	prometheus.MustRegister(cpuLoad)
 	prometheus.MustRegister(UserCount)
 	initUserCount(openDatabase)
@@ -53,11 +53,10 @@ func getCpuLoad() float64 {
 
 func RequestDuration(c *gin.Context) {
 	startTime := time.Now()
-
 	c.Next()
-
 	duration := time.Since(startTime).Milliseconds()
-	requestDurationHistogram.Observe(float64(duration))
+
+	endpointLatencies.WithLabelValues(c.FullPath()).Observe(float64(duration))
 }
 
 func initUserCount(openDatabase database.OpenDatabaseFunc) {

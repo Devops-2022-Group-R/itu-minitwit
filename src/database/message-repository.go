@@ -11,7 +11,7 @@ type MessageDTO struct {
 	AuthorId int     `gorm:"not null"`
 	Author   UserDTO `gorm:"foreignkey:AuthorId"`
 	Text     string  `gorm:"not null"`
-	PubDate  int64   `gorm:"not null"`
+	PubDate  int64   `gorm:"not null;index:,sort:desc"`
 	Flagged  bool    `gorm:"not null"`
 }
 

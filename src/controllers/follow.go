@@ -6,7 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"github.com/Devops-2022-Group-R/itu-minitwit/src/database"
-	"github.com/Devops-2022-Group-R/itu-minitwit/src/models"
+	"github.com/Devops-2022-Group-R/itu-minitwit/src/internal"
 )
 
 type FollowRequestBody struct {
@@ -20,29 +20,13 @@ func FollowPostController(c *gin.Context) {
 
 	var body FollowRequestBody
 	if err := c.BindJSON(&body); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		internal.AbortWithError(c, internal.NewBadRequestErrorFromError(err))
 		return
 	}
 
-	urlUsername := c.Param("username")
-
-	user := c.MustGet(UserKey).(*models.User)
-	if c.MustGet(IsAdminKey).(bool) {
-		userRepository := c.MustGet(UserRepositoryKey).(database.IUserRepository)
-		var err error
-		user, err = userRepository.GetByUsername(urlUsername)
-
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-			return
-		}
-
-		if user == nil {
-			c.JSON(http.StatusNotFound, gin.H{"error": "the username provided in the URL does not exist"})
-			return
-		}
-	} else if user.Username != urlUsername {
-		c.JSON(http.StatusUnprocessableEntity, gin.H{"error": "the URL username did not match the Authorization header username"})
+	user, err := GetUserOrAdmin(c, userRepository)
+	if err != nil {
+		internal.AbortWithError(c, err)
 		return
 	}
 
@@ -50,10 +34,10 @@ func FollowPostController(c *gin.Context) {
 	if len(body.Follow) > 0 {
 		followTarget, err := userRepository.GetByUsername(body.Follow)
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			internal.AbortWithError(c, internal.NewInternalServerError(err))
 			return
 		} else if followTarget == nil {
-			c.JSON(http.StatusNotFound, gin.H{"error": "the username to follow does not exist"})
+			internal.AbortWithError(c, internal.ErrUserNotFound)
 			return
 		}
 		followTargetUserId = followTarget.UserId
@@ -63,10 +47,10 @@ func FollowPostController(c *gin.Context) {
 	if len(body.Unfollow) > 0 {
 		unfollowTarget, err := userRepository.GetByUsername(body.Unfollow)
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			internal.AbortWithError(c, internal.NewInternalServerError(err))
 			return
 		} else if unfollowTarget == nil {
-			c.JSON(http.StatusNotFound, gin.H{"error": "the username to unfollow does not exist"})
+			internal.AbortWithError(c, internal.ErrUserNotFound)
 			return
 		}
 		unfollowTargetUserId = unfollowTarget.UserId
@@ -74,14 +58,14 @@ func FollowPostController(c *gin.Context) {
 
 	if len(body.Follow) > 0 {
 		if err := userRepository.Follow(user.UserId, followTargetUserId); err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			internal.AbortWithError(c, internal.NewInternalServerError(err))
 			return
 		}
 	}
 
 	if len(body.Unfollow) > 0 {
 		if err := userRepository.Unfollow(user.UserId, unfollowTargetUserId); err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			internal.AbortWithError(c, internal.NewInternalServerError(err))
 			return
 		}
 	}
@@ -95,16 +79,16 @@ func FollowGetController(c *gin.Context) {
 	urlUsername := c.Param("username")
 	author, err := userRepository.GetByUsername(urlUsername)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		internal.AbortWithError(c, internal.NewInternalServerError(err))
 		return
 	} else if author == nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "the username provided in the URL does not exist"})
+		internal.AbortWithError(c, internal.ErrUserNotFound)
 		return
 	}
 
 	allFollowed, err := userRepository.AllFollowed(author.UserId)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		internal.AbortWithError(c, internal.NewInternalServerError(err))
 		return
 	}
 
