@@ -1,5 +1,8 @@
 version: 2.1
 
+orbs: 
+  snyk: snyk/snyk@1.1.2
+
 defaults: &defaults
   working_directory: /tmp/workdir
 
@@ -186,12 +189,58 @@ jobs:
           paths:
               - shared_vars
 
+  check_gocyclo:
+    working_directory: ~/repo
+    docker:
+      - image: circleci/golang:1.17-buster
+    steps:
+      - checkout
+
+      - run:
+          name: "Check cyclomatic complexity"
+          command: |
+            go install github.com/fzipp/gocyclo/cmd/gocyclo@latest
+            MAX_CYCLO=$(echo $(gocyclo -top 1 src/) | head -n1 | cut -d " " -f1) # Get cyclomatic complexity - first word
+            CYCLO_LIMIT=15
+
+            if [ $MAX_CYCLO -ge $CYCLO_LIMIT ]; then
+              echo "These functions have a cyclomatic complexity of at least $CYCLO_LIMIT!"
+              gocyclo -over $((CYCLO_LIMIT-1)) src/
+              # exit 1
+            fi
+
+  check_snyk:
+    docker:
+      - image: circleci/golang:1.17-buster
+    environment:
+      IMAGE_NAME: itu-minitwit-server
+    steps:
+      - checkout
+
+      - setup_remote_docker:
+          version: 20.10.11
+          docker_layer_caching: true
+
+      - run:
+          name: Build Docker image
+          command: docker build -t $IMAGE_NAME .
+      - snyk/scan:
+          docker-image-name: $IMAGE_NAME
+          project: '${CIRCLE_PROJECT_REPONAME}/${CIRCLE_BRANCH}-container'
+          severity-threshold: medium
+          target-file: Dockerfile
+          token-variable: SNYK_TOKEN
+
 workflows:
   build_test_deploy:
     jobs:
       - build_and_test
 
       - lint
+
+      - check_gocyclo
+
+      - check_snyk
 
       - publish_github_release:
           context: ITU MiniTwit
@@ -201,6 +250,7 @@ workflows:
                 - master
           requires:
             - build_and_test
+            - check_snyk
 
       - push_to_docker_hub:
           requires:
