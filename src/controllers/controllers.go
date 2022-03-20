@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"log"
 	"time"
 
 	"github.com/Devops-2022-Group-R/itu-minitwit/src/database"
@@ -28,6 +27,7 @@ func SetupRouter(openDatabase database.OpenDatabaseFunc) *gin.Engine {
 
 	r.Use(gin.Recovery())
 	r.Use(LoggingMiddleware())
+	r.Use(internal.ErrorHandleMiddleware())
 	r.Use(CORSMiddleware())
 	r.Use(beforeRequest(openDatabase))
 	r.Use(UpdateLatestMiddleware)
@@ -108,7 +108,7 @@ func beforeRequest(openDatabase database.OpenDatabaseFunc) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		gormDb, err := database.ConnectDatabase(openDatabase)
 		if err != nil {
-			log.Fatal(err)
+			internal.AbortWithError(c, internal.NewInternalServerError(err))
 		}
 
 		c.Set(UserRepositoryKey, database.NewGormUserRepository(gormDb))
