@@ -136,7 +136,8 @@ jobs:
               -var "database_admin_username=$DB_ADMIN_USERNAME" \
               -var "database_admin_password=$DB_ADMIN_PASSWORD" \
               -var "database_server_name=$DB_SERVER_NAME" \
-              -var "database_db_name=$DB_NAME"
+              -var "database_db_name=$DB_NAME" \
+              -auto-approve
 
   # Based on: https://circleci.com/blog/publishing-to-github-releases-via-circleci/
   publish_github_release:
