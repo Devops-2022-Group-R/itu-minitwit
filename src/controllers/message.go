@@ -4,8 +4,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/Devops-2022-Group-R/itu-minitwit/src/custom"
 	"github.com/Devops-2022-Group-R/itu-minitwit/src/database"
+	"github.com/Devops-2022-Group-R/itu-minitwit/src/internal"
 	"github.com/Devops-2022-Group-R/itu-minitwit/src/models"
 	"github.com/gin-gonic/gin"
 )
@@ -19,7 +19,7 @@ func GetMessages(c *gin.Context) {
 	messageRepository := c.MustGet(MessageRepositoryKey).(database.IMessageRepository)
 	messages, err := messageRepository.GetWithLimit(perPage)
 	if err != nil {
-		custom.AbortWithError(c, custom.NewInternalServerError(err))
+		internal.AbortWithError(c, internal.NewInternalServerError(err))
 		return
 	}
 
@@ -33,18 +33,18 @@ func GetUserMessages(c *gin.Context) {
 
 	user, err := userRepository.GetByUsername(c.Param("username"))
 	if err != nil {
-		custom.AbortWithError(c, custom.NewInternalServerError(err))
+		internal.AbortWithError(c, internal.NewInternalServerError(err))
 		return
 	}
 
 	if user == nil {
-		custom.AbortWithError(c, custom.ErrUserNotFound)
+		internal.AbortWithError(c, internal.ErrUserNotFound)
 		return
 	}
 
 	messages, err := messageRepository.GetByUserId(user.UserId, perPage)
 	if err != nil {
-		custom.AbortWithError(c, custom.NewInternalServerError(err))
+		internal.AbortWithError(c, internal.NewInternalServerError(err))
 		return
 	}
 
@@ -58,7 +58,7 @@ func GetFeedMessages(c *gin.Context) {
 
 	messages, err := messageRepository.GetByUserAndItsFollowers(user.UserId, perPage)
 	if err != nil {
-		custom.AbortWithError(c, custom.NewInternalServerError(err))
+		internal.AbortWithError(c, internal.NewInternalServerError(err))
 		return
 	}
 
@@ -70,14 +70,14 @@ func PostUserMessage(c *gin.Context) {
 	var body PostUserMessageRequestBody
 
 	if err := c.BindJSON(&body); err != nil {
-		custom.AbortWithError(c, custom.NewBadRequestErrorFromError(err))
+		internal.AbortWithError(c, internal.NewBadRequestErrorFromError(err))
 		return
 	}
 
 	userRepository := c.MustGet(UserRepositoryKey).(database.IUserRepository)
 	user, err := GetUserOrAdmin(c, userRepository)
 	if err != nil {
-		custom.AbortWithError(c, err)
+		internal.AbortWithError(c, err)
 		return
 	}
 
@@ -90,7 +90,7 @@ func PostUserMessage(c *gin.Context) {
 	})
 
 	if err != nil {
-		custom.AbortWithError(c, custom.NewInternalServerError(err))
+		internal.AbortWithError(c, internal.NewInternalServerError(err))
 		return
 	}
 
