@@ -194,31 +194,25 @@ jobs:
 
   build_snyk:
     docker:
-      - image: '$DOCKER_USERNAME/itu-minitwit-server'
+      - image: circleci/golang:1.17-buster
     environment:
       IMAGE_NAME: itu-minitwit-server
     steps:
       - checkout
-
-      # - attach_workspace:
-      #     at: /tmp/workspace
-      # - run:
-      #     name: Import variables from other jobs
-      #     command: cat /tmp/workspace/shared_vars >> $BASH_ENV
 
       - setup_remote_docker:
           version: 20.10.11
           docker_layer_caching: true
 
       - run:
-          command: 'docker build -t itu-minitwit-server:latest .'
           name: Build Docker image
+          command: docker build -t $IMAGE_NAME .
       - snyk/scan:
-          docker-image-name: 'itu-minitwit-server:latest'
+          docker-image-name: $IMAGE_NAME
           fail-on-issues: false
           monitor-on-build: true
           project: '${CIRCLE_PROJECT_REPONAME}/${CIRCLE_BRANCH}-container'
-          severity-threshold: high
+          severity-threshold: medium
           target-file: Dockerfile
           token-variable: SNYK_TOKEN
 
