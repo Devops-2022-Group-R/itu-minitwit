@@ -18,11 +18,8 @@ import (
 )
 
 const (
-	debug     = true
-	secretKey = "development key"
+	debug = true
 )
-
-type Row = map[string]interface{}
 
 func init() {
 	monitoring.Initialise(openDatabase)
