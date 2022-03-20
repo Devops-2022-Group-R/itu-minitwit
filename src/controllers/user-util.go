@@ -2,12 +2,12 @@ package controllers
 
 import (
 	"github.com/Devops-2022-Group-R/itu-minitwit/src/database"
-	"github.com/Devops-2022-Group-R/itu-minitwit/src/custom"
+	"github.com/Devops-2022-Group-R/itu-minitwit/src/internal"
 	"github.com/Devops-2022-Group-R/itu-minitwit/src/models"
 	"github.com/gin-gonic/gin"
 )
 
-func GetUserOrAdmin(c *gin.Context, userRepository database.IUserRepository) (*models.User, custom.HttpError) {
+func GetUserOrAdmin(c *gin.Context, userRepository database.IUserRepository) (*models.User, error) {
 	urlUsername := c.Param("username")
 
 	user := c.MustGet(UserKey).(*models.User)
@@ -16,15 +16,15 @@ func GetUserOrAdmin(c *gin.Context, userRepository database.IUserRepository) (*m
 		user, err = userRepository.GetByUsername(urlUsername)
 
 		if err != nil {
-			return nil, custom.NewInternalServerError(err)
+			return nil, internal.NewInternalServerError(err)
 		}
 
 		if user == nil {
-			return nil, custom.ErrUserNotFound
+			return nil, internal.ErrUserNotFound
 		}
 	} else if user.Username != urlUsername {
-		return nil, custom.ErrUrlUsernameNotMatchHeader
+		return nil, internal.ErrUrlUsernameNotMatchHeader
 	}
 
-	return user, custom.HttpError{}
+	return user, nil
 }

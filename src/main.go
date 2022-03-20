@@ -10,7 +10,7 @@ import (
 
 	"github.com/Devops-2022-Group-R/itu-minitwit/src/controllers"
 	"github.com/Devops-2022-Group-R/itu-minitwit/src/database"
-	"github.com/Devops-2022-Group-R/itu-minitwit/src/custom"
+	"github.com/Devops-2022-Group-R/itu-minitwit/src/internal"
 	"github.com/Devops-2022-Group-R/itu-minitwit/src/monitoring"
 	_ "github.com/Devops-2022-Group-R/itu-minitwit/src/password"
 	"github.com/denisenkom/go-mssqldb/azuread"
@@ -29,7 +29,11 @@ func main() {
 		}
 	}
 
-	controllers.SetupRouter(openDatabase).Run()
+	err := controllers.SetupRouter(openDatabase).Run()
+
+	if err != nil {
+		internal.Logger.Fatalf("failed to start: %v", err)
+	}
 }
 
 func openDatabase() gorm.Dialector {
@@ -37,7 +41,7 @@ func openDatabase() gorm.Dialector {
 	if env == "PRODUCTION" {
 		connString, exists := os.LookupEnv("SQLCONNSTR_CONNECTION_STRING")
 		if !exists {
-			custom.Logger.Fatalln("SQLCONNSTR_CONNECTION_STRING environment variable not set")
+			internal.Logger.Fatalln("SQLCONNSTR_CONNECTION_STRING environment variable not set")
 		}
 
 		return sqlserver.New(sqlserver.Config{

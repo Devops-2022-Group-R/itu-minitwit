@@ -1,10 +1,14 @@
 .PHONY: run
 run:
-	go run .
+	go run ./src
 
 .PHONY: init
 init:
-	go run . "initDb"
+	go run ./src "initDb"
+
+.PHONY: test
+test:
+	go test ./...
 
 .PHONY: build
 build:

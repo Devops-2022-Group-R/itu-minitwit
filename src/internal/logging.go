@@ -1,4 +1,4 @@
-package custom
+package internal
 
 import (
 	"bufio"
@@ -99,17 +99,17 @@ func (l *Log) Println(message string) {
 
 func (l *Log) Fatalf(format string, args ...interface{}) {
 	l.print(l.formatStringF(Fatal, format, args...))
-	os.Exit(0)
+	os.Exit(1)
 }
 
 func (l *Log) Fatal(v ...interface{}) {
 	l.print(l.formatString(Fatal, v...))
-	os.Exit(0)
+	os.Exit(1)
 }
 
 func (l *Log) Fatalln(message string) {
 	l.print(l.formatStringLn(Fatal, message))
-	os.Exit(0)
+	os.Exit(1)
 }
 
 func (l *Log) Warnf(format string, args ...interface{}) {

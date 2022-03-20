@@ -4,7 +4,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/Devops-2022-Group-R/itu-minitwit/src/custom"
+	"github.com/Devops-2022-Group-R/itu-minitwit/src/internal"
 	"github.com/Devops-2022-Group-R/itu-minitwit/src/models"
 	pwdHash "github.com/Devops-2022-Group-R/itu-minitwit/src/password"
 	"gorm.io/gorm"
@@ -20,7 +20,7 @@ func ConnectDatabase(openDatabase OpenDatabaseFunc) (*gorm.DB, error) {
 	}
 
 	database, err := gorm.Open(openDatabase(), &gorm.Config{
-		Logger: custom.Logger,
+		Logger: internal.Logger,
 	})
 	if err != nil {
 		return nil, err
@@ -52,9 +52,18 @@ func InitDatabase(openDatabase OpenDatabaseFunc) {
 	}
 
 	userRepository := NewGormUserRepository(db)
-	userRepository.Migrate()
-	NewGormMessageRepository(db).Migrate()
-	NewGormLatestRepository(db).Migrate()
+
+	if err = userRepository.Migrate(); err != nil {
+		internal.Logger.Fatalf("user repository migration failed: %v", err)
+	}
+
+	if err = NewGormMessageRepository(db).Migrate(); err != nil {
+		internal.Logger.Fatalf("message repository migration failed: %v", err)
+	}
+
+	if err = NewGormLatestRepository(db).Migrate(); err != nil {
+		internal.Logger.Fatalf("latest repository migration failed: %v", err)
+	}
 
 	user, err := userRepository.GetByUsername("simulator")
 	if err != nil {
