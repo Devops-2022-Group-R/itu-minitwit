@@ -11,6 +11,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/Devops-2022-Group-R/itu-minitwit/src/custom"
 	"golang.org/x/crypto/pbkdf2"
 )
 
@@ -23,7 +24,12 @@ const (
 
 func generateSalt() string {
 	var bytes = make([]byte, saltLength)
-	rand.Read(bytes)
+	_, err := rand.Read(bytes)
+
+	if err != nil {
+		custom.Logger.Fatalf("generating salt failed: %v", err)
+	}
+
 	for k, v := range bytes {
 		bytes[k] = saltChars[v%byte(len(saltChars))]
 	}

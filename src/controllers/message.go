@@ -4,8 +4,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/Devops-2022-Group-R/itu-minitwit/src/database"
 	"github.com/Devops-2022-Group-R/itu-minitwit/src/custom"
+	"github.com/Devops-2022-Group-R/itu-minitwit/src/database"
 	"github.com/Devops-2022-Group-R/itu-minitwit/src/models"
 	"github.com/gin-gonic/gin"
 )
@@ -76,18 +76,23 @@ func PostUserMessage(c *gin.Context) {
 
 	userRepository := c.MustGet(UserRepositoryKey).(database.IUserRepository)
 	user, err := GetUserOrAdmin(c, userRepository)
-	if err != (custom.HttpError{}) {
+	if err != nil {
 		custom.AbortWithError(c, err)
 		return
 	}
 
 	messageRepository := c.MustGet(MessageRepositoryKey).(database.IMessageRepository)
-	messageRepository.Create(models.Message{
+	err = messageRepository.Create(models.Message{
 		Author:  *user,
 		Text:    body.Content,
 		PubDate: time.Now().UTC().Unix(),
 		Flagged: false,
 	})
+
+	if err != nil {
+		custom.AbortWithError(c, custom.NewInternalServerError(err))
+		return
+	}
 
 	c.JSON(http.StatusNoContent, nil)
 }

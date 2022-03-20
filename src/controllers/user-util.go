@@ -1,13 +1,13 @@
 package controllers
 
 import (
-	"github.com/Devops-2022-Group-R/itu-minitwit/src/database"
 	"github.com/Devops-2022-Group-R/itu-minitwit/src/custom"
+	"github.com/Devops-2022-Group-R/itu-minitwit/src/database"
 	"github.com/Devops-2022-Group-R/itu-minitwit/src/models"
 	"github.com/gin-gonic/gin"
 )
 
-func GetUserOrAdmin(c *gin.Context, userRepository database.IUserRepository) (*models.User, custom.HttpError) {
+func GetUserOrAdmin(c *gin.Context, userRepository database.IUserRepository) (*models.User, error) {
 	urlUsername := c.Param("username")
 
 	user := c.MustGet(UserKey).(*models.User)

@@ -4,8 +4,8 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/Devops-2022-Group-R/itu-minitwit/src/database"
 	"github.com/Devops-2022-Group-R/itu-minitwit/src/custom"
+	"github.com/Devops-2022-Group-R/itu-minitwit/src/database"
 	"github.com/gin-gonic/gin"
 )
 
@@ -26,7 +26,9 @@ func UpdateLatestMiddleware(c *gin.Context) {
 		latestRepository := c.MustGet(LatestRepositoryKey).(database.ILatestRepository)
 		newLatest, err := strconv.Atoi(values[0])
 		if err == nil {
-			latestRepository.Set(newLatest)
+			if err = latestRepository.Set(newLatest); err != nil {
+				custom.Logger.Printf("ERROR - updating latest middleware failed: %v", err)
+			}
 		}
 	}
 
