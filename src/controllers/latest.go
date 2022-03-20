@@ -5,7 +5,7 @@ import (
 	"strconv"
 
 	"github.com/Devops-2022-Group-R/itu-minitwit/src/database"
-	"github.com/Devops-2022-Group-R/itu-minitwit/src/custom"
+	"github.com/Devops-2022-Group-R/itu-minitwit/src/internal"
 	"github.com/gin-gonic/gin"
 )
 
@@ -14,7 +14,7 @@ func LatestController(c *gin.Context) {
 
 	latest, err := latestRepository.GetCurrent()
 	if err != nil {
-		custom.AbortWithError(c, custom.NewInternalServerError(err))
+		internal.AbortWithError(c, internal.NewInternalServerError(err))
 		return
 	}
 

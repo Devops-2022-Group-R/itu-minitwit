@@ -6,14 +6,14 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"github.com/Devops-2022-Group-R/itu-minitwit/src/database"
-	"github.com/Devops-2022-Group-R/itu-minitwit/src/custom"
+	"github.com/Devops-2022-Group-R/itu-minitwit/src/internal"
 	pwdHash "github.com/Devops-2022-Group-R/itu-minitwit/src/password"
 )
 
 var (
-	ErrInvalidUsername    = custom.NewHttpError(http.StatusNotFound, "invalid username")
-	ErrIncorrectPassword  = custom.NewHttpError(http.StatusUnauthorized, "incorrect password")
-	ErrMissingCredentials = custom.NewHttpError(http.StatusUnauthorized, "missing authentication credentials")
+	ErrInvalidUsername    = internal.NewHttpError(http.StatusNotFound, "invalid username")
+	ErrIncorrectPassword  = internal.NewHttpError(http.StatusUnauthorized, "incorrect password")
+	ErrMissingCredentials = internal.NewHttpError(http.StatusUnauthorized, "missing authentication credentials")
 )
 
 // Logs the user in.
@@ -50,7 +50,7 @@ func AuthRequired() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		authUsername, err := GetAuthState(c)
 		if authUsername == "" || err != nil {
-			custom.AbortWithError(c, err)
+			internal.AbortWithError(c, err)
 
 			return
 		}
@@ -58,11 +58,11 @@ func AuthRequired() gin.HandlerFunc {
 		userRepository := c.MustGet(UserRepositoryKey).(database.IUserRepository)
 		user, err := userRepository.GetByUsername(authUsername)
 		if err != nil {
-			custom.AbortWithError(c, custom.NewInternalServerError(err))
+			internal.AbortWithError(c, internal.NewInternalServerError(err))
 			return
 		}
 		if user == nil {
-			custom.AbortWithError(c, custom.ErrUserNotFound)
+			internal.AbortWithError(c, internal.ErrUserNotFound)
 			return
 		}
 
