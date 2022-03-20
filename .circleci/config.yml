@@ -210,7 +210,6 @@ jobs:
       - snyk/scan:
           docker-image-name: $IMAGE_NAME
           fail-on-issues: false
-          monitor-on-build: true
           project: '${CIRCLE_PROJECT_REPONAME}/${CIRCLE_BRANCH}-container'
           severity-threshold: medium
           target-file: Dockerfile
