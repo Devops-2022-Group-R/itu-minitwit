@@ -25,7 +25,7 @@ func FollowPostController(c *gin.Context) {
 	}
 
 	user, err := GetUserOrAdmin(c, userRepository)
-	if err != (internal.HttpError{}) {
+	if err != nil {
 		internal.AbortWithError(c, err)
 		return
 	}

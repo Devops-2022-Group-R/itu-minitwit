@@ -7,7 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func GetUserOrAdmin(c *gin.Context, userRepository database.IUserRepository) (*models.User, internal.HttpError) {
+func GetUserOrAdmin(c *gin.Context, userRepository database.IUserRepository) (*models.User, error) {
 	urlUsername := c.Param("username")
 
 	user := c.MustGet(UserKey).(*models.User)
@@ -26,5 +26,5 @@ func GetUserOrAdmin(c *gin.Context, userRepository database.IUserRepository) (*m
 		return nil, internal.ErrUrlUsernameNotMatchHeader
 	}
 
-	return user, internal.HttpError{}
+	return user, nil
 }

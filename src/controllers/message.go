@@ -76,18 +76,23 @@ func PostUserMessage(c *gin.Context) {
 
 	userRepository := c.MustGet(UserRepositoryKey).(database.IUserRepository)
 	user, err := GetUserOrAdmin(c, userRepository)
-	if err != (internal.HttpError{}) {
+	if err != nil {
 		internal.AbortWithError(c, err)
 		return
 	}
 
 	messageRepository := c.MustGet(MessageRepositoryKey).(database.IMessageRepository)
-	messageRepository.Create(models.Message{
+	err = messageRepository.Create(models.Message{
 		Author:  *user,
 		Text:    body.Content,
 		PubDate: time.Now().UTC().Unix(),
 		Flagged: false,
 	})
+
+	if err != nil {
+		internal.AbortWithError(c, internal.NewInternalServerError(err))
+		return
+	}
 
 	c.JSON(http.StatusNoContent, nil)
 }

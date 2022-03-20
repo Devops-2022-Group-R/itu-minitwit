@@ -29,7 +29,11 @@ func main() {
 		}
 	}
 
-	controllers.SetupRouter(openDatabase).Run()
+	err := controllers.SetupRouter(openDatabase).Run()
+
+	if err != nil {
+		internal.Logger.Fatalf("failed to start: %v", err)
+	}
 }
 
 func openDatabase() gorm.Dialector {

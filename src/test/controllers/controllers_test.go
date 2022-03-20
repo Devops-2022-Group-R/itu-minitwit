@@ -78,7 +78,7 @@ func (suite *BaseTestSuite) registerSimulator() {
 
 func (suite *BaseTestSuite) readBody(w *httptest.ResponseRecorder, target interface{}) {
 	bodyBytes, _ := ioutil.ReadAll(w.Result().Body)
-	json.Unmarshal(bodyBytes, target)
+	json.Unmarshal(bodyBytes, target) // nolint
 }
 
 func encodeCredentialsToB64(username string, password string) string {

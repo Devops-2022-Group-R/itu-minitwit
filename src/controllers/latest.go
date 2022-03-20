@@ -26,7 +26,9 @@ func UpdateLatestMiddleware(c *gin.Context) {
 		latestRepository := c.MustGet(LatestRepositoryKey).(database.ILatestRepository)
 		newLatest, err := strconv.Atoi(values[0])
 		if err == nil {
-			latestRepository.Set(newLatest)
+			if err = latestRepository.Set(newLatest); err != nil {
+				internal.Logger.Printf("ERROR - updating latest middleware failed: %v", err)
+			}
 		}
 	}
 

@@ -52,9 +52,18 @@ func InitDatabase(openDatabase OpenDatabaseFunc) {
 	}
 
 	userRepository := NewGormUserRepository(db)
-	userRepository.Migrate()
-	NewGormMessageRepository(db).Migrate()
-	NewGormLatestRepository(db).Migrate()
+
+	if err = userRepository.Migrate(); err != nil {
+		internal.Logger.Fatalf("user repository migration failed: %v", err)
+	}
+
+	if err = NewGormMessageRepository(db).Migrate(); err != nil {
+		internal.Logger.Fatalf("message repository migration failed: %v", err)
+	}
+
+	if err = NewGormLatestRepository(db).Migrate(); err != nil {
+		internal.Logger.Fatalf("latest repository migration failed: %v", err)
+	}
 
 	user, err := userRepository.GetByUsername("simulator")
 	if err != nil {

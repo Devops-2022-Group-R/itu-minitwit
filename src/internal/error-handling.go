@@ -47,7 +47,7 @@ func NewBadRequestErrorFromError(err error) HttpError {
 }
 
 func AbortWithError(c *gin.Context, err error) {
-	c.Error(err)
+	c.Error(err) //nolint:errcheck
 	c.Abort()
 }
 
