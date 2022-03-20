@@ -219,15 +219,9 @@ workflows:
     jobs:
       - build_and_test
 
-      - build_snyk:
-          context: ITU MiniTwit
-          requires:
-            - build_and_test
+      - check_gocyclo
 
-      - build_and_run_static_analysis_tools:
-          context: ITU MiniTwit
-          requires:
-            - build_and_test
+      - check_snyk
 
       # - publish_github_release:
       #     context: ITU MiniTwit
