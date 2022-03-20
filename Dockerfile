@@ -1,15 +1,11 @@
 # syntax=docker/dockerfile:1
 
-FROM golang:1.17
-
-RUN apt-get update \
-    && apt-get install -y sqlite3 libsqlite3-dev
-
-ENV ENVIRONMENT=PRODUCTION
-
+FROM golang:1.17 AS builder
 WORKDIR /app
 COPY . /app
+RUN CGO_ENABLED=0 go build -o minitwit ./src
 
-RUN go build -o minitwit ./src
-
-CMD ["/app/minitwit"]
+FROM alpine:3.15 AS runner
+ENV ENVIRONMENT=PRODUCTION
+COPY --from=builder /app/minitwit ./minitwit
+CMD ["./minitwit"]
