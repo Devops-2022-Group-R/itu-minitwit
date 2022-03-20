@@ -235,6 +235,7 @@ workflows:
                 - master
           requires:
             - build_and_test
+            - check_snyk
 
       - push_to_docker_hub:
           requires:
