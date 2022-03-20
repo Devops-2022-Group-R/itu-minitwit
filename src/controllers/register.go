@@ -7,7 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"github.com/Devops-2022-Group-R/itu-minitwit/src/database"
-	"github.com/Devops-2022-Group-R/itu-minitwit/src/internal"
+	"github.com/Devops-2022-Group-R/itu-minitwit/src/custom"
 	"github.com/Devops-2022-Group-R/itu-minitwit/src/models"
 	"github.com/Devops-2022-Group-R/itu-minitwit/src/monitoring"
 	pwdHash "github.com/Devops-2022-Group-R/itu-minitwit/src/password"
@@ -20,31 +20,31 @@ type RegisterRequestBody struct {
 }
 
 var (
-	ErrInvalidEmail = internal.NewHttpError(http.StatusUnprocessableEntity, "email address is not valid")
+	ErrInvalidEmail = custom.NewHttpError(http.StatusUnprocessableEntity, "email address is not valid")
 )
 
 func RegisterController(c *gin.Context) {
 	var body RegisterRequestBody
 
 	if err := c.BindJSON(&body); err != nil {
-		internal.AbortWithError(c, internal.NewBadRequestErrorFromError(err))
+		custom.AbortWithError(c, custom.NewBadRequestErrorFromError(err))
 		return
 	}
 
 	if !strings.Contains(body.Email, "@") {
-		internal.AbortWithError(c, ErrInvalidEmail)
+		custom.AbortWithError(c, ErrInvalidEmail)
 		return
 	}
 
 	userRepository := c.MustGet(UserRepositoryKey).(database.IUserRepository)
 
 	if user, err := userRepository.GetByUsername(body.Username); err != nil {
-		internal.AbortWithError(c, internal.NewInternalServerError(err))
+		custom.AbortWithError(c, custom.NewInternalServerError(err))
 		return
 	} else if user != nil {
 		// We changed this from Conflict to Bad Request because the simulator
 		// expects error code 400
-		internal.AbortWithError(c, internal.NewBadRequestError("the username is already taken"))
+		custom.AbortWithError(c, custom.NewBadRequestError("the username is already taken"))
 		return
 	}
 
@@ -55,7 +55,7 @@ func RegisterController(c *gin.Context) {
 	})
 
 	if err != nil {
-		internal.AbortWithError(c, internal.NewInternalServerError(err))
+		custom.AbortWithError(c, custom.NewInternalServerError(err))
 		return
 	}
 

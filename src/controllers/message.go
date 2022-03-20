@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/Devops-2022-Group-R/itu-minitwit/src/database"
-	"github.com/Devops-2022-Group-R/itu-minitwit/src/internal"
+	"github.com/Devops-2022-Group-R/itu-minitwit/src/custom"
 	"github.com/Devops-2022-Group-R/itu-minitwit/src/models"
 	"github.com/gin-gonic/gin"
 )
@@ -19,7 +19,7 @@ func GetMessages(c *gin.Context) {
 	messageRepository := c.MustGet(MessageRepositoryKey).(database.IMessageRepository)
 	messages, err := messageRepository.GetWithLimit(perPage)
 	if err != nil {
-		internal.AbortWithError(c, internal.NewInternalServerError(err))
+		custom.AbortWithError(c, custom.NewInternalServerError(err))
 		return
 	}
 
@@ -33,18 +33,18 @@ func GetUserMessages(c *gin.Context) {
 
 	user, err := userRepository.GetByUsername(c.Param("username"))
 	if err != nil {
-		internal.AbortWithError(c, internal.NewInternalServerError(err))
+		custom.AbortWithError(c, custom.NewInternalServerError(err))
 		return
 	}
 
 	if user == nil {
-		internal.AbortWithError(c, internal.ErrUserNotFound)
+		custom.AbortWithError(c, custom.ErrUserNotFound)
 		return
 	}
 
 	messages, err := messageRepository.GetByUserId(user.UserId, perPage)
 	if err != nil {
-		internal.AbortWithError(c, internal.NewInternalServerError(err))
+		custom.AbortWithError(c, custom.NewInternalServerError(err))
 		return
 	}
 
@@ -58,7 +58,7 @@ func GetFeedMessages(c *gin.Context) {
 
 	messages, err := messageRepository.GetByUserAndItsFollowers(user.UserId, perPage)
 	if err != nil {
-		internal.AbortWithError(c, internal.NewInternalServerError(err))
+		custom.AbortWithError(c, custom.NewInternalServerError(err))
 		return
 	}
 
@@ -70,14 +70,14 @@ func PostUserMessage(c *gin.Context) {
 	var body PostUserMessageRequestBody
 
 	if err := c.BindJSON(&body); err != nil {
-		internal.AbortWithError(c, internal.NewBadRequestErrorFromError(err))
+		custom.AbortWithError(c, custom.NewBadRequestErrorFromError(err))
 		return
 	}
 
 	userRepository := c.MustGet(UserRepositoryKey).(database.IUserRepository)
 	user, err := GetUserOrAdmin(c, userRepository)
-	if err != (internal.HttpError{}) {
-		internal.AbortWithError(c, err)
+	if err != (custom.HttpError{}) {
+		custom.AbortWithError(c, err)
 		return
 	}
 

@@ -6,7 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"github.com/Devops-2022-Group-R/itu-minitwit/src/database"
-	"github.com/Devops-2022-Group-R/itu-minitwit/src/internal"
+	"github.com/Devops-2022-Group-R/itu-minitwit/src/custom"
 )
 
 type FollowRequestBody struct {
@@ -20,13 +20,13 @@ func FollowPostController(c *gin.Context) {
 
 	var body FollowRequestBody
 	if err := c.BindJSON(&body); err != nil {
-		internal.AbortWithError(c, internal.NewBadRequestErrorFromError(err))
+		custom.AbortWithError(c, custom.NewBadRequestErrorFromError(err))
 		return
 	}
 
 	user, err := GetUserOrAdmin(c, userRepository)
-	if err != (internal.HttpError{}) {
-		internal.AbortWithError(c, err)
+	if err != (custom.HttpError{}) {
+		custom.AbortWithError(c, err)
 		return
 	}
 
@@ -34,10 +34,10 @@ func FollowPostController(c *gin.Context) {
 	if len(body.Follow) > 0 {
 		followTarget, err := userRepository.GetByUsername(body.Follow)
 		if err != nil {
-			internal.AbortWithError(c, internal.NewInternalServerError(err))
+			custom.AbortWithError(c, custom.NewInternalServerError(err))
 			return
 		} else if followTarget == nil {
-			internal.AbortWithError(c, internal.ErrUserNotFound)
+			custom.AbortWithError(c, custom.ErrUserNotFound)
 			return
 		}
 		followTargetUserId = followTarget.UserId
@@ -47,10 +47,10 @@ func FollowPostController(c *gin.Context) {
 	if len(body.Unfollow) > 0 {
 		unfollowTarget, err := userRepository.GetByUsername(body.Unfollow)
 		if err != nil {
-			internal.AbortWithError(c, internal.NewInternalServerError(err))
+			custom.AbortWithError(c, custom.NewInternalServerError(err))
 			return
 		} else if unfollowTarget == nil {
-			internal.AbortWithError(c, internal.ErrUserNotFound)
+			custom.AbortWithError(c, custom.ErrUserNotFound)
 			return
 		}
 		unfollowTargetUserId = unfollowTarget.UserId
@@ -58,14 +58,14 @@ func FollowPostController(c *gin.Context) {
 
 	if len(body.Follow) > 0 {
 		if err := userRepository.Follow(user.UserId, followTargetUserId); err != nil {
-			internal.AbortWithError(c, internal.NewInternalServerError(err))
+			custom.AbortWithError(c, custom.NewInternalServerError(err))
 			return
 		}
 	}
 
 	if len(body.Unfollow) > 0 {
 		if err := userRepository.Unfollow(user.UserId, unfollowTargetUserId); err != nil {
-			internal.AbortWithError(c, internal.NewInternalServerError(err))
+			custom.AbortWithError(c, custom.NewInternalServerError(err))
 			return
 		}
 	}
@@ -79,16 +79,16 @@ func FollowGetController(c *gin.Context) {
 	urlUsername := c.Param("username")
 	author, err := userRepository.GetByUsername(urlUsername)
 	if err != nil {
-		internal.AbortWithError(c, internal.NewInternalServerError(err))
+		custom.AbortWithError(c, custom.NewInternalServerError(err))
 		return
 	} else if author == nil {
-		internal.AbortWithError(c, internal.ErrUserNotFound)
+		custom.AbortWithError(c, custom.ErrUserNotFound)
 		return
 	}
 
 	allFollowed, err := userRepository.AllFollowed(author.UserId)
 	if err != nil {
-		internal.AbortWithError(c, internal.NewInternalServerError(err))
+		custom.AbortWithError(c, custom.NewInternalServerError(err))
 		return
 	}
 

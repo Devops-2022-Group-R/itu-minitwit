@@ -1,4 +1,4 @@
-package internal
+package custom
 
 import (
 	"fmt"
@@ -35,7 +35,7 @@ func NewHiddenHttpErrorWithRelatedError(statusCode int, message string, err erro
 }
 
 func NewInternalServerError(err error) HttpError {
-	return NewHiddenHttpErrorWithRelatedError(500, "internal server error", err)
+	return NewHiddenHttpErrorWithRelatedError(500, "custom server error", err)
 }
 
 func NewBadRequestError(message string) HttpError {

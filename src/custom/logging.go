@@ -1,4 +1,4 @@
-package internal
+package custom
 
 import (
 	"bufio"
@@ -64,7 +64,7 @@ func getLogLevel(level LogLevel) string {
 	}
 }
 
-// Used internally to print in the desired format
+// Used customly to print in the desired format
 func (l *Log) formatString(level LogLevel, v ...interface{}) string {
 	// Format now as dd-mm-yyyy hh:mm:ss ±hhmm
 	timestamp := time.Now().UTC().Format("02-01-2006 15:04:05 -0700")
