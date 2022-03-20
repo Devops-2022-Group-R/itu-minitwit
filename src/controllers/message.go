@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/Devops-2022-Group-R/itu-minitwit/src/database"
+	"github.com/Devops-2022-Group-R/itu-minitwit/src/custom"
 	"github.com/Devops-2022-Group-R/itu-minitwit/src/models"
 	"github.com/gin-gonic/gin"
 )
@@ -18,7 +19,7 @@ func GetMessages(c *gin.Context) {
 	messageRepository := c.MustGet(MessageRepositoryKey).(database.IMessageRepository)
 	messages, err := messageRepository.GetWithLimit(perPage)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		custom.AbortWithError(c, custom.NewInternalServerError(err))
 		return
 	}
 
@@ -32,18 +33,18 @@ func GetUserMessages(c *gin.Context) {
 
 	user, err := userRepository.GetByUsername(c.Param("username"))
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		custom.AbortWithError(c, custom.NewInternalServerError(err))
 		return
 	}
 
 	if user == nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "user not found"})
+		custom.AbortWithError(c, custom.ErrUserNotFound)
 		return
 	}
 
 	messages, err := messageRepository.GetByUserId(user.UserId, perPage)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		custom.AbortWithError(c, custom.NewInternalServerError(err))
 		return
 	}
 
@@ -57,7 +58,7 @@ func GetFeedMessages(c *gin.Context) {
 
 	messages, err := messageRepository.GetByUserAndItsFollowers(user.UserId, perPage)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		custom.AbortWithError(c, custom.NewInternalServerError(err))
 		return
 	}
 
@@ -69,29 +70,14 @@ func PostUserMessage(c *gin.Context) {
 	var body PostUserMessageRequestBody
 
 	if err := c.BindJSON(&body); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		custom.AbortWithError(c, custom.NewBadRequestErrorFromError(err))
 		return
 	}
 
-	urlUsername := c.Param("username")
-
-	user := c.MustGet(UserKey).(*models.User)
-	if c.MustGet(IsAdminKey).(bool) {
-		userRepository := c.MustGet(UserRepositoryKey).(database.IUserRepository)
-		var err error
-		user, err = userRepository.GetByUsername(urlUsername)
-
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-			return
-		}
-
-		if user == nil {
-			c.JSON(http.StatusNotFound, gin.H{"error": "user not found"})
-			return
-		}
-	} else if user.Username != urlUsername {
-		c.JSON(http.StatusUnprocessableEntity, gin.H{"error": "the URL username did not match the Authorization header username"})
+	userRepository := c.MustGet(UserRepositoryKey).(database.IUserRepository)
+	user, err := GetUserOrAdmin(c, userRepository)
+	if err != (custom.HttpError{}) {
+		custom.AbortWithError(c, err)
 		return
 	}
 
