@@ -209,7 +209,6 @@ jobs:
           command: docker build -t $IMAGE_NAME .
       - snyk/scan:
           docker-image-name: $IMAGE_NAME
-          fail-on-issues: false
           project: '${CIRCLE_PROJECT_REPONAME}/${CIRCLE_BRANCH}-container'
           severity-threshold: medium
           target-file: Dockerfile
