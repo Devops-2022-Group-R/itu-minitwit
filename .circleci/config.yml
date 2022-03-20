@@ -176,7 +176,7 @@ jobs:
           paths:
               - shared_vars
 
-  build_and_run_static_analysis_tools:
+  check_gocyclo:
     working_directory: ~/repo
     docker:
       - image: circleci/golang:1.17-buster
@@ -187,12 +187,16 @@ jobs:
           name: "Check cyclomatic complexity"
           command: |
             go install github.com/fzipp/gocyclo/cmd/gocyclo@latest
+            MAX_CYCLO=$(echo $(gocyclo -top 1 src/) | head -n1 | cut -d " " -f1) # Get cyclomatic complexity - first word
+            CYCLO_LIMIT=15
 
-            log=$cycloComplexity.txt
-            gocyclo src/ > log
-            echo "Create cyclomatic log in $log"
+            if [ $MAX_CYCLO -ge $CYCLO_LIMIT ]; then
+              echo "These functions have a cyclomatic complexity of at least $CYCLO_LIMIT!"
+              gocyclo -over $((CYCLO_LIMIT-1)) src/
+              # exit 1
+            fi
 
-  build_snyk:
+  check_snyk:
     docker:
       - image: circleci/golang:1.17-buster
     environment:
