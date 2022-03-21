@@ -39,7 +39,7 @@ resource "azurerm_app_service_plan" "asp" {
 
   sku {
     tier = "Basic"
-    size = "B2"
+    size = "B1"
   }
 }
 
@@ -125,24 +125,11 @@ resource "azurerm_mssql_database" "database_mssql_database" {
   sku_name    = "Basic"
 }
 
-resource "azurerm_app_service_plan" "monitoring_asp" {
-  name                = "${var.prefix}-monitoring-asp"
-  location            = azurerm_resource_group.rg.location
-  resource_group_name = azurerm_resource_group.rg.name
-  kind                = "linux"
-  reserved            = true
-
-  sku {
-    tier = "Basic"
-    size = "B2"
-  }
-}
-
 resource "azurerm_app_service" "monitoring_as" {
   name                = "${var.prefix}-monitoring-as"
   location            = azurerm_resource_group.rg.location
   resource_group_name = azurerm_resource_group.rg.name
-  app_service_plan_id = azurerm_app_service_plan.monitoring_asp.id
+  app_service_plan_id = azurerm_app_service_plan.asp.id
   client_cert_enabled = false
   site_config {
     ftps_state       = "Disabled"
