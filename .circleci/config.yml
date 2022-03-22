@@ -206,7 +206,7 @@ jobs:
             if [ $MAX_CYCLO -ge $CYCLO_LIMIT ]; then
               echo "These functions have a cyclomatic complexity of at least $CYCLO_LIMIT!"
               gocyclo -over $((CYCLO_LIMIT-1)) src/
-              # exit 1
+              exit 1
             fi
 
   check_snyk:
