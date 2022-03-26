@@ -145,15 +145,24 @@ jobs:
               -auto-approve
 
   apply_kubernetes:
+    <<: *defaults 
     executor: azure-aks/default
     steps:
       - checkout
+
+      - attach_workspace:
+          at: /tmp/workspace
+      
+      - run:
+          name: Import variables from other jobs
+          command: cat /tmp/workspace/shared_vars >> $BASH_ENV
 
       - azure-aks/update-kubeconfig-with-credentials:
           cluster-name: itu-minitwit-cluster
           install-kubectl: true
           perform-login: true
           resource-group: itu-minitwit-rg
+
       - run:
           command: |
             curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
@@ -161,6 +170,11 @@ jobs:
             cd .infrastructure/kubernetes
             chmod +x apply.sh
             ./apply.sh
+
+            kubectl set image deployment itu-minitwit-backend itu-minitwit-backend=kongborup/itu-minitwit-server:$VERSION -n itu-minitwit-backend-ns
+            kubectl set image deployment itu-minitwit-frontend itu-minitwit-frontend=kongborup/itu-minitwit-frontend:$VERSION -n itu-minitwit-frontend-ns
+            kubectl set image deployment itu-minitwit-monitoring-grafana itu-minitwit-monitoring-grafana=kongborup/itu-minitwit-monitoring-grafana:$VERSION -n itu-minitwit-monitoring-ns
+            kubectl set image deployment itu-minitwit-monitoring-prometheus itu-minitwit-monitoring-prometheus=kongborup/itu-minitwit-monitoring-prometheus:$VERSION -n itu-minitwit-monitoring-ns
           name: Deploy cluster 
 
   # Based on: https://circleci.com/blog/publishing-to-github-releases-via-circleci/
@@ -263,49 +277,49 @@ workflows:
 
       # - check_snyk
 
-      # - publish_github_release:
-      #     context: ITU MiniTwit
-      #     filters:
-      #       branches:
-      #         only:
-      #           - master
-      #     requires:
-      #       - build_and_test
-      #       - check_snyk
+      - publish_github_release:
+          context: ITU MiniTwit
+          filters:
+            branches:
+              only:
+                - master
+          requires:
+            - build_and_test
+            - check_snyk
 
-      # - push_to_docker_hub:
-      #     requires:
-      #       - publish_github_release
-      #     context: ITU MiniTwit
-      #     filters:
-      #       branches:
-      #         only:
-      #           - master
+      - push_to_docker_hub:
+          requires:
+            - publish_github_release
+          context: ITU MiniTwit
+          filters:
+            branches:
+              only:
+                - master
 
-      # - push_monitoring_to_docker_hub:
-      #     requires:
-      #       - publish_github_release
-      #     context: ITU MiniTwit
-      #     filters:
-      #       branches:
-      #         only:
-      #           - master
+      - push_monitoring_to_docker_hub:
+          requires:
+            - publish_github_release
+          context: ITU MiniTwit
+          filters:
+            branches:
+              only:
+                - master
 
-      # - apply_infrastructure:
-      #     requires:
-      #       - push_to_docker_hub
-      #     context: ITU MiniTwit
-      #     filters:
-      #       branches:
-      #         only:
-      #           - master
+      - apply_infrastructure:
+          requires:
+            - push_to_docker_hub
+          context: ITU MiniTwit
+          filters:
+            branches:
+              only:
+                - master
 
       - apply_kubernetes:
-          # requires:
-          #   - apply_infrastructure
+          requires:
+            - apply_infrastructure
           context: ITU MiniTwit
-          # filters:
-          #   branches:
-          #     only:
-          #       - master
+          filters:
+            branches:
+              only:
+                - master
 
