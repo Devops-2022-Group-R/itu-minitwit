@@ -89,7 +89,7 @@ resource "azurerm_dns_zone" "cluster_dns_zone" {
   resource_group_name = azurerm_resource_group.rg.name
 }
 
-resource "azurerm_dns_zone" "cluster_dns_zone" {
+resource "azurerm_dns_zone" "cluster_dns_zone_swuwu" {
   name                = "swuwu.dk"
   resource_group_name = azurerm_resource_group.rg.name
 }
