@@ -64,9 +64,12 @@ spec:
   - hosts:
     - monitoring.rhododevdron.dk
     secretName: tls-secret-grafana
+  - hosts:
+    - monitoring.rhododevdron.swuwu.dk
+    secretName: tls-secret-grafana-swuwu
   rules:
   - host: monitoring.rhododevdron.dk 
-    http:
+    http: &http_rules
       paths:
       - path: /
         pathType: Prefix
@@ -75,3 +78,5 @@ spec:
             name: itu-minitwit-monitoring-grafana
             port:
               number: 80
+  - host: monitoring.rhododevdron.swuwu.dk
+    http: *http_rules

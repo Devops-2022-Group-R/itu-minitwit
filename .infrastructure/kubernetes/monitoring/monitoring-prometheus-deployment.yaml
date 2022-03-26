@@ -61,9 +61,12 @@ spec:
   - hosts:
     - prometheus.rhododevdron.dk
     secretName: tls-secret-prometheus
+  - hosts:
+    - prometheus.rhododevdron.swuwu.dk
+    secretName: tls-secret-prometheus-swuwu
   rules:
   - host: prometheus.rhododevdron.dk 
-    http:
+    http: &http_rules
       paths:
       - path: /
         pathType: Prefix
@@ -72,3 +75,5 @@ spec:
             name: itu-minitwit-monitoring-prometheus
             port:
               number: 80
+  - host: prometheus.rhododevdron.swuwu.dk
+    http: *http_rules
