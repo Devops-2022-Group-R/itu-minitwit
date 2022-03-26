@@ -151,6 +151,7 @@ jobs:
 
       - azure-aks/update-kubeconfig-with-credentials:
           cluster-name: itu-minitwit-cluster
+          service-principal: $AZURE_SP_APPID
           install-kubectl: true
           perform-login: true
           resource-group: itu-minitwit-rg
