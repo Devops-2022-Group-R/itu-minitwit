@@ -103,7 +103,7 @@ resource "azurerm_mssql_server" "database_mssql_server" {
     # Security group that should be made in Azure to provide access
     login_username              = "Admins"
     object_id                   = "fa37a2f2-6d36-45e6-8b20-fa037e932ac6"
-    azuread_authentication_only = true
+    azuread_authentication_only = false
   }
 
   identity {
