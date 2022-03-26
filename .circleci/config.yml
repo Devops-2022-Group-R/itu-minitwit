@@ -172,7 +172,6 @@ jobs:
             ./apply.sh
 
             kubectl set image deployment itu-minitwit-backend itu-minitwit-backend=kongborup/itu-minitwit-server:$VERSION -n itu-minitwit-backend-ns
-            kubectl set image deployment itu-minitwit-frontend itu-minitwit-frontend=kongborup/itu-minitwit-frontend:$VERSION -n itu-minitwit-frontend-ns
             kubectl set image deployment itu-minitwit-monitoring-grafana itu-minitwit-monitoring-grafana=kongborup/itu-minitwit-monitoring-grafana:$VERSION -n itu-minitwit-monitoring-ns
             kubectl set image deployment itu-minitwit-monitoring-prometheus itu-minitwit-monitoring-prometheus=kongborup/itu-minitwit-monitoring-prometheus:$VERSION -n itu-minitwit-monitoring-ns
           name: Deploy cluster 
