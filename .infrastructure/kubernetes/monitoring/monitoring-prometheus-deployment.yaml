@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: itu-minitwit-monitoring-prometheus
+  namespace: itu-minitwit-monitoring-ns
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: itu-minitwit-monitoring-prometheus
+  template:
+    metadata:
+      labels:
+        app: itu-minitwit-monitoring-prometheus
+    spec:
+      nodeSelector:
+        "beta.kubernetes.io/os": linux
+      containers:
+      - name: itu-minitwit-monitoring-prometheus
+        image: kongborup/itu-minitwit-monitoring-prometheus
+        ports:
+        - containerPort: 9090
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: itu-minitwit-monitoring-prometheus
+  namespace: itu-minitwit-monitoring-ns
+spec:
+  type: LoadBalancer
+  ports:
+  - name: http
+    port: 80
+    protocol: TCP
+    targetPort: 9090
+  selector:
+    app: itu-minitwit-monitoring-prometheus
