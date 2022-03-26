@@ -157,9 +157,9 @@ resource "azurerm_kubernetes_cluster" "cluster" {
   identity {
     type = "SystemAssigned"
   }
-
-  tags = {
-    Environment = "Production"
-  }
 }
 
+resource "azurerm_dns_zone" "cluster_dns_zone" {
+  name                = "rhododevdron.dk"
+  resource_group_name = azurerm_resource_group.rg.name
+}
