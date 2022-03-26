@@ -156,6 +156,8 @@ jobs:
           resource-group: itu-minitwit-rg
       - run:
           command: |
+            curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+
             cd .infrastructure/kubernetes
             chmod +x apply.sh
             ./apply.sh
