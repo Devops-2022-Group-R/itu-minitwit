@@ -19,6 +19,3 @@ kubectl apply -f ./backend/backend-deployment.yaml
 kubectl apply -f ./monitoring/monitoring-namespace.yaml
 kubectl apply -f ./monitoring/monitoring-grafana-deployment.yaml
 kubectl apply -f ./monitoring/monitoring-prometheus-deployment.yaml
-
-kubectl apply -f ./frontend/frontend-namespace.yaml
-kubectl apply -f ./frontend/frontend-deployment.yaml
