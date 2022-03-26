@@ -141,3 +141,25 @@ resource "azurerm_app_service" "monitoring_as" {
     "WEBSITES_ENABLE_APP_SERVICE_STORAGE" = "false"
   }
 }
+
+resource "azurerm_kubernetes_cluster" "cluster" {
+  name                = "${var.prefix}-cluster"
+  location            = azurerm_resource_group.rg.location
+  resource_group_name = azurerm_resource_group.rg.name
+  dns_prefix          = "regnbur"
+
+  default_node_pool {
+    name       = "default"
+    node_count = 1
+    vm_size    = "standard_d2as_v4"
+  }
+
+  identity {
+    type = "SystemAssigned"
+  }
+
+  tags = {
+    Environment = "Production"
+  }
+}
+
