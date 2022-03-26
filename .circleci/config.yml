@@ -272,9 +272,9 @@ workflows:
 
       - lint
 
-      # - check_gocyclo
+      - check_gocyclo
 
-      # - check_snyk
+      - check_snyk
 
       - publish_github_release:
           context: ITU MiniTwit
