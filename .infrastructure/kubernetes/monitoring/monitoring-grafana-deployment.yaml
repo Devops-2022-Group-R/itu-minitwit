@@ -67,6 +67,9 @@ spec:
   - hosts:
     - monitoring.rhododevdron.swuwu.dk
     secretName: tls-secret-grafana-swuwu
+  - hosts:
+    - monitoring.rhododevron.swuwu.dk
+    secretName: tls-secret-grafana-swuwu-wrong
   rules:
   - host: monitoring.rhododevdron.dk 
     http: &http_rules
@@ -79,4 +82,6 @@ spec:
             port:
               number: 80
   - host: monitoring.rhododevdron.swuwu.dk
+    http: *http_rules
+  - host: monitoring.rhododevron.swuwu.dk
     http: *http_rules
