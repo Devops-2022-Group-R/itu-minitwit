@@ -88,3 +88,8 @@ resource "azurerm_dns_zone" "cluster_dns_zone" {
   name                = "rhododevdron.dk"
   resource_group_name = azurerm_resource_group.rg.name
 }
+
+resource "azurerm_dns_zone" "cluster_dns_zone" {
+  name                = "swuwu.dk"
+  resource_group_name = azurerm_resource_group.rg.name
+}
