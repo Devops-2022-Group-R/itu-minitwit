@@ -27,7 +27,6 @@ metadata:
   name: itu-minitwit-monitoring-prometheus
   namespace: itu-minitwit-monitoring-ns
 spec:
-  type: LoadBalancer
   ports:
   - name: http
     port: 80
@@ -35,3 +34,23 @@ spec:
     targetPort: 9090
   selector:
     app: itu-minitwit-monitoring-prometheus
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: itu-minitwit-monitoring-prometheus
+  namespace: itu-minitwit-monitoring-ns
+  annotations:
+    kubernetes.io/ingress.class: nginx
+spec:
+  rules:
+  - host: prometheus.rhododevdron.dk 
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: itu-minitwit-monitoring-prometheus
+            port:
+              number: 80
