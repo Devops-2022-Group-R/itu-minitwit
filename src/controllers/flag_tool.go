@@ -10,7 +10,8 @@ import (
 )
 
 var (
-	ErrInvalidMessageId = internal.NewBadRequestError("invalid message id")
+	ErrInvalidMessageId     = internal.NewBadRequestError("invalid message id")
+	ErrMissingAuthorization = internal.NewHttpError(403, "Forbidden not authorized")
 )
 
 func FlagMessageById(c *gin.Context) {
