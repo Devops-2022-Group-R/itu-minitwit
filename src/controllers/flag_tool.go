@@ -14,6 +14,18 @@ var (
 	ErrMissingAuthorization = internal.NewHttpError(403, "Forbidden not authorized")
 )
 
+func AuthorizationRequired() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		isAdmin := c.MustGet(IsAdminKey).(bool)
+		if isAdmin {
+			c.Next()
+		} else {
+			internal.AbortWithError(c, ErrMissingAuthorization)
+			return
+		}
+	}
+}
+
 func FlagMessageById(c *gin.Context) {
 	messageRepository := c.MustGet(MessageRepositoryKey).(database.IMessageRepository)
 	msgId, err := strconv.Atoi(c.Param("msgid"))
