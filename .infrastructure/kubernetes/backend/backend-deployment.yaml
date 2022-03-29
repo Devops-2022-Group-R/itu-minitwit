@@ -1,0 +1,87 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: itu-minitwit-backend
+  namespace: itu-minitwit-backend-ns
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: itu-minitwit-backend
+  minReadySeconds: 5
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        app: itu-minitwit-backend
+    spec:
+      nodeSelector:
+        "beta.kubernetes.io/os": linux
+      containers:
+      - name: itu-minitwit-backend
+        image: kongborup/itu-minitwit-server 
+        env:
+        - name: ENVIRONMENT
+          value: "PRODUCTION"
+        - name: SQLCONNSTR_CONNECTION_STRING
+          valueFrom:
+            secretKeyRef:
+              name: itu-minitwit-backend-secrets
+              key: CONNECTION_STRING
+        ports:
+        - containerPort: 8080
+        readinessProbe:
+          httpGet:
+            path: /latest
+            port: 8080
+          initialDelaySeconds: 5
+          periodSeconds: 2
+          successThreshold: 1
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: itu-minitwit-backend
+  namespace: itu-minitwit-backend-ns
+spec:
+  ports:
+  - name: http
+    port: 80
+    protocol: TCP
+    targetPort: 8080
+  selector:
+    app: itu-minitwit-backend
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: itu-minitwit-backend
+  namespace: itu-minitwit-backend-ns
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+spec:
+  tls:
+  - hosts:
+    - api.rhododevdron.dk
+    secretName: tls-secret
+  - hosts:
+    - api.rhododevdron.swuwu.dk
+    secretName: tls-secret-swuwu
+  rules:
+  - host: api.rhododevdron.dk 
+    http: &http_rules
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: itu-minitwit-backend 
+            port:
+              number: 80
+  - host: api.rhododevdron.swuwu.dk 
+    http: *http_rules
