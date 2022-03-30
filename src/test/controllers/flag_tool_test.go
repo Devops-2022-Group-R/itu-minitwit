@@ -113,12 +113,11 @@ func (suite *FlagToolTestSuite) Test_GetAllMessages_Without_Authorization_return
 
 	// Arrange
 	user := "Geralt"
-	password := "Gesty"
-	suite.registerUser(user, "WhiteWolf@eh.com", password)
+	suite.registerUser(user, "WhiteWolf@eh.com", "Gesty")
 
 	// Act
 	req := httptest.NewRequest(http.MethodGet, "/flag_tool/msgs", nil)
-	w := suite.sendAuthedRequest(req, user, password)
+	w := suite.sendAuthedRequest(req, user, "Gesty")
 
 	// Assert
 	suite.Equal(http.StatusForbidden, w.Code)
