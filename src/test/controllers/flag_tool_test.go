@@ -22,7 +22,7 @@ func (suite *FlagToolTestSuite) Test_FlagMessageById_Given_hello_Returns_BadRequ
 
 	// Act
 	req := httptest.NewRequest(http.MethodPut, "/flag_tool/hello", nil)
-	w := suite.sendRequest(req)
+	w := suite.sendSimulatorRequest(req)
 
 	// Assert
 	suite.Equal(http.StatusBadRequest, w.Code)
@@ -54,7 +54,7 @@ func (suite *FlagToolTestSuite) Test_FlagMessageById_Given_ExistingMsgId_Returns
 	suite.readBody(wPreFlag, &resBodyPreFlag)
 
 	req := httptest.NewRequest(http.MethodPut, "/flag_tool/1", nil)
-	w := suite.sendRequest(req)
+	w := suite.sendSimulatorRequest(req)
 
 	reqPostFlag := httptest.NewRequest(http.MethodGet, "/msgs", nil)
 	wPostFlag := suite.sendRequest(reqPostFlag)
@@ -97,7 +97,7 @@ func (suite *FlagToolTestSuite) Test_GetAllMessages_Returns_AllMessages() {
 
 	// 	Act
 	req := httptest.NewRequest(http.MethodGet, "/flag_tool/msgs", nil)
-	w := suite.sendRequest(req)
+	w := suite.sendSimulatorRequest(req)
 
 	var resBody []models.Message
 	suite.readBody(w, &resBody)
