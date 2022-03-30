@@ -108,3 +108,18 @@ func (suite *FlagToolTestSuite) Test_GetAllMessages_Returns_AllMessages() {
 	suite.Equal(expectedMsg.Text, resBody[32].Text)
 	suite.Equal(expectedMsg.Author.Username, resBody[32].Author.Username)
 }
+
+func (suite *FlagToolTestSuite) Test_GetAllMessages_Without_Authorization_returns_403() {
+
+	// Arrange
+	user := "Geralt"
+	password := "Gesty"
+	suite.registerUser(user, "WhiteWolf@eh.com", password)
+
+	// Act
+	req := httptest.NewRequest(http.MethodGet, "/flag_tool/msgs", nil)
+	w := suite.sendAuthedRequest(req, user, password)
+
+	// Assert
+	suite.Equal(http.StatusForbidden, w.Code)
+}
