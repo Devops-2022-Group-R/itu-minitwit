@@ -14,8 +14,16 @@ import (
 
 type FlagToolTestSuite struct{ BaseTestSuite }
 
+var (
+	user = "Geralt"
+)
+
 func TestFlagToolTestSuite(t *testing.T) {
 	suite.Run(t, new(FlagToolTestSuite))
+}
+
+func utilCreateUserInDatabase(suite *FlagToolTestSuite) {
+	suite.registerUser(user, "WhiteWolf@eh.com", "Gesty")
 }
 
 func (suite *FlagToolTestSuite) Test_FlagMessageById_Given_hello_Returns_BadRequest() {
@@ -32,8 +40,7 @@ func (suite *FlagToolTestSuite) Test_FlagMessageById_Given_ExistingMsgId_Returns
 
 	// Arrange
 	msg := "Gesty msg"
-	user := "Geralt"
-	suite.registerUser(user, "WhiteWolf@eh.com", "Gesty")
+	utilCreateUserInDatabase(suite)
 
 	geraltMsg, _ := json.Marshal(gin.H{"content": msg})
 	reqG, _ := http.NewRequest(http.MethodPost, "/msgs/Geralt", bytes.NewReader(geraltMsg))
@@ -63,11 +70,13 @@ func (suite *FlagToolTestSuite) Test_FlagMessageById_Given_ExistingMsgId_Returns
 	suite.readBody(wPostFlag, &resBodyPostFlag)
 
 	// Assert
+	// pre flag
 	suite.Equal(http.StatusOK, wPreFlag.Code)
 	suite.False(resBodyPreFlag[0].Flagged)
 	suite.Equal(expectedMsg.Text, resBodyPreFlag[0].Text)
 	suite.Equal(expectedMsg.Author.Username, resBodyPreFlag[0].Author.Username)
 
+	//	post flag 
 	suite.Equal(http.StatusOK, w.Code)
 	suite.Equal(http.StatusOK, wPostFlag.Code)
 	suite.Equal(expectedMsg.Text, resBodyPostFlag[0].Text)
@@ -80,8 +89,8 @@ func (suite *FlagToolTestSuite) Test_GetAllMessages_Returns_AllMessages() {
 	// 	Arrange
 	const perPage = 30
 	msg := "Gesty msg"
-	user := "Geralt"
-	suite.registerUser(user, "WhiteWolf@eh.com", "Gesty")
+	utilCreateUserInDatabase(suite)
+
 	// add more messages then perpage limit
 	for i := 0; i < perPage+5; i++ {
 		geraltMsg, _ := json.Marshal(gin.H{"content": msg})
@@ -109,11 +118,10 @@ func (suite *FlagToolTestSuite) Test_GetAllMessages_Returns_AllMessages() {
 	suite.Equal(expectedMsg.Author.Username, resBody[32].Author.Username)
 }
 
-func (suite *FlagToolTestSuite) Test_GetAllMessages_Without_Authorization_returns_403() {
+func (suite *FlagToolTestSuite) Test_GetAllMessages_Without_Authorization_Returns_ForbiddenRequest() {
 
 	// Arrange
-	user := "Geralt"
-	suite.registerUser(user, "WhiteWolf@eh.com", "Gesty")
+	utilCreateUserInDatabase(suite)
 
 	// Act
 	req := httptest.NewRequest(http.MethodGet, "/flag_tool/msgs", nil)
