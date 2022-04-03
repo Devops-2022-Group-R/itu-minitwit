@@ -1,0 +1,13 @@
+apiVersion: elasticsearch.k8s.elastic.co/v1
+kind: Elasticsearch
+metadata:
+  name: itu-minitwit-elasticsearch
+  namespace: itu-minitwit-logging-ns
+# By default creates a 1Gi volume claim in Azure
+spec:
+  version: 7.1.1
+  nodeSets:
+  - name: default
+    count: 1
+    config:
+      node.store.allow_mmap: false

@@ -1,0 +1,10 @@
+apiVersion: kibana.k8s.elastic.co/v1
+kind: Kibana
+metadata:
+  name: itu-minitwit-kibana
+  namespace: itu-minitwit-logging-ns
+spec:
+  version: 7.1.1
+  count: 1
+  elasticsearchRef:
+    name: itu-minitwit-elasticsearch
