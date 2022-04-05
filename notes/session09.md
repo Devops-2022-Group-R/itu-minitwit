@@ -1,5 +1,19 @@
 
 ## Logging in Kubernetes
+### Storage
+Retrieve storage info and create secret
+```bash
+STORAGE_ACCOUNT_NAME=regnburclusterstorage
+SHARE_NAME=cluster-persistent-storage
+RG=itu-minitwit-rg
+
+STORAGE_KEY=$(az storage account keys list --resource-group $RG --account-name $STORAGE_ACCOUNT_NAME --query "[0].value" -o tsv)
+
+# Create secret
+kubectl create secret generic azure-storage-secret --from-literal=azurestorageaccountname=$STORAGE_ACCOUNT_NAME --from-literal=azurestorageaccountkey=$STORAGE_KEY
+```
+
+
 ### Elasticsearch
 See:
 - https://www.elastic.co/blog/how-to-run-elastic-cloud-on-kubernetes-from-azure-kubernetes-service
