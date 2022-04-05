@@ -25,20 +25,10 @@ data:
         read_from_head false
         exclude_path ["/var/log/containers/fluent*", "/var/log/containers/azuredisk*", "/var/log/containers/coredns*"]
         <parse>
-          @type multi_format
-          <pattern>
-            format json
-            time_key time
-            time_type string
-            time_format "%Y-%m-%dT%H:%M:%S.%NZ"
-            keep_time_key false
-          </pattern>
-          <pattern>
-            format regexp
-            expression /^(?<time>.+) (?<stream>stdout|stderr)( (?<logtag>.))? (?<log>.*)$/
-            time_format '%Y-%m-%dT%H:%M:%S.%N%:z'
-            keep_time_key false
-          </pattern>
+          @type regexp
+          expression /^(?<time>.+) (?<stream>stdout|stderr)( (?<logtag>.))? (?<log>.*)$/
+          time_format '%Y-%m-%dT%H:%M:%S.%N%:z'
+          keep_time_key false
         </parse>
       </source>
 
@@ -47,6 +37,7 @@ data:
         @type kubernetes_metadata
       </filter>
 
+      # Copy log message to log_json for parsing purposes
       <filter kubernetes.**>
         @type record_transformer
         enable_ruby true
@@ -76,11 +67,29 @@ data:
         @type null
       </match>
 
+      <filter kubernetes.var.log.containers.**itu-minitwit-backend**>
+        @type parser
+        key_name log_json
+        reserve_data true
+        remove_key_name_field true
+        <parse>
+          @type regexp
+          expression /^\[(?<loglevel>\w+)\]\[(?<time>[^\]]*)\] \[(?<source>[^\]]*)\]\[(?<status>[^\]]*)\]\[\s+(?<duration>[^\]]*)\]\[IP:\s+(?<ip>[^\]]*)\]\[(?<method>\w+)\s+\]\[(?<route>[^\]]*)\] $/
+          time_format '%d-%m-%Y %H:%M:%S %z'
+        </parse>
+      </filter>
+
+      # Remove log_json again, and other unnecessary keys
+      <filter kubernetes.**>
+        @type record_transformer
+        remove_keys log_json
+      </filter>
+
       # we send the logs to Elasticsearch
       <match kubernetes.**>
         @type elasticsearch
         @id out_es
-        @log_level info
+        @log_level debug
         include_tag_key true
 
         host "#{ENV['FLUENT_ELASTICSEARCH_HOST']}"
