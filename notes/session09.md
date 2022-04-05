@@ -26,9 +26,15 @@
 
 #### Zaproxy kubernetes steps
 
+If issue with connecting to the cluster, try setting the subscription Id found in Azure
+
+```sh
+az account set --subscription cluser-subscrition-id
+```
+
 from .infrastructure/kubernetes/security
 ```sh
-kubectl apply -f zap.yml
+kubectl apply -f zap.yaml
 ```
 
 ```sh
@@ -39,10 +45,6 @@ Setup environment variables
 
 ```sh
 export URL_TO_SCAN="url"
-```
-
-```sh
-export SCAN_TYPE="all"
 ```
 
 
@@ -60,12 +62,16 @@ helm install "vuln-scan-$(date '+%Y-%m-%d-%H-%M-%S')-job" simplyzee/kube-owasp-z
 Show available logs sorted by most recent date
 
 ```sh
-kubectl get jobs --namespace owasp-zap | grep -v "COMPLETIONS" | sort`
+kubectl get jobs --namespace owasp-zap | grep -v "COMPLETIONS" | sort
+```
+Get corresponding pod
+```sh
+kubectl get pods --namespace owasp-zap
 ```
 
 Select log
 ```sh
-kubctl logs vuln-scan-2022-01-01-01-01-01-job-kube-owasp-zap-qmfbl --namespace owasp-zap
+kubectl logs <podname> --namespace owasp-zap
 ```
 
 ### Monitoring vulnerability
