@@ -55,7 +55,6 @@ helm install "vuln-scan-$(date '+%Y-%m-%d-%H-%M-%S')-job" simplyzee/kube-owasp-z
     --set zapcli.debug.enabled=true \
     --set zapcli.spider.enabled=false \
     --set zapcli.recursive.enabled=false \
-    --set zapcli.scanTypes=$SCAN_TYPE \
     --set zapcli.targetHost=$URL_TO_SCAN
 ```
 
@@ -75,4 +74,85 @@ kubectl logs <podname> --namespace owasp-zap
 ```
 
 ### Monitoring vulnerability
-See scenario discussion [security](./session09_Security.md)
+See scenario discussion [Security](./session09_Security.md)
+
+
+### Metasploit WMAP
+
+Resources used
+- [Setup Metasploit database in Kali Docker Container](https://gist.github.com/pich4ya/e7be40000c4fe7e487460dbebf1832fb)
+- [Metasploit WMAP in linux](https://linuxhint.com/metasploit_vurnerability_scanner_linux/)
+
+Installing Docker image
+```ps1
+docker pull kalilinux/kali-rolling 
+```
+
+```ps1
+docker run -it kalilinux/kali-rolling bash
+```
+
+Access running container
+```ps1
+docker exec -it <docker_container_name> bash
+```
+
+Commands inside image to setup Metasploit
+```sh
+apt-get install postgresql &&
+apt update && 
+apt -y upgrade &&
+apt install metasploit-framework &&
+msfdb init &&
+service postgresql start
+```
+
+Open metasploit console
+```ps1
+msfconsole
+```
+
+To check postgres connection
+```msfconsole
+db_status
+```
+
+Load WMAP plugin
+```msfconsole
+load wmap
+```
+
+Add sites to scan
+```msfconsole
+wmap_sites -a https://rhododevdron.swuwu.dk/public
+```
+
+List of sites
+```msfconsole
+wmap_sites -l
+```
+
+Add targets (sites or sub pages, based on wmap_sites) 
+```msfconsole
+wmap_targets -d [wmap_sites id] 
+```
+
+```msfconsole
+wmap_targets -t [url]
+```
+
+Show enabled modules
+```msfconsole
+wmap_run -t
+```
+
+Run scanner on all targets (warning takes a long time) - Seems to halt at brute_dirs module
+- [ ] Select or disable specific modules
+```msfconsole
+wmap_run -e
+```
+
+Show vulnerabilites 
+```msfconsole
+wmap_vulns -l
+```
