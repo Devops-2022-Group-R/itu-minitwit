@@ -54,8 +54,8 @@ func (suite *FlagToolTestSuite) Test_FlagMessageById_Given_ExistingMsgId_Returns
 	}
 
 	// Act
-	reqPreFlag := httptest.NewRequest(http.MethodGet, "/msgs", nil)
-	wPreFlag := suite.sendRequest(reqPreFlag)
+	reqPreFlag := httptest.NewRequest(http.MethodGet, "/flag_tool/msgs", nil)
+	wPreFlag := suite.sendSimulatorRequest(reqPreFlag)
 
 	var resBodyPreFlag []models.Message
 	suite.readBody(wPreFlag, &resBodyPreFlag)
@@ -63,8 +63,8 @@ func (suite *FlagToolTestSuite) Test_FlagMessageById_Given_ExistingMsgId_Returns
 	req := httptest.NewRequest(http.MethodPut, "/flag_tool/1", nil)
 	w := suite.sendSimulatorRequest(req)
 
-	reqPostFlag := httptest.NewRequest(http.MethodGet, "/msgs", nil)
-	wPostFlag := suite.sendRequest(reqPostFlag)
+	reqPostFlag := httptest.NewRequest(http.MethodGet, "/flag_tool/msgs", nil)
+	wPostFlag := suite.sendSimulatorRequest(reqPostFlag)
 
 	var resBodyPostFlag []models.Message
 	suite.readBody(wPostFlag, &resBodyPostFlag)
