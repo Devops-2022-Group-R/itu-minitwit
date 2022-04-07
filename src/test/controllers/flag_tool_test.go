@@ -14,8 +14,9 @@ import (
 
 type FlagToolTestSuite struct{ BaseTestSuite }
 
-var (
-	user = "Geralt"
+const (
+	user                = "Geralt"
+	flagToolMsgEndpoint = "/flag_tool/msgs"
 )
 
 func TestFlagToolTestSuite(t *testing.T) {
@@ -54,7 +55,7 @@ func (suite *FlagToolTestSuite) Test_FlagMessageById_Given_ExistingMsgId_Returns
 	}
 
 	// Act
-	reqPreFlag := httptest.NewRequest(http.MethodGet, "/flag_tool/msgs", nil)
+	reqPreFlag := httptest.NewRequest(http.MethodGet, flagToolMsgEndpoint, nil)
 	wPreFlag := suite.sendSimulatorRequest(reqPreFlag)
 
 	var resBodyPreFlag []models.Message
@@ -63,7 +64,7 @@ func (suite *FlagToolTestSuite) Test_FlagMessageById_Given_ExistingMsgId_Returns
 	req := httptest.NewRequest(http.MethodPut, "/flag_tool/1", nil)
 	w := suite.sendSimulatorRequest(req)
 
-	reqPostFlag := httptest.NewRequest(http.MethodGet, "/flag_tool/msgs", nil)
+	reqPostFlag := httptest.NewRequest(http.MethodGet, flagToolMsgEndpoint, nil)
 	wPostFlag := suite.sendSimulatorRequest(reqPostFlag)
 
 	var resBodyPostFlag []models.Message
@@ -76,7 +77,7 @@ func (suite *FlagToolTestSuite) Test_FlagMessageById_Given_ExistingMsgId_Returns
 	suite.Equal(expectedMsg.Text, resBodyPreFlag[0].Text)
 	suite.Equal(expectedMsg.Author.Username, resBodyPreFlag[0].Author.Username)
 
-	//	post flag 
+	//	post flag
 	suite.Equal(http.StatusOK, w.Code)
 	suite.Equal(http.StatusOK, wPostFlag.Code)
 	suite.Equal(expectedMsg.Text, resBodyPostFlag[0].Text)
@@ -105,7 +106,7 @@ func (suite *FlagToolTestSuite) Test_GetAllMessages_Returns_AllMessages() {
 	}
 
 	// 	Act
-	req := httptest.NewRequest(http.MethodGet, "/flag_tool/msgs", nil)
+	req := httptest.NewRequest(http.MethodGet, flagToolMsgEndpoint, nil)
 	w := suite.sendSimulatorRequest(req)
 
 	var resBody []models.Message
@@ -124,7 +125,7 @@ func (suite *FlagToolTestSuite) Test_GetAllMessages_Without_Authorization_Return
 	utilCreateUserInDatabase(suite)
 
 	// Act
-	req := httptest.NewRequest(http.MethodGet, "/flag_tool/msgs", nil)
+	req := httptest.NewRequest(http.MethodGet, flagToolMsgEndpoint, nil)
 	w := suite.sendAuthedRequest(req, user, "Gesty")
 
 	// Assert
