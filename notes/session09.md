@@ -16,6 +16,7 @@
 - Zaproxy didn't work as intented with kubernetes [simplyzee](https://github.com/simplyzee/kube-owasp-zap))
 - Run ZapProxy via the executable targeting Rhododevdron frontpage https://rhododevdron.swuwu.dk/public, found a few obscure risks
     -  Missing header settings (Anti-clickjacking Header, X-Content-Type-Options Header, Incomplete or No Cache-control Header)
+- Run WMAP in a docker container, targeting Rhododevdron frontpage https://rhododevdron.swuwu.dk/public see steps below 
 
 ### Zaproxy executable steps
 1. Install [Zaproxy](https://www.zaproxy.org/download/)
@@ -82,6 +83,7 @@ See scenario discussion [Security](./session09_Security.md)
 Resources used
 - [Setup Metasploit database in Kali Docker Container](https://gist.github.com/pich4ya/e7be40000c4fe7e487460dbebf1832fb)
 - [Metasploit WMAP in linux](https://linuxhint.com/metasploit_vurnerability_scanner_linux/)
+- [Fix missing 'systemd' in docker container](https://mefmobile.org/fix-systemctl-command-not-found/#:~:text=based%20operating%20systems.-,What%20is%20causing%20the%20%E2%80%9CSystemctl%3A%20command%20not%20found%E2%80%9D%20error,SysV%20init%20instead%20of%20systemd%20.)
 
 Installing Docker image
 ```ps1
@@ -99,11 +101,14 @@ docker exec -it <docker_container_name> bash
 
 Commands inside image to setup Metasploit
 ```sh
-apt-get install postgresql &&
 apt update && 
 apt -y upgrade &&
+apt-get install postgresql &&
 apt install metasploit-framework &&
-msfdb init &&
+dpkg -l | grep systemd &&
+apt-get update &&
+apt-get install systemd &&
+msfdb init && 
 service postgresql start
 ```
 
