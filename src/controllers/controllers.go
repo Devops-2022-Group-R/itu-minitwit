@@ -49,7 +49,7 @@ func SetupRouter(openDatabase database.OpenDatabaseFunc) *gin.Engine {
 	authorized.Use(AuthRequired())
 	authorized.Use(AuthorizationRequired())
 	authorized.PUT("/flag_tool/:msgid", FlagMessageById)
-	authorized.GET("/flag_tool/:msgs", GetAllMessages)
+	authorized.GET("/flag_tool/msgs", GetAllMessages)
 
 	return r
 }
