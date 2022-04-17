@@ -76,8 +76,10 @@ spec:
           - name: FLUENT_ELASTICSEARCH_USER
             value: "elastic"
           - name: FLUENT_ELASTICSEARCH_PASSWORD
-            # TODO: replace with secret
-            value: xbQ143WLkD7z181JVYnOK751
+            valueFrom:
+              secretKeyRef:
+                name: itu-minitwit-elasticsearch-es-elastic-user
+                key: elastic
           - name: FLUENT_ELASTICSEARCH_SSL_VERIFY
             value: "false"
           resources:
