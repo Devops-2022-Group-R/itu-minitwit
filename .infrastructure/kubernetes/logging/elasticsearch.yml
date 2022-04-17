@@ -13,6 +13,9 @@ spec:
       node.store.allow_mmap: false
     podTemplate:
       spec:
+        securityContext: # Necessary for reasons beyond my comprehension
+          fsGroup: 1000
+          runAsUser: 1000
         containers:
         - name: elasticsearch
           resources:
@@ -27,9 +30,9 @@ spec:
         name: elasticsearch-data
       spec:
         accessModes:
-          - ReadWriteMany
-        storageClassName: "azurefile-csi"
-        volumeName: elasticsearch-pv
+          - ReadWriteOnce
+        storageClassName: logging-nfs
+        volumeName: itu-minitwit-elasticsearch-pv
         resources:
           requests:
-            storage: 2Gi
+            storage: 10Gi
