@@ -25,10 +25,8 @@ data:
         read_from_head false
         exclude_path ["/var/log/containers/fluent*", "/var/log/containers/azuredisk*", "/var/log/containers/coredns*"]
         <parse>
-          @type regexp
-          expression /^(?<time>.+) (?<stream>stdout|stderr)( (?<logtag>.))? (?<log>.*)$/
+          @type json
           time_format '%Y-%m-%dT%H:%M:%S.%N%:z'
-          keep_time_key false
         </parse>
       </source>
 
@@ -37,13 +35,13 @@ data:
         @type kubernetes_metadata
       </filter>
 
-      # Copy log message to log_json for parsing purposes
+      # Copy log message to log_to_parse for parsing purposes
       <filter kubernetes.**>
         @type record_transformer
         enable_ruby true
         
         <record>
-          log_json ${record["log"]}
+          log_to_parse ${record["log"]}
         </record>
       </filter>
 
@@ -69,7 +67,7 @@ data:
 
       <filter kubernetes.var.log.containers.**itu-minitwit-backend**>
         @type parser
-        key_name log_json
+        key_name log_to_parse
         reserve_data true
         remove_key_name_field true
         <parse>
@@ -79,10 +77,10 @@ data:
         </parse>
       </filter>
 
-      # Remove log_json again, and other unnecessary keys
+      # Remove log_to_parse again, and other unnecessary keys
       <filter kubernetes.**>
         @type record_transformer
-        remove_keys log_json
+        remove_keys log_to_parse
       </filter>
 
       # we send the logs to Elasticsearch
