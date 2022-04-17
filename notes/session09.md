@@ -112,6 +112,16 @@ msfdb init &&
 service postgresql start
 ```
 
+Fix issue with postgres connection [Metasploit - Authentication failed for user "msf"](https://github.com/rapid7/metasploit-framework/issues/9696)
+```sh
+msfdb reinit
+```
+
+Ensure postgres server is running
+```sh 
+pg_lsclusters
+```
+
 Open metasploit console
 ```ps1
 msfconsole
