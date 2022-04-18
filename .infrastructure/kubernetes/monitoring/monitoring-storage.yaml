@@ -1,31 +1,10 @@
-apiVersion: v1
-kind: PersistentVolume
-metadata:
-  name: itu-minitwit-monitoring-grafana-pv
-  namespace: itu-minitwit-monitoring-ns
-spec:
-  capacity:
-    storage: 1Gi
-  volumeMode: Filesystem
-  accessModes:
-    - ReadWriteOnce
-  persistentVolumeReclaimPolicy: Retain
-  storageClassName: grafana-nfs
-  mountOptions:
-    - hard
-    - nfsvers=4.1
-  nfs:
-    server: 127.0.0.1
-    path: /mnt/md0/k8_nfs_share/grafana
-    readOnly: false
----
 kind: PersistentVolumeClaim
 apiVersion: v1
 metadata:
   name: itu-minitwit-monitoring-grafana-pvc
   namespace: itu-minitwit-monitoring-ns
 spec:
-  storageClassName: grafana-nfs
+  storageClassName: itu-minitwit-sc 
   accessModes:
     - ReadWriteOnce
   resources:

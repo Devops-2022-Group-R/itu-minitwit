@@ -31,8 +31,7 @@ spec:
       spec:
         accessModes:
           - ReadWriteOnce
-        storageClassName: logging-nfs
-        volumeName: itu-minitwit-elasticsearch-pv
+        storageClassName: itu-minitwit-sc
         resources:
           requests:
             storage: 10Gi
