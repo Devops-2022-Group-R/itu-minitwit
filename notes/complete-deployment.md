@@ -1,4 +1,89 @@
 # New host complete deployment run through
+## Setup secrets
+Deploy [sealed secrets](https://github.com/bitnami-labs/sealed-secrets) controller
+```
+kubectl apply -f https://github.com/bitnami-labs/sealed-secrets/releases/download/v0.17.4/controller.yaml 
+```
+
+### To create new secrets, using mssql server as an example
+*This example assumes your CWD is in .infrastructure/kubernetes/backend*
+
+*If no secret creation is necessary, just skip to the next step*
+
+Install the kubeseal CLI from https://github.com/bitnami-labs/sealed-secrets/releases. Then (only on new clusters) fetch the certificate from the cluster, and output it to a file
+```bash
+kubeseal --fetch-cert > clustercert.pem
+```
+Create a new secret yaml file. DO NOT COMMIT THIS FILE, it's not secure
+```bash
+kubectl create secret generic itu-minitwit-mssql \
+    --namespace itu-minitwit-backend-ns \
+    --dry-run=client \
+    --from-literal=SA_PASSWORD="mysupersecretpassword" \
+    -o yaml > database-secret-unsealed.yaml
+```
+Create the sealed secret file
+```
+kubeseal --cert ../clustercert.pem -o yaml < database-secret-unsealed.yaml > database-secret.yaml
+```
+
+## Storage
+Create Azure Service Principal
+```bash
+az login
+az account set --subscription <subscription-id>
+az group list --query "[?name=='itu-minitwit-rg'].id" -o tsv # Get scope
+az ad sp create-for-rbac -n "itu-minitwit-cluster-storage-sp" --role "Contributor" --scopes <scope-from-above-command> # Note down the values from this command
+```
+Create azure.json of the format:
+```
+{
+    "cloud":"AzurePublicCloud",
+    "tenantId": "0000000-0000-0000-0000-000000000000", 
+    "aadClientId": "0000000-0000-0000-0000-000000000000",
+    "aadClientSecret": "0000000-0000-0000-0000-000000000000",
+    "subscriptionId": "0000000-0000-0000-0000-000000000000",
+    "resourceGroup": "itu-minitwit-rg",
+    "location": "northeurope",
+    "cloudProviderBackoff": false,
+    "useManagedIdentityExtension": false,
+    "useInstanceMetadata": true
+}
+```
+`tenantId,subscriptionId` can be retrieved with `az account show`
+
+`aadClientId,aadClientSecret` is from the service principal create before
+
+`resourceGroup,location` can be retrieved with `az group`
+
+Create secret
+```bash
+cat azure.json | \
+kubectl create secret generic azure-cloud-provider \
+    --namespace kube-system \
+    --dry-run=client \
+    --from-file=cloud-config=/dev/stdin \
+    -o yaml > azure-cloud-provider-unsealed.yaml
+
+kubeseal --cert ../clustercert.pem -o yaml < azure-cloud-provider-unsealed.yaml > azure-cloud-provider.yaml
+
+kubectl apply -f azure-cloud-provider.yaml
+```
+
+Install the driver
+```bash
+helm repo add azurefile-csi-driver https://raw.githubusercontent.com/kubernetes-sigs/azurefile-csi-driver/master/charts
+helm repo update
+
+helm install azurefile-csi-driver azurefile-csi-driver/azurefile-csi-driver \
+    --namespace kube-system \
+    --set controller.cloudConfigSecretName="azure-cloud-provider" \
+    --set controller.cloudConfigSecretNamespace="kube-system" \
+    --set node.cloudConfigSecretName="azure-cloud-provider" \
+    --set node.cloudConfigSecretNamespace="kube-system"
+```
+
+
 ## Networking
 *This section assumes CWD is in .infrastructure/kubernetes/networking*
 
@@ -27,34 +112,6 @@ Deploy certificate issuer
 ```
 kubectl apply -f cluster-issuer-staging.yaml
 kubectl apply -f cluster-issuer-prod.yaml
-```
-
-## Setup secrets
-Deploy [sealed secrets](https://github.com/bitnami-labs/sealed-secrets) controller
-```
-kubectl apply -f https://github.com/bitnami-labs/sealed-secrets/releases/download/v0.17.4/controller.yaml 
-```
-
-### To create new secrets, using mssql server as an example
-*This example assumes your CWD is in .infrastructure/kubernetes/backend*
-
-*If no secret creation is necessary, just skip to the next step*
-
-Install the kubeseal CLI from https://github.com/bitnami-labs/sealed-secrets/releases. Then (only on new clusters) fetch the certificate from the cluster, and output it to a file
-```bash
-kubeseal --fetch-cert > clustercert.pem
-```
-Create a new secret yaml file. DO NOT COMMIT THIS FILE, it's not secure
-```bash
-kubectl create secret generic itu-minitwit-mssql \
-    --namespace itu-minitwit-backend-ns \
-    --dry-run=client \
-    --from-literal=SA_PASSWORD="mysupersecretpassword" \
-    -o yaml > database-secret-unsealed.yaml
-```
-Create the sealed secret file
-```
-kubeseal --cert ../clustercert.pem -o yaml < database-secret-unsealed.yaml > database-secret.yaml
 ```
 
 ## Backend and database
@@ -143,6 +200,11 @@ kubectl apply -f elasticsearch.yml
 Setup
 ```bash
 kubectl apply -f kibana.yml
+```
+
+Get log in password
+```bash
+kubectl get secret itu-minitwit-elasticsearch-es-elastic-user -n itu-minitwit-logging-ns -o go-template='{{.data.elastic | base64decode}}'
 ```
 
 ### Fluentd
