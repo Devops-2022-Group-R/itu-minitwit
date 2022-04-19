@@ -5,12 +5,12 @@
     - [x] Pen-Test Your System
     - [x] ZapProxy
     - [x] wmap - https://www.metasploit.com/
-    - [ ] other tools in the [list of OWASP vulnerability scanning tools](https://owasp.org/www-community/Vulnerability_Scanning_Tools))
-    - [ ] Fix at least one vulnerability. (e.g. monitoring access control)
+    - [x] other tools in the [list of OWASP vulnerability scanning tools](https://owasp.org/www-community/Vulnerability_Scanning_Tools))
+    - [x] Fix at least one vulnerability. (e.g. monitoring access control)
 
 - [x] White Hat Attack The Next Team
     - [x] Zaproxy
-    - [x] Wmap
+    - [x] Wmap - Had issues when targeting [GroupA](https://minitwit.thesvindler.net) - OpenSSL tlsv1 alert internal error
 
 ## Notes
 
@@ -20,7 +20,7 @@
     -  Missing header settings (Anti-clickjacking Header, X-Content-Type-Options Header, Incomplete or No Cache-control Header)
 - Run WMAP in a docker container, targeting Rhododevdron frontpage https://rhododevdron.swuwu.dk/public see steps below 
 
-### Zaproxy executable steps
+#### Zaproxy executable steps
 1. Install [Zaproxy](https://www.zaproxy.org/download/)
 2. specify url to target Rhododevdron frontpage https://rhododevdron.swuwu.dk/
     - [x] use traditional spider
@@ -76,11 +76,10 @@ Select log
 kubectl logs <podname> --namespace owasp-zap
 ```
 
-### Monitoring vulnerability
-See scenario discussion [Security](./session09_Security.md)
 
 
-### Metasploit WMAP
+
+#### Metasploit WMAP
 
 Resources used
 - [Setup Metasploit database in Kali Docker Container](https://gist.github.com/pich4ya/e7be40000c4fe7e487460dbebf1832fb)
@@ -114,16 +113,6 @@ msfdb init &&
 service postgresql start
 ```
 
-Fix issue with postgres connection [Metasploit - Authentication failed for user "msf"](https://github.com/rapid7/metasploit-framework/issues/9696)
-```sh
-msfdb reinit
-```
-
-Ensure postgres server is running
-```sh 
-pg_lsclusters
-```
-
 Open metasploit console
 ```ps1
 msfconsole
@@ -141,7 +130,7 @@ load wmap
 
 Add sites to scan
 ```msfconsole
-wmap_sites -a https://rhododevdron.swuwu.dk/public
+wmap_sites -a https://rhododevdron.swuwu.dk/
 ```
 
 List of sites
@@ -153,7 +142,6 @@ Add targets (sites or sub pages, based on wmap_sites)
 ```msfconsole
 wmap_targets -d [wmap_sites id] 
 ```
-
 ```msfconsole
 wmap_targets -t [url]
 ```
@@ -172,3 +160,21 @@ Show vulnerabilites
 ```msfconsole
 wmap_vulns -l
 ```
+
+##### Fix issue with postgres connection [Metasploit - Authentication failed for user "msf"](https://github.com/rapid7/metasploit-framework/issues/9696)
+```sh
+msfdb reinit
+```
+
+Ensure postgres server is running
+```sh 
+pg_lsclusters
+```
+
+Start postgres
+```sh
+service postgresql start
+```
+
+### Monitoring vulnerability
+See scenario discussion [Security](./session09_Security.md)
