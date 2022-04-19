@@ -82,11 +82,9 @@ For a given group, their "fellow colleagues" are represented by the next group i
 ## 2) White Hat Attack The Next Team group A.
 ### Pen testing
 
-- We tried SQL injection, but with no luck, seems like you got everything set up nicely in gorm
-- You seem to have up to date packages, so finding new exploits is difficult
-- We targeted your URL https://minitwit.thesvindler.net with [Zaproxy](https://www.zaproxy.org/download/), see results below
+- We tried SQL injection, but with no luck, seems like they got everything set up nicely in gorm
+- They seem to have up to date packages, so finding new exploits is difficult
+- We targeted their URL https://minitwit.thesvindler.net with [Zaproxy](https://www.zaproxy.org/download/), see results below
 
-![image](https://user-images.githubusercontent.com/75098556/163984222-ec9a2556-9809-4823-a930-3f1f385dc03d.png)
-
-**Overall niceness and good luck!**
+![image](./GroupA-Zaproxy.png)
 

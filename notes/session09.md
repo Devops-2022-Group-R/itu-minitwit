@@ -163,8 +163,7 @@ Show enabled modules
 wmap_run -t
 ```
 
-Run scanner on all targets (warning takes a long time) - Seems to halt at brute_dirs module
-- [ ] Select or disable specific modules
+Run scanner on all targets (warning takes a long time)
 ```msfconsole
 wmap_run -e
 ```
