@@ -1,5 +1,5 @@
 # Perform a Security Assessment
-- [] Draft - Brief results for report
+- [ ] Draft - Brief results for report
 ##  Brief results for report
 Identifying risks
 
@@ -55,9 +55,9 @@ Identifying risks
     - Wmap didn't find any vulnerabilites [Wmap notes](./session09_security_WMAP.txt), but made us aware of a certificate issue "Fake ingress controller certificate" on the the root endpoint
 
 ### Fix at least one vulnerability or more. (e.g. monitoring access control)
-- Change monitoring password of the admin account to avoid 3rd party access 
+- [ ] Change monitoring password of the admin account to avoid 3rd party access 
 - Only allow changes in the Dashboard through code 
-- Fix the certificate issue on root endpoint
+- [ ] Fix the certificate issue on root endpoint
 
 
 # White Hat Attack group A.
