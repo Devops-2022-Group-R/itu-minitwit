@@ -73,8 +73,7 @@ data:
         reserve_data true
         remove_key_name_field true
         <parse>
-          @type regexp
-          expression /^\[(?<loglevel>\w+)\]\[(?<time>[^\]]*)\] \[(?<source>[^\]]*)\]\[(?<status>[^\]]*)\]\[\s+(?<duration>[^\]]*)\]\[IP:\s+(?<ip>[^\]]*)\]\[(?<method>\w+)\s+\]\[(?<route>[^\]]*)\] $/
+          @type json
           time_format '%d-%m-%Y %H:%M:%S %z'
         </parse>
       </filter>
