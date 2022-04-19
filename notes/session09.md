@@ -1,5 +1,19 @@
 
 ## Logging in Kubernetes
+### Storage
+Retrieve storage info and create secret
+```bash
+STORAGE_ACCOUNT_NAME=regnburclusterstorage
+SHARE_NAME=cluster-persistent-storage
+RG=itu-minitwit-rg
+
+STORAGE_KEY=$(az storage account keys list --resource-group $RG --account-name $STORAGE_ACCOUNT_NAME --query "[0].value" -o tsv)
+
+# Create secret
+kubectl create secret generic azure-storage-secret --from-literal=azurestorageaccountname=$STORAGE_ACCOUNT_NAME --from-literal=azurestorageaccountkey=$STORAGE_KEY
+```
+
+
 ### Elasticsearch
 See:
 - https://www.elastic.co/blog/how-to-run-elastic-cloud-on-kubernetes-from-azure-kubernetes-service
@@ -14,6 +28,7 @@ kubectl apply -f https://download.elastic.co/downloads/eck/2.1.0/operator.yaml
 
 Start pod:
 ```bash
+kubectl apply -f logging/elasticsearch-storage.yml
 kubectl apply -f logging/elasticsearch.yml
 ```
 
@@ -68,6 +83,12 @@ location: /login?next=%2F
 ```
 
 ## Fluentd
+Set the password you got earlier in the designated space in fluentd.yml, then
+```
+kubectl apply -f logging/fluentd-config.yml
+kubectl apply -f logging/fluentd.yml
+```
+
 - https://medium.com/avmconsulting-blog/how-to-deploy-an-efk-stack-to-kubernetes-ebc1b539d063
 - https://blog.kubernauts.io/simple-logging-with-eck-and-fluentd-13824ad65aaf
 - https://www.digitalocean.com/community/tutorials/how-to-set-up-an-elasticsearch-fluentd-and-kibana-efk-logging-stack-on-kubernetes

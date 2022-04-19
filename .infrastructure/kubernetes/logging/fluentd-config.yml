@@ -1,0 +1,140 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: fluentd-config
+  namespace: itu-minitwit-logging-ns
+  labels:
+    app: fluentd
+data:
+  fluent.conf: |-
+      <label @FLUENT_LOG>
+        <match fluent.**>
+          @type null
+          @id ignore_fluent_logs
+        </match>
+      </label>
+
+      # here we read the logs from Docker's containers and parse them
+      <source>
+        @type tail
+        @id in_tail_container_logs
+
+        path /var/log/containers/itu-minitwit*.log
+        pos_file /var/log/fluentd-containers.log.pos
+        tag kubernetes.*
+        read_from_head false
+        exclude_path ["/var/log/containers/fluent*", "/var/log/containers/azuredisk*", "/var/log/containers/coredns*"]
+        <parse>
+          @type regexp
+          expression /^(?<time>.+) (?<stream>stdout|stderr)( (?<logtag>.))? (?<log>.*)$/
+          time_format '%Y-%m-%dT%H:%M:%S.%N%:z'
+          keep_time_key false
+        </parse>
+      </source>
+
+      # we use kubernetes metadata plugin to add metadatas to the log
+      <filter kubernetes.**>
+        @type kubernetes_metadata
+      </filter>
+
+      # Copy log message to log_to_parse for parsing purposes
+      <filter kubernetes.**>
+        @type record_transformer
+        enable_ruby true
+        
+        <record>
+          log_to_parse ${record["log"]}
+        </record>
+      </filter>
+
+      # Ignore unrelated namespaces
+      <match kubernetes.var.log.containers.**ingress-nginx**>
+        @type null
+      </match>
+      <match kubernetes.var.log.containers.**kube-node-lease**>
+        @type null
+      </match>
+      <match kubernetes.var.log.containers.**kube-public**>
+        @type null
+      </match>
+      <match kubernetes.var.log.containers.**kube-system**>
+        @type null
+      </match>
+      <match kubernetes.var.log.containers.**owasp-zap**>
+        @type null
+      </match>
+      <match kubernetes.var.log.containers.**default**>
+        @type null
+      </match>
+
+      <filter kubernetes.var.log.containers.**itu-minitwit-backend**>
+        @type parser
+        key_name log_to_parse
+        reserve_data true
+        remove_key_name_field true
+        <parse>
+          @type regexp
+          expression /^\[(?<loglevel>\w+)\]\[(?<time>[^\]]*)\] \[(?<source>[^\]]*)\]\[(?<status>[^\]]*)\]\[\s+(?<duration>[^\]]*)\]\[IP:\s+(?<ip>[^\]]*)\]\[(?<method>\w+)\s+\]\[(?<route>[^\]]*)\] $/
+          time_format '%d-%m-%Y %H:%M:%S %z'
+        </parse>
+      </filter>
+
+      # Remove log_to_parse again, and other unnecessary keys
+      <filter kubernetes.**>
+        @type record_transformer
+        remove_keys log_to_parse
+      </filter>
+
+      # we send the logs to Elasticsearch
+      <match kubernetes.**>
+        @type elasticsearch
+        @id out_es
+        @log_level debug
+        include_tag_key true
+
+        host "#{ENV['FLUENT_ELASTICSEARCH_HOST']}"
+        port "#{ENV['FLUENT_ELASTICSEARCH_PORT']}"
+        path "#{ENV['FLUENT_ELASTICSEARCH_PATH']}"
+        scheme "#{ENV['FLUENT_ELASTICSEARCH_SCHEME'] || 'http'}"
+        ssl_verify "#{ENV['FLUENT_ELASTICSEARCH_SSL_VERIFY'] || 'true'}"
+        ssl_version "#{ENV['FLUENT_ELASTICSEARCH_SSL_VERSION'] || 'TLSv1_2'}"
+        logstash_format true
+        logstash_prefix ${$.kubernetes.pod_name}
+        type_name fluentd 
+
+        user "#{ENV['FLUENT_ELASTICSEARCH_USER'] || use_default}"
+        password "#{ENV['FLUENT_ELASTICSEARCH_PASSWORD'] || use_default}"
+        reload_connections "#{ENV['FLUENT_ELASTICSEARCH_RELOAD_CONNECTIONS'] || 'false'}"
+        reconnect_on_error "#{ENV['FLUENT_ELASTICSEARCH_RECONNECT_ON_ERROR'] || 'true'}"
+        reload_on_failure "#{ENV['FLUENT_ELASTICSEARCH_RELOAD_ON_FAILURE'] || 'true'}"
+        log_es_400_reason "#{ENV['FLUENT_ELASTICSEARCH_LOG_ES_400_REASON'] || 'false'}"
+        logstash_dateformat "#{ENV['FLUENT_ELASTICSEARCH_LOGSTASH_DATEFORMAT'] || '%Y.%m.%d'}"
+        target_index_key "#{ENV['FLUENT_ELASTICSEARCH_TARGET_INDEX_KEY'] || use_nil}"
+        include_timestamp "#{ENV['FLUENT_ELASTICSEARCH_INCLUDE_TIMESTAMP'] || 'false'}"
+        template_name "#{ENV['FLUENT_ELASTICSEARCH_TEMPLATE_NAME'] || use_nil}"
+        template_file "#{ENV['FLUENT_ELASTICSEARCH_TEMPLATE_FILE'] || use_nil}"
+        template_overwrite "#{ENV['FLUENT_ELASTICSEARCH_TEMPLATE_OVERWRITE'] || use_default}"
+        sniffer_class_name "#{ENV['FLUENT_SNIFFER_CLASS_NAME'] || 'Fluent::Plugin::ElasticsearchSimpleSniffer'}"
+        request_timeout "#{ENV['FLUENT_ELASTICSEARCH_REQUEST_TIMEOUT'] || '5s'}"
+        application_name "#{ENV['FLUENT_ELASTICSEARCH_APPLICATION_NAME'] || use_default}" 
+        suppress_type_name "#{ENV['FLUENT_ELASTICSEARCH_SUPPRESS_TYPE_NAME'] || 'true'}"
+        enable_ilm "#{ENV['FLUENT_ELASTICSEARCH_ENABLE_ILM'] || 'false'}"
+        ilm_policy_id "#{ENV['FLUENT_ELASTICSEARCH_ILM_POLICY_ID'] || use_default}"
+        ilm_policy "#{ENV['FLUENT_ELASTICSEARCH_ILM_POLICY'] || use_default}"
+        ilm_policy_overwrite "#{ENV['FLUENT_ELASTICSEARCH_ILM_POLICY_OVERWRITE'] || 'false'}"
+        
+        <buffer tag, $.kubernetes.pod_name>
+          @type file
+          flush_mode interval
+          flush_thread_count 2
+          path /var/log/fluentd-buffers/kubernetes.system.buffer
+          total_limit_size 500M
+          chunk_limit_size 2M
+          flush_interval 5s
+          overflow_action drop_oldest_chunk
+          retry_max_interval 30s
+          retry_forever true
+          retry_type exponential_backoff
+          queue_limit_length 32
+        </buffer>
+      </match>

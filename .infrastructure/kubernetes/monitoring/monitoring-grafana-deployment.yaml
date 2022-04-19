@@ -19,8 +19,12 @@ spec:
       labels:
         app: itu-minitwit-monitoring-grafana
     spec:
+      securityContext:
+        fsGroup: 472
+        supplementalGroups:
+          - 0
       nodeSelector:
-        "beta.kubernetes.io/os": linux
+        "kubernetes.io/os": linux
       containers:
       - name: itu-minitwit-monitoring-grafana
         image: kongborup/itu-minitwit-monitoring-grafana
@@ -36,6 +40,13 @@ spec:
           initialDelaySeconds: 5
           periodSeconds: 2
           successThreshold: 1
+        volumeMounts:
+          - mountPath: /var/lib/grafana
+            name: grafana-pv
+      volumes:
+      - name: grafana-pv
+        persistentVolumeClaim: 
+          claimName: itu-minitwit-monitoring-grafana-pvc
 ---
 apiVersion: v1
 kind: Service

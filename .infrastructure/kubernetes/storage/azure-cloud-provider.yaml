@@ -1,0 +1,16 @@
+apiVersion: bitnami.com/v1alpha1
+kind: SealedSecret
+metadata:
+  creationTimestamp: null
+  name: azure-cloud-provider
+  namespace: kube-system
+spec:
+  encryptedData:
+    cloud-config: AgCRXL+5Wa+jZCSt1EwE4pkPZdPimr9Z2KD08H69d2cTNHZyYFYeEmWP8Gw/VHdC1xGWhDyQOH8BUHNbRV+4/XabVJoL5bQTpqu60kITMcZ/MkgYyXpZWHwNfeF5ZaIsdLcfgdamWO2XPrynUEDeIy1Hu+hiTG9xnCWIoL86vc8rdln9UxmkftlMffsaO6DA1lkFIN6XRFehKF4mivEKj0FfLGihpBFWmk8vhUlfGrCS4LVXNnIZQHNod/RihxC9IVM9JGV+hqr9lNMuJYRrrwtpK74uemxKoownIrE4BRRs5AnXTgVSDY9TXS/CVRP+7r8yWxNSzlgXuioXpF/d+8o88zuN2v94OqlHZLAdAJTUT/DNqq19X2EF7kz8WhPPtGgjoLCUrrcJj78Lw3O/uAx4RB3954Jh9k+odSL64Bwc9nVU+jOZNgrjbgtaOvpZipQTyioVLjuHm61jvx0qMLBq/hIY9BO1wRdD8W3mChhZf4f5U2NXFS6c2j4x+s7KBN5pm/49h5xxZI6YNFLCkZaRIgSn0mcJW8el6o/sEX2W7qfOBZ4Zwr4jskjXdlaWurOLcYBVoBHqH7gvPfAlaoxxxQmr4zAXTKQRp83VTR1fDBJIz2Q1bP01VCT4TfBdqV4VHn7NeJO64xJ/9SPtpnDoUrrLWTa03BRmr4Y6BgA+rckOxomGE34aJ050p6XOGVmI79iE1YesCsI/cAOupeA+sCofy/iKrKn/iBmMYKhml1eCrgoWlYdqxyzNw7JOqk9s6Sjbr0fezuVj6zZUnZYeH78/6ptLimAx5IiYntR2w3Jh5U+xzqyUo3Ijgp9thPPPNeh+wMuWwbdefOIh+AWF7VqnpZAP/hRbhVgN9agFsAYecobBcu4650gxp+vzSwE9QNByqVUXn2w7pZSysJXwXQzwIc6cmFfklocHreVM5FCom9PB9peoJB6Z03S6eErqH35Ast1ryqvJECAZ0qut1a0LwAA1PWDZsHbrKX2BG6wn5yOGVZT6llZRnTXKpCQz9Z7B9kttm/FN6WuVSQsmbFJ1RXsRv+q1aeM7V1Cja4+sC7Whd0wcUPNzL9/zH8HuourUfH+mVOcz7w1p4o0zCvvH+IR6voR9fK8wE5AQVdcEKfbMAe9mX9GcNUu3HWnKZdPPacoGBnqCNWZWqCt4Xym/RcIMeBLN+r0/ygv3/3WVxbrQ+jv8TwlyVTSV77XWCB0epIjiBiMEYV2kwnB1IhjHbe3tnAb800avj+Z1u2tD7a5UP4e4+RM/kPcVIjtbV0ipQetyjX8xaBxjrBwt3oLuoXPTFw==
+  template:
+    data: null
+    metadata:
+      creationTimestamp: null
+      name: azure-cloud-provider
+      namespace: kube-system
+

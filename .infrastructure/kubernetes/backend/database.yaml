@@ -1,0 +1,55 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: itu-minitwit-database-deployment
+  namespace: itu-minitwit-backend-ns
+spec:
+  replicas: 1
+  selector:
+     matchLabels:
+       app: itu-minitwit-database
+  template:
+    metadata:
+      labels:
+        app: itu-minitwit-database
+    spec:
+      terminationGracePeriodSeconds: 30
+      hostname: mssqlinst
+      securityContext:
+        fsGroup: 10001
+      containers:
+      - name: mssql
+        image: mcr.microsoft.com/mssql/server:2019-latest
+        ports:
+        - containerPort: 1433
+        env:
+        - name: MSSQL_PID
+          value: "Developer" # TODO: Not licensed
+        - name: ACCEPT_EULA
+          value: "Y"
+        - name: SA_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: itu-minitwit-mssql
+              key: SA_PASSWORD 
+        volumeMounts:
+        - name: mssqldb
+          mountPath: /var/opt/mssql
+      volumes:
+      - name: mssqldb
+        persistentVolumeClaim:
+          claimName: itu-minitwit-database-pvc 
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: itu-minitwit-database-deployment
+  namespace: itu-minitwit-backend-ns
+spec:
+  selector:
+    app: itu-minitwit-database
+  ports:
+    - protocol: TCP
+      port: 1433
+      targetPort: 1433
+  type: ClusterIP
