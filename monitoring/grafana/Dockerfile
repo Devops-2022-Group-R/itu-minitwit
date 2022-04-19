@@ -1,4 +1,4 @@
-FROM grafana/grafana:8.4.4-ubuntu
+FROM grafana/grafana:8.5.0-beta1
 
 ENV PROMETHEUS_HOST='host.docker.internal:9090'
 
