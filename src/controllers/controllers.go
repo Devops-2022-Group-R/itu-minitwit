@@ -97,7 +97,7 @@ func LoggingMiddleware() gin.HandlerFunc {
 			"method":     method,
 			"ip":         clientIP,
 			"path":       path,
-			"comment":    comment,
+			"msg":        comment,
 		})
 	}
 }
