@@ -15,7 +15,7 @@
 ## Notes
 
 ### Pen testing steps
-- Zaproxy didn't work as intented with kubernetes [simplyzee](https://github.com/simplyzee/kube-owasp-zap))
+- Zaproxy didn't produce results as expected with kubernetes [simplyzee](https://github.com/simplyzee/kube-owasp-zap)
 - Run ZapProxy via the executable targeting Rhododevdron frontpage https://rhododevdron.swuwu.dk/public, found a few obscure risks
     -  Missing header settings (Anti-clickjacking Header, X-Content-Type-Options Header, Incomplete or No Cache-control Header)
 - Run WMAP in a docker container, targeting Rhododevdron frontpage https://rhododevdron.swuwu.dk/public see steps below 
