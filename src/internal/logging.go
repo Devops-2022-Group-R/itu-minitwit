@@ -70,7 +70,7 @@ func (l *Log) formatString(level LogLevel, v ...interface{}) string {
 	jsonMap := map[string]interface{}{
 		"time":  time.Now().UTC().Format("02-01-2006 15:04:05 -0700"),
 		"level": getLogLevel(level),
-		"log":   fmt.Sprint(v...),
+		"msg":   fmt.Sprint(v...),
 	}
 	jsonStr, _ := json.Marshal(jsonMap)
 
