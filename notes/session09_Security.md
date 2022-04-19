@@ -1,6 +1,5 @@
 # Your turn now: Security!
 
-
 ## 1) Perform a Security Assessment 
 
 The following general steps will guide you through a security assessment. Consider using them as steps in a report. The report will become a section in your final project report.
@@ -18,6 +17,22 @@ The following general steps will guide you through a security assessment. Consid
 3. Use a Risk Matrix to prioritize risk of scenarios   
 4. Discuss what are you going to do about each of the scenarios
 
+### C. Pen-Test Your System
+
+- Try to test for vulnerabilities in your project by using `wmap`, [`zaproxy`](https://www.zaproxy.org/getting-started/), or any of the tools in the [list of OWASP vulnerability scanning tools](https://owasp.org/www-community/Vulnerability_Scanning_Tools))
+- Fix at least one vulnerability that you find; ideally one that is high in your prioritization cf. to your risk analysis 
+
+
+*To think about*: can you find the traces of the pen test in the logs? Or of your colleagues pen-test?
+
+## 2) White Hat Attack The Next Team
+
+Try to help your fellow colleagues by pen-testing their system. Remember that the goal is to help not to hinder.  Send them a report of what you find. 
+
+For a given group, their "fellow colleagues" are represented by the next group in the [repositories](https://github.com/itu-devops/lecture_notes/blob/master/repositories.py) file. Group R wraps back to 
+
+
+----
 ### A. Risk Identification
 #### Identify assets
 - Data (backend)
@@ -52,20 +67,26 @@ The following general steps will guide you through a security assessment. Consid
 - Security flaw of vulnerable or outdated components. We use Static analysis tools like Snyk encorporated with the pipeline, to be aware about vulnerable dependencies and update the dependencies.
 - Access to CircleCi, Access is granted via github user, on github set a requirement on the organisation repository to require 2FA.   
 - Access to Azure crendetials, Require MFA for every user.  
-- Access to monitoring, Create a team to limit permissions in grafana, add users to the team.  
+- Access to monitoring, Create a team to limit permissions in grafana, add users to the team. 
 
 ### C. Pen-Test Your System
 
-- Try to test for vulnerabilities in your project by using `wmap`, [`zaproxy`](https://www.zaproxy.org/getting-started/), or any of the tools in the [list of OWASP vulnerability scanning tools](https://owasp.org/www-community/Vulnerability_Scanning_Tools))
-- Fix at least one vulnerability that you find; ideally one that is high in your prioritization cf. to your risk analysis 
+### Pen testing steps
+- Zaproxy didn't work as intented with kubernetes [simplyzee](https://github.com/simplyzee/kube-owasp-zap)
+- Run ZapProxy via the executable targeting Rhododevdron frontpage https://rhododevdron.swuwu.dk/, found a few obscure risks
+    -  Missing header settings on the root endpoint, but not (CSP, Anti-clickjacking Header, X-Content-Type-Options Header, Incomplete or No Cache-control Header)
+- Run WMAP in a docker container, targeting Rhododevdron frontpage https://rhododevdron.swuwu.dk/ see steps [Notes](./session09.md) in section Metasploit WMAP 
 
+![Zaproxy results](./ZaproxyAlarms.png)
 
-*To think about*: can you find the traces of the pen test in the logs? Or of your colleagues pen-test?
+## 2) White Hat Attack The Next Team group A.
+### Pen testing
 
+- We tried SQL injection, but with no luck, seems like you got everything set up nicely in gorm
+- You seem to have up to date packages, so finding new exploits is difficult
+- We targeted your URL https://minitwit.thesvindler.net with [Zaproxy](https://www.zaproxy.org/download/), see results below
 
+![image](https://user-images.githubusercontent.com/75098556/163984222-ec9a2556-9809-4823-a930-3f1f385dc03d.png)
 
-## 2) White Hat Attack The Next Team
+**Overall niceness and good luck!**
 
-Try to help your fellow colleagues by pen-testing their system. Remember that the goal is to help not to hinder.  Send them a report of what you find. 
-
-For a given group, their "fellow colleagues" are represented by the next group in the [repositories](https://github.com/itu-devops/lecture_notes/blob/master/repositories.py) file. Group R wraps back to evaluate group A.

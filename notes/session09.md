@@ -2,13 +2,15 @@
 - [x] Perform a Security Assessment
     - [x] Risk Identification 
     - [x] Risk Analysis
-    - [ ] Pen-Test Your System
+    - [x] Pen-Test Your System
     - [x] ZapProxy
-    - [ ] wmap - https://www.metasploit.com/
+    - [x] wmap - https://www.metasploit.com/
     - [ ] other tools in the [list of OWASP vulnerability scanning tools](https://owasp.org/www-community/Vulnerability_Scanning_Tools))
     - [ ] Fix at least one vulnerability. (e.g. monitoring access control)
 
 - [x] White Hat Attack The Next Team
+    - [x] Zaproxy
+    - [x] Wmap
 
 ## Notes
 
@@ -20,7 +22,7 @@
 
 ### Zaproxy executable steps
 1. Install [Zaproxy](https://www.zaproxy.org/download/)
-2. specify url to target Rhododevdron frontpage https://rhododevdron.swuwu.dk/public
+2. specify url to target Rhododevdron frontpage https://rhododevdron.swuwu.dk/
     - [x] use traditional spider
     - [x] use ajax spider with FireFox Headless
 3. Read alarms in the Zaproxy GUI
