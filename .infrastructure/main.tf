@@ -13,7 +13,7 @@ terraform {
   #   az storage container create -n <container-name> --account-name <account-name> --account-key <key-from-created-account> 
   backend "azurerm" {
     resource_group_name  = "core-rg"
-    storage_account_name = "minitwitterraformstate"
+    storage_account_name = "minitwitterraformstate2"
     container_name       = "terraformstate"
     key                  = "terraform.tfstate"
   }
@@ -92,18 +92,4 @@ resource "azurerm_dns_zone" "cluster_dns_zone" {
 resource "azurerm_dns_zone" "cluster_dns_zone_swuwu" {
   name                = "swuwu.dk"
   resource_group_name = azurerm_resource_group.rg.name
-}
-
-resource "azurerm_storage_account" "cluster_storage_account" {
-  name                     = "regnburclusterstorage"
-  location                 = azurerm_resource_group.rg.location
-  resource_group_name      = azurerm_resource_group.rg.name
-  account_tier             = "Standard"
-  account_replication_type = "LRS"
-}
-
-resource "azurerm_storage_share" "cluster_persistent_storage_share" {
-  name                 = "cluster-persistent-storage"
-  storage_account_name = azurerm_storage_account.cluster_storage_account.name
-  quota                = 10
 }

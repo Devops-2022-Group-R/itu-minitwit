@@ -25,8 +25,10 @@ data:
         read_from_head false
         exclude_path ["/var/log/containers/fluent*", "/var/log/containers/azuredisk*", "/var/log/containers/coredns*"]
         <parse>
-          @type json
+          @type regexp
+          expression /^(?<time>.+) (?<stream>stdout|stderr)( (?<logtag>.))? (?<log>.*)$/
           time_format '%Y-%m-%dT%H:%M:%S.%N%:z'
+          keep_time_key false
         </parse>
       </source>
 

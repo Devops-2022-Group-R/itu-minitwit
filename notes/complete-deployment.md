@@ -1,4 +1,20 @@
 # New host complete deployment run through
+## Setup storage account for terraform
+**Note: Only necessary if using Terraform to manage infrastructure**
+
+```bash
+az group create -n core-rg -l northeurope
+ 
+# Create Storage Account
+az storage account create -n minitwitterraformstate2 -g core-rg -l northeurope --sku Standard_LRS
+
+# List keys with
+az storage account keys list --account-name minitwitterraformstate2
+
+# Create Storage Account Container
+az storage container create -n terraformstate --account-name minitwitterraformstate2 --account-key <key-from-created-account> 
+```
+
 ## Setup secrets
 Deploy [sealed secrets](https://github.com/bitnami-labs/sealed-secrets) controller
 ```
@@ -28,6 +44,8 @@ kubeseal --cert ../clustercert.pem -o yaml < database-secret-unsealed.yaml > dat
 ```
 
 ## Storage
+**Note: Only necessary if the host is not on Azure, it is also required to change disk to file in storage-class**
+
 Create Azure Service Principal
 ```bash
 az login
@@ -83,6 +101,10 @@ helm install azurefile-csi-driver azurefile-csi-driver/azurefile-csi-driver \
     --set node.cloudConfigSecretNamespace="kube-system"
 ```
 
+### Create storage-class
+```bash
+kubectl apply -f storage-class.yaml
+```
 
 ## Networking
 *This section assumes CWD is in .infrastructure/kubernetes/networking*
@@ -90,6 +112,53 @@ helm install azurefile-csi-driver azurefile-csi-driver/azurefile-csi-driver \
 Deploy the networking namespace
 ```
 kubectl apply -f network-namespace.yaml
+```
+
+### Ingress
+```bash
+helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
+helm repo update
+helm install nginx-ingress ingress-nginx/ingress-nginx --namespace ingress-nginx --create-namespace -f ingress.yaml
+```
+
+### Setup dns zones
+```bash
+az ad sp create-for-rbac -n ExternalDnsServicePrincipal
+
+spId="9ec83678-21e4-4efd-8496-0e642c2b65b0" # Replace with real id
+
+rg="itu-minitwit-rg"
+# Get resource group id
+rgId=$(az group show --name $rg --query "id" -o tsv)
+# Get dns zone id
+dnsId=$(az network dns zone show --name rhododevdron.dk -g $rg --query "id" -o tsv)
+dnsId2=$(az network dns zone show --name swuwu.dk -g $rg --query "id" -o tsv)
+
+az role assignment create --role "Reader" --assignee $spId --scope $rgId
+az role assignment create --role "DNS Zone Contributor" --assignee $spId --scope $dnsId
+az role assignment create --role "DNS Zone Contributor" --assignee $spId --scope $dnsId2
+
+# Get cluster identity id
+clusterIdentity=$(az aks show -g $rg -n itu-minitwit-cluster --query "identity.principalId" -o tsv)
+
+# Make the cluster identity a network contributor on the other resource group
+az role assignment create --assignee $clusterIdentity --role "Network Contributor" --scope $rgId
+```
+
+Create a file, called `external-dns-secret.json` that looks like this, with the data from the service principal:
+```json
+{
+  "tenantId": "01234abc-de56-ff78-abc1-234567890def",
+  "subscriptionId": "01234abc-de56-ff78-abc1-234567890def",
+  "resourceGroup": "MyDnsResourceGroup",
+  "aadClientId": "01234abc-de56-ff78-abc1-234567890def",
+  "aadClientSecret": "uKiuXeiwui4jo9quae9o"
+}
+```
+Then run
+```
+kubectl create secret generic external-dns-config-file --from-file=/path/to/external-dns-secret.json
+kubectl apply -f external-dns-deployment.yaml
 ```
 
 ### Setup and deploy cluster issuer
@@ -125,7 +194,7 @@ kubectl apply -f backend-namespace.yaml
 ### Database
 Create database secrets
 ```bash
-kubectl apply -f database-secret.yaml
+kubectl apply -f database-secret.yaml # Created in the example above
 ```
 Create database volume and claims (requires an nfs volume)
 ```bash
@@ -170,7 +239,7 @@ kubectl apply -f frontend-deployment.yaml
 Deploy the monitoring and it's namespace
 ```bash
 kubectl apply -f monitoring-namespace.yaml
-kubectl apply -f monitoring-storage.yaml # Create the nfs volume subfolder "grafana" before
+kubectl apply -f monitoring-storage.yaml
 kubectl apply -f monitoring-grafana-deployment.yaml
 kubectl apply -f monitoring-prometheus-deployment.yaml
 ```
@@ -192,7 +261,6 @@ kubectl apply -f https://download.elastic.co/downloads/eck/2.1.0/operator.yaml
 
 Create the pods, persistent volume and namespace
 ```bash
-kubectl apply -f elasticsearch-storage.yml # Create the nfs volume subfolder "logging" before
 kubectl apply -f elasticsearch.yml
 ```
 
