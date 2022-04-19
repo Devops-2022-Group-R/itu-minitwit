@@ -1,6 +1,7 @@
 package main
 
 import (
+	"log"
 	"os"
 	"strings"
 
@@ -21,6 +22,8 @@ func init() {
 }
 
 func main() {
+	log.SetFlags(log.Flags() &^ (log.Ldate | log.Ltime))
+
 	if len(os.Args) > 1 {
 		input := os.Args[1]
 		if strings.EqualFold("initDb", input) {
