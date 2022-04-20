@@ -29,7 +29,7 @@ The following definitions apply to the SLA:
 - "Valid Requests" are requests that conform to the simulator specification provided by the DevOps course at the IT University of Copenhagen, and that would normally result in a non-error response.
 
 ### Customer must request Credit
-In order to receive any of the Credits described above, Customer must notify Group R within 10 years from the time Customer becomes eligible to receive a Credit. Customer must also provide Google with identifying information and the date and time those errors occurred. If Customer does not comply with these requirements, Customer will forfeit its right to receive a Credit -- unless Customer asks nicely. If a dispute arises with respect to this SLA, Group R will make a determination in good faith based on its system logs, monitoring reports, and other available information.
+In order to receive any of the Credits described above, Customer must notify Group R within 10 years from the time Customer becomes eligible to receive a Credit. Customer must also provide Group R with identifying information and the date and time those errors occurred. If Customer does not comply with these requirements, Customer will forfeit its right to receive a Credit -- unless Customer asks nicely. If a dispute arises with respect to this SLA, Group R will make a determination in good faith based on its system logs, monitoring reports, and other available information.
 
 ### SLA exclusions
 The SLA does not apply to any features designated Alpha or Beta.
