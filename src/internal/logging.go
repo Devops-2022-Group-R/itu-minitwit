@@ -3,6 +3,7 @@ package internal
 import (
 	"bufio"
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	goLog "log"
@@ -66,10 +67,14 @@ func getLogLevel(level LogLevel) string {
 
 // Used internally to print in the desired format
 func (l *Log) formatString(level LogLevel, v ...interface{}) string {
-	// Format now as dd-mm-yyyy hh:mm:ss ±hhmm
-	timestamp := time.Now().UTC().Format("02-01-2006 15:04:05 -0700")
+	jsonMap := map[string]interface{}{
+		"time":  time.Now().UTC().Format("02-01-2006 15:04:05 -0700"),
+		"level": getLogLevel(level),
+		"msg":   fmt.Sprint(v...),
+	}
+	jsonStr, _ := json.Marshal(jsonMap)
 
-	return fmt.Sprintf("[%s][%s] %s", getLogLevel(level), timestamp, fmt.Sprint(v...))
+	return string(jsonStr)
 }
 
 func (l *Log) formatStringF(level LogLevel, format string, args ...interface{}) string {
@@ -189,6 +194,19 @@ func (l *Log) Trace(_ context.Context, begin time.Time, fc func() (string, int64
 			l.Printf(traceStr, utils.FileWithLineNum(), float64(elapsed.Nanoseconds())/1e6, rows, sql)
 		}
 	}
+}
+
+func LogJson(level LogLevel, jsonMap map[string]interface{}) {
+	jsonMap["level"] = getLogLevel(level)
+	jsonMap["time"] = time.Now().UTC().Format("02-01-2006 15:04:05 -0700")
+	jsonStr, err := json.Marshal(jsonMap)
+
+	if err != nil {
+		Logger.Warnf("log failed to marshal into json: %v", jsonMap)
+		return
+	}
+
+	goLog.Printf("%s", jsonStr)
 }
 
 var (

@@ -94,14 +94,14 @@ func LoggingMiddleware() gin.HandlerFunc {
 		comment := c.Errors.ByType(gin.ErrorTypePrivate).String()
 
 		// Log request
-		internal.Logger.Printf("[GIN][%3d][%13v][IP: %15s][%-7s][%s] %s\n",
-			statusCode,
-			latency,
-			clientIP,
-			method,
-			path,
-			comment,
-		)
+		internal.LogJson(internal.Info, map[string]interface{}{
+			"statusCode": statusCode,
+			"latency":    latency.String(),
+			"method":     method,
+			"ip":         clientIP,
+			"path":       path,
+			"msg":        comment,
+		})
 	}
 }
 

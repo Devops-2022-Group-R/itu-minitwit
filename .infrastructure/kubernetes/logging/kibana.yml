@@ -1,0 +1,46 @@
+apiVersion: kibana.k8s.elastic.co/v1
+kind: Kibana
+metadata:
+  name: itu-minitwit-kibana
+  namespace: itu-minitwit-logging-ns
+spec:
+  version: 7.1.1
+  count: 1
+  elasticsearchRef:
+    name: itu-minitwit-elasticsearch
+  config: 
+    xpack.monitoring.enabled: true 
+  http:
+    tls:
+      selfSignedCertificate:
+        disabled: true
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: itu-minitwit-logging
+  namespace: itu-minitwit-logging-ns
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+spec:
+  tls:
+  - hosts:
+    - logs.rhododevdron.dk
+    secretName: tls-secret
+  - hosts:
+    - logs.rhododevdron.swuwu.dk
+    secretName: tls-secret-swuwu
+  rules:
+  - host: logs.rhododevdron.dk 
+    http: &http_rules
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: itu-minitwit-kibana-kb-http 
+            port:
+              number: 5601
+  - host: logs.rhododevdron.swuwu.dk 
+    http: *http_rules

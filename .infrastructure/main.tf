@@ -13,7 +13,7 @@ terraform {
   #   az storage container create -n <container-name> --account-name <account-name> --account-key <key-from-created-account> 
   backend "azurerm" {
     resource_group_name  = "core-rg"
-    storage_account_name = "minitwitterraformstate"
+    storage_account_name = "minitwitterraformstate2"
     container_name       = "terraformstate"
     key                  = "terraform.tfstate"
   }
