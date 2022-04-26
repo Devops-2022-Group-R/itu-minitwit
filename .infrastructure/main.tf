@@ -30,43 +30,6 @@ resource "azurerm_resource_group" "rg" {
   location = "northeurope"
 }
 
-resource "azurerm_mssql_server" "database_mssql_server" {
-  name                = var.database_server_name
-  resource_group_name = azurerm_resource_group.rg.name
-  location            = azurerm_resource_group.rg.location
-  version             = "12.0"
-
-  administrator_login          = var.database_admin_username
-  administrator_login_password = var.database_admin_password
-
-  minimum_tls_version = "1.2"
-
-  azuread_administrator {
-    # Security group that should be made in Azure to provide access
-    login_username              = "Admins"
-    object_id                   = "fa37a2f2-6d36-45e6-8b20-fa037e932ac6"
-    azuread_authentication_only = false
-  }
-
-  identity {
-    type = "SystemAssigned"
-  }
-}
-
-resource "azurerm_mssql_firewall_rule" "database_firewall_rule" {
-  name             = "${var.prefix}-allow-azure-ips"
-  server_id        = azurerm_mssql_server.database_mssql_server.id
-  start_ip_address = "0.0.0.0"
-  end_ip_address   = "0.0.0.0"
-}
-
-resource "azurerm_mssql_database" "database_mssql_database" {
-  name        = var.database_db_name
-  server_id   = azurerm_mssql_server.database_mssql_server.id
-  max_size_gb = 2
-  sku_name    = "Basic"
-}
-
 resource "azurerm_kubernetes_cluster" "cluster" {
   name                = "${var.prefix}-cluster"
   location            = azurerm_resource_group.rg.location
