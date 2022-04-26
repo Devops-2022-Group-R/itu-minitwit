@@ -1,5 +1,1 @@
 prefix="itu-minitwit"
-database_admin_username="<add value>"
-database_admin_password="<add value>"
-database_server_name="<add value>"
-database_db_name="<add value>"
