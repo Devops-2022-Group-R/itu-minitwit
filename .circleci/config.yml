@@ -138,10 +138,6 @@ jobs:
 
             terraform apply \
               -var "prefix=itu-minitwit" \
-              -var "database_admin_username=$DB_ADMIN_USERNAME" \
-              -var "database_admin_password=$DB_ADMIN_PASSWORD" \
-              -var "database_server_name=$DB_SERVER_NAME" \
-              -var "database_db_name=$DB_NAME" \
               -auto-approve
 
   apply_kubernetes:
