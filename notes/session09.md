@@ -178,3 +178,12 @@ service postgresql start
 
 ### Monitoring vulnerability
 See scenario discussion [Security](./session09_Security.md)
+
+### Steps to test and fix security vulnerabilites locally
+1. Change root endpoint in env variable(VITE_API_URL) in the front end dockerfile to localhost 
+2. Build new docker image of the front end   
+3. Run the front end image map port 8080:80
+4. Start itu-minitwit locally
+5. Target localhost with WMAP, Zaproxy etc.
+6. Add fix,
+7. Verify by iterating from step 2. or 4. 

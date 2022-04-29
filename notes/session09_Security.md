@@ -1,7 +1,6 @@
 # Perform a Security Assessment
 - [ ] Draft - Brief results for report
 ##  Brief results for report
-Identifying risks
 
 
 ## A. Risk Identification
@@ -25,7 +24,7 @@ Identifying risks
 - Attacker performs SQL Injection to copy, delete or ransom all data from the Database layer
 - Attacker abuses security flaw of a vulnerable component and gains access to unwanted parts of the program
 - Attacker gains access to Azure credentials, have complete control over the service, change subscribtion, database, resource group, redirect CI/CD pipeline
-- Attack gains Access to CircleCi credntials, edit environment variables, stop the pipeline CI/CD
+- Attack gains Access to CircleCi credentials, edit environment variables, stop the pipeline CI/CD
 
 ## B. Risk Analysis
 
@@ -49,14 +48,14 @@ Identifying risks
     - But the rest of our endpoints are fine
 
 ![Zaproxy results](./ZaproxyAlarms.png)
-#### We tried to add an extra middleware to fix the header issues on the root endpoint but to no success, we accessed the risk to minimal.
+#### We tried to add an extra middleware to fix the header issues on the root endpoint but to no success, we accessed the risk to be minimal.
 
 - Run Metasploit WMAP in a docker container, targeting Rhododevdron frontpage https://rhododevdron.swuwu.dk/ see steps [Session09](./session09.md) under section Metasploit WMAP 
     - Wmap didn't find any vulnerabilites [Wmap notes](./session09_security_WMAP.txt), but made us aware of a certificate issue "Fake ingress controller certificate" on the the root endpoint
 
 ### Fix at least one vulnerability or more. (e.g. monitoring access control)
 - [ ] Change monitoring password of the admin account to avoid 3rd party access 
-- Only allow changes in the Dashboard through code 
+- [x] Only allow changes to the monitoring Dashboard through code 
 - [ ] Fix the certificate issue on root endpoint
 
 
