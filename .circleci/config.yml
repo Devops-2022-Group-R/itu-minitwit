@@ -7,8 +7,9 @@ orbs:
   changelog: onimur/github-changelog-generator@2.1.9
 
 orb_tagged_filters: &orb_tagged_filters
-  # branches:
-  #   ignore: /.*/
+  branches:
+    only: 'feature/ChangelogGenerator'
+    # ignore: /.*/
   tags:
     only: /^\d+\.\d+\.\d+$/ #for tag 1.2.3
 
@@ -269,16 +270,16 @@ jobs:
           token-variable: SNYK_TOKEN
 
   changelog/changelog-default:
+    docker:
+      - image: circleci/golang:1.17-buster
     pre-steps:
       - checkout
-    context: ITU MiniTwit    
     token: GITHUB_TOKEN        
     branch: 'feature/ChangelogGenerator'
     commit-message: 'Update changelog'
     git-push: true             
     project: CIRCLE_PROJECT_REPONAME
-    user: CIRCLE_PROJECT_USERNAME                 
-    filters: *orb_tagged_filters    # Trigger to only tag   
+    user: CIRCLE_PROJECT_USERNAME                  
           
 
 workflows:
@@ -307,6 +308,8 @@ workflows:
       - check_snyk 
 
       - changelog/changelog-default
+          context: ITU MiniTwit
+          filters: *orb_tagged_filters  
           
   #     - publish_github_release:
   #         context: ITU MiniTwit
