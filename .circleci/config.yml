@@ -307,19 +307,19 @@ workflows:
 
       - check_snyk 
 
-      - changelog/changelog-default
+      - changelog/changelog-default:
           context: ITU MiniTwit
           filters: *orb_tagged_filters  
           
-  #     - publish_github_release:
-  #         context: ITU MiniTwit
-  #         filters:
-  #           branches:
-  #             only:
-  #               - master
-  #         requires:
-  #           - build_and_test
-  #           - check_snyk
+      # - publish_github_release:
+      #     context: ITU MiniTwit
+      #     filters:
+      #       branches:
+      #         only:
+      #           - master
+      #     requires:
+      #       - build_and_test
+      #       - check_snyk
 
   #     - push_to_docker_hub:
   #         requires:
