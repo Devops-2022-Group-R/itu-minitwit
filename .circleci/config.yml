@@ -267,36 +267,10 @@ jobs:
           project: '${CIRCLE_PROJECT_REPONAME}/${CIRCLE_BRANCH}-container'
           severity-threshold: medium
           target-file: Dockerfile
-          token-variable: SNYK_TOKEN
-
-  changelog/changelog-default:
-    docker:
-      - image: circleci/golang:1.17-buster
-    pre-steps:
-      - checkout
-    token: GITHUB_TOKEN        
-    branch: 'feature/ChangelogGenerator'
-    commit-message: 'Update changelog'
-    git-push: true             
-    project: CIRCLE_PROJECT_REPONAME
-    user: CIRCLE_PROJECT_USERNAME                  
+          token-variable: SNYK_TOKEN        
           
 
 workflows:
-  # generate_changelog:
-  #   jobs:
-  #     - changelog/changelog-default:
-  #         pre-steps:
-  #           - checkout
-  #         context: ITU MiniTwit    
-  #         token: GITHUB_TOKEN        
-  #         branch: 'feature/ChangelogGenerator'
-  #         commit-message: 'Update changelog'
-  #         git-push: true             
-  #         project: CIRCLE_PROJECT_REPONAME
-  #         user: CIRCLE_PROJECT_USERNAME                 
-  #         filters: *orb_tagged_filters    # Trigger to only tag   
-
   build_test_deploy:
     jobs:
       - build_and_test
@@ -306,20 +280,16 @@ workflows:
       - check_gocyclo
 
       - check_snyk 
-
-      - changelog/changelog-default:
-          context: ITU MiniTwit
-          filters: *orb_tagged_filters  
           
-      # - publish_github_release:
-      #     context: ITU MiniTwit
-      #     filters:
-      #       branches:
-      #         only:
-      #           - master
-      #     requires:
-      #       - build_and_test
-      #       - check_snyk
+      - publish_github_release:
+          context: ITU MiniTwit
+          filters:
+            branches:
+              only:
+                - master
+          requires:
+            - build_and_test
+            - check_snyk
 
   #     - push_to_docker_hub:
   #         requires:
@@ -356,3 +326,16 @@ workflows:
   #           branches:
   #             only:
   #               - master
+  generate_changelog:
+    jobs:
+      - changelog/changelog-default:
+          pre-steps:
+            - checkout
+          context: ITU MiniTwit    
+          token: GITHUB_TOKEN        
+          branch: 'feature/ChangelogGenerator'
+          commit-message: 'Update changelog'
+          git-push: true             
+          project: CIRCLE_PROJECT_REPONAME
+          user: CIRCLE_PROJECT_USERNAME                 
+          filters: *orb_tagged_filters    # Trigger to only tag  
