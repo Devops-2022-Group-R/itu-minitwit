@@ -7,8 +7,6 @@ orbs:
   changelog: onimur/github-changelog-generator@2.1.9
 
 orb_tagged_filters: &orb_tagged_filters
-  branches:
-    ignore: /.*/
   tags:
     only: /^\d+\.\d+\.\d+$/ #for tag 1.2.3
 
