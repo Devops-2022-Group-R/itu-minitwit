@@ -6,13 +6,6 @@ orbs:
   kubernetes: circleci/kubernetes@0.4.0
   changelog: onimur/github-changelog-generator@2.1.9
 
-orb_tagged_filters: &orb_tagged_filters
-  branches:
-    only: 'feature/ChangelogGenerator'
-    # ignore: /.*/
-  tags:
-    only: /^\d+\.\d+\.\d+$/ #for tag 1.2.3
-
 defaults: &defaults
   working_directory: /tmp/workdir
 
@@ -291,41 +284,42 @@ workflows:
             - build_and_test
             - check_snyk
 
-  #     - push_to_docker_hub:
-  #         requires:
-  #           - publish_github_release
-  #         context: ITU MiniTwit
-  #         filters:
-  #           branches:
-  #             only:
-  #               - master
+      - push_to_docker_hub:
+          requires:
+            - publish_github_release
+          context: ITU MiniTwit
+          filters:
+            branches:
+              only:
+                - master
 
-  #     - push_monitoring_to_docker_hub:
-  #         requires:
-  #           - publish_github_release
-  #         context: ITU MiniTwit
-  #         filters:
-  #           branches:
-  #             only:
-  #               - master
+      - push_monitoring_to_docker_hub:
+          requires:
+            - publish_github_release
+          context: ITU MiniTwit
+          filters:
+            branches:
+              only:
+                - master
 
-  #     - apply_infrastructure:
-  #         requires:
-  #           - push_to_docker_hub
-  #         context: ITU MiniTwit
-  #         filters:
-  #           branches:
-  #             only:
-  #               - master
+      - apply_infrastructure:
+          requires:
+            - push_to_docker_hub
+          context: ITU MiniTwit
+          filters:
+            branches:
+              only:
+                - master
 
-  #     - apply_kubernetes:
-  #         requires:
-  #           - apply_infrastructure
-  #         context: ITU MiniTwit
-  #         filters:
-  #           branches:
-  #             only:
-  #               - master
+      - apply_kubernetes:
+          requires:
+            - apply_infrastructure
+          context: ITU MiniTwit
+          filters:
+            branches:
+              only:
+                - master
+                
   generate_changelog:
     jobs:
       - changelog/changelog-default:
@@ -338,4 +332,9 @@ workflows:
           git-push: true             
           project: CIRCLE_PROJECT_REPONAME
           user: CIRCLE_PROJECT_USERNAME                 
-          filters: *orb_tagged_filters    # Trigger to only tag  
+          filters: 
+            branches:
+              only: 'master'
+              ignore: /.*/
+            tags:
+              only: /^\d+\.\d+\.\d+$/ #for tag 1.2.3
