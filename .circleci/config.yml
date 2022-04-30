@@ -272,7 +272,8 @@ jobs:
       - changelog/changelog-default:
           pre-steps:
             - checkout
-            attach_workspace:
+            
+            - attach_workspace:
               at: /tmp/
           context: ITU MiniTwit           # Case contain your Github Token
           token: GITHUB_TOKEN             # Token as env_var
@@ -293,58 +294,58 @@ workflows:
     jobs: 
       - generate_changelog  
 
-  build_test_deploy:
-    jobs:
-      - build_and_test
+  # build_test_deploy:
+  #   jobs:
+  #     - build_and_test
 
-      - lint
+  #     - lint
 
-      - check_gocyclo
+  #     - check_gocyclo
 
-      - check_snyk
+  #     - check_snyk
 
-      - publish_github_release:
-          context: ITU MiniTwit
-          filters:
-            branches:
-              only:
-                - master
-          requires:
-            - build_and_test
-            - check_snyk
+  #     - publish_github_release:
+  #         context: ITU MiniTwit
+  #         filters:
+  #           branches:
+  #             only:
+  #               - master
+  #         requires:
+  #           - build_and_test
+  #           - check_snyk
 
-      - push_to_docker_hub:
-          requires:
-            - publish_github_release
-          context: ITU MiniTwit
-          filters:
-            branches:
-              only:
-                - master
+  #     - push_to_docker_hub:
+  #         requires:
+  #           - publish_github_release
+  #         context: ITU MiniTwit
+  #         filters:
+  #           branches:
+  #             only:
+  #               - master
 
-      - push_monitoring_to_docker_hub:
-          requires:
-            - publish_github_release
-          context: ITU MiniTwit
-          filters:
-            branches:
-              only:
-                - master
+  #     - push_monitoring_to_docker_hub:
+  #         requires:
+  #           - publish_github_release
+  #         context: ITU MiniTwit
+  #         filters:
+  #           branches:
+  #             only:
+  #               - master
 
-      - apply_infrastructure:
-          requires:
-            - push_to_docker_hub
-          context: ITU MiniTwit
-          filters:
-            branches:
-              only:
-                - master
+  #     - apply_infrastructure:
+  #         requires:
+  #           - push_to_docker_hub
+  #         context: ITU MiniTwit
+  #         filters:
+  #           branches:
+  #             only:
+  #               - master
 
-      - apply_kubernetes:
-          requires:
-            - apply_infrastructure
-          context: ITU MiniTwit
-          filters:
-            branches:
-              only:
-                - master
+  #     - apply_kubernetes:
+  #         requires:
+  #           - apply_infrastructure
+  #         context: ITU MiniTwit
+  #         filters:
+  #           branches:
+  #             only:
+  #               - master
