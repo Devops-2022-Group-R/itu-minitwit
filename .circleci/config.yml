@@ -286,7 +286,7 @@ jobs:
   #       filters: *orb_tagged_filters    # Trigger to only tag
 
 workflows:
-  # tagged-publish: # run job for all tags
+  # tagged_publish: # run job for all tags
   generate_changelog:
     jobs:
       - changelog/changelog-default:
@@ -305,20 +305,19 @@ workflows:
                 #   git commit -m "Your description [skip ci]"
                 #   git push -q https://$<<parameters.token>>@github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git feature/ChangelogGenerator
       
-
   # tagged-publish:
   #   jobs: 
   #     - generate_changelog  
 
-  # build_test_deploy:
-  #   jobs:
-  #     - build_and_test
+  build_test_deploy:
+    jobs:
+      - build_and_test
 
-  #     - lint
+      - lint
 
-  #     - check_gocyclo
+      - check_gocyclo
 
-  #     - check_snyk
+      - check_snyk
 
   #     - publish_github_release:
   #         context: ITU MiniTwit
