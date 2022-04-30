@@ -7,8 +7,8 @@ orbs:
   changelog: onimur/github-changelog-generator@2.1.9
 
 orb_tagged_filters: &orb_tagged_filters
-  branches:
-    ignore: /.*/
+  # branches:
+  #   ignore: /.*/
   tags:
     only: /^\d+\.\d+\.\d+$/ #for tag 1.2.3
 
@@ -268,20 +268,33 @@ jobs:
           target-file: Dockerfile
           token-variable: SNYK_TOKEN
 
+  changelog/changelog-default:
+    pre-steps:
+      - checkout
+    context: ITU MiniTwit    
+    token: GITHUB_TOKEN        
+    branch: 'feature/ChangelogGenerator'
+    commit-message: 'Update changelog'
+    git-push: true             
+    project: CIRCLE_PROJECT_REPONAME
+    user: CIRCLE_PROJECT_USERNAME                 
+    filters: *orb_tagged_filters    # Trigger to only tag   
+          
+
 workflows:
-  generate_changelog:
-    jobs:
-      - changelog/changelog-default:
-          pre-steps:
-            - checkout
-          context: ITU MiniTwit    
-          token: GITHUB_TOKEN        
-          branch: 'feature/ChangelogGenerator'
-          commit-message: 'Testing update changelog'
-          git-push: true             
-          project: CIRCLE_PROJECT_REPONAME
-          user: CIRCLE_PROJECT_USERNAME                 
-          filters: *orb_tagged_filters    # Trigger to only tag   
+  # generate_changelog:
+  #   jobs:
+  #     - changelog/changelog-default:
+  #         pre-steps:
+  #           - checkout
+  #         context: ITU MiniTwit    
+  #         token: GITHUB_TOKEN        
+  #         branch: 'feature/ChangelogGenerator'
+  #         commit-message: 'Update changelog'
+  #         git-push: true             
+  #         project: CIRCLE_PROJECT_REPONAME
+  #         user: CIRCLE_PROJECT_USERNAME                 
+  #         filters: *orb_tagged_filters    # Trigger to only tag   
 
   build_test_deploy:
     jobs:
@@ -291,9 +304,9 @@ workflows:
 
       - check_gocyclo
 
-      - check_snyk
+      - check_snyk 
 
- 
+      - changelog/changelog-default
           
   #     - publish_github_release:
   #         context: ITU MiniTwit
