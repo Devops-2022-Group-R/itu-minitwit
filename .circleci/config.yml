@@ -294,7 +294,7 @@ workflows:
           pre-steps:
             - checkout
           context: ITU MiniTwit           # Case contain your Github Token
-          token: $GITHUB_TOKEN        # Token as env_var
+          token: GITHUB_TOKEN        # Token as env_var
           git-push: false                 # The changelog will be stored in /tmp/.persist/persist/ and can be retrieved using: - attach_workspace: at: tmp //https://circleci.com/docs/2.0/configuration-reference/#example-7
           #Push the changelog to remote repository manually
           post-steps:
