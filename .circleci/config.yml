@@ -293,19 +293,22 @@ workflows:
             - checkout
           context: ITU MiniTwit           # Case contain your Github Token
           token: GITHUB_TOKEN        # Token as env_var
-          git-push: false                 # The changelog will be stored in /tmp/.persist/persist/ and can be retrieved using: - attach_workspace: at: tmp //https://circleci.com/docs/2.0/configuration-reference/#example-7
+          branch: 'feature/ChangelogGenerator'
+          commit-message: 'Testing update changelog'
+          git-push: true                 # The changelog will be stored in /tmp/.persist/persist/ and can be retrieved using: - attach_workspace: at: tmp //https://circleci.com/docs/2.0/configuration-reference/#example-7
+          project: CIRCLE_PROJECT_REPONAME
+          user: CIRCLE_PROJECT_USERNAME
           #Push the changelog to remote repository manually
           post-steps:
             - run:
                 command: |
-                  echo "just testing"
+                echo "still testing"
+                  
+          filters: *orb_tagged_filters    # Trigger to only tag        
+                #   git add CHANGELOG.md
+                #   git commit -m "Your description [skip ci]"
+                #   git push -q https://$<<parameters.token>>@github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git feature/ChangelogGenerator
       
-          filters: *orb_tagged_filters    # Trigger to only tag
-                  # git config user.name "BotUsername"
-                  # git config user.email "bot@email.com"
-                  # git add CHANGELOG.md
-                  # git commit -m "Your description [skip ci]"
-                  # git push -q https://$<<parameters.token>>@github.com/YourUser/YourProjectName.git master
 
   # tagged-publish:
   #   jobs: 
