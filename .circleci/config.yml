@@ -302,9 +302,9 @@ workflows:
 
       - check_snyk
 
-      - check_latex:
+      - build_latex:
           context: ITU MiniTwit
-          
+
 
       - publish_github_release:
           context: ITU MiniTwit
