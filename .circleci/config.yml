@@ -311,8 +311,8 @@ workflows:
 
       # - check_snyk
 
-      - build_latex:
-          context: ITU MiniTwit
+      # - build_latex:
+      #     context: ITU MiniTwit
 
 
       # - publish_github_release:
