@@ -6,12 +6,12 @@ set -e
 LATEST_COMMIT=$(git rev-parse HEAD)
 
 # latest commit where path/to/folder1 was changed
-REPORT_COMMIT=$(git log -1 --format=format:%H --full-diff /report)
+REPORT_COMMIT=$(git log -1 --format=format:%H --full-diff itu-minitwit/report)
 
 if [ "$REPORT_COMMIT" = "$LATEST_COMMIT" ];
     then
         echo "files in Report has changed"
-        cd /report
+        cd ../report
         ./scripts/compile-latex-docker.sh main.tex
         # ./scripts/compile-latex-docker.bat main.tex
         exit 0;
