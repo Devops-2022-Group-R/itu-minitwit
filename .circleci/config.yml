@@ -264,7 +264,9 @@ jobs:
   # https://stackoverflow.com/questions/44773415/how-to-push-a-commit-to-github-from-a-circleci-build-using-a-personal-access-tok
   # https://support.circleci.com/hc/en-us/articles/360018860473-How-to-push-a-commit-back-to-the-same-repository-as-part-of-the-CircleCI-job
   # https://github.com/entria/entria-deploy
-  # https://discuss.circleci.com/t/only-kicking-off-if-changes-are-to-a-specific-folder/9711
+  
+  
+  # Inspire by: https://discuss.circleci.com/t/only-kicking-off-if-changes-are-to-a-specific-folder/9711
 
   build_latex:
     docker: 
@@ -280,9 +282,9 @@ jobs:
       - run:
           name: "check_latex"
           command: |
-            CHANGES=$(git diff master -- report  -- chore/IntegrateLatexBuild/ -- report)
-            ANY_CHANGES=$(echo $CHANGES |awk '{print length}')
-            if [ "$ANY_CHANGES" -gt 0 ]; then
+            LATEST_COMMIT=$(git rev-parse HEAD)
+            REPORT_FOLDER_COMMIT=$(git log -1 --format=format:%H --full-diff -- report)
+            if [ "$LATEST_COMMIT" = "$REPORT_FOLDER_COMMIT" ]; then
               echo "Changes have been made in report folder"
               
               echo "Building report"
@@ -311,8 +313,8 @@ workflows:
 
       # - check_snyk
 
-      # - build_latex:
-      #     context: ITU MiniTwit
+      - build_latex:
+          context: ITU MiniTwit
 
 
       # - publish_github_release:
