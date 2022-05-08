@@ -282,7 +282,7 @@ jobs:
           command: |
             CHANGES=$(git diff master -- report  -- chore/IntegrateLatexBuild/ -- report)
             ANY_CHANGES=$(echo $CHANGES |awk '{print length}')
-            if [$ANY_CHANGES -gt 0]; then
+            if [ "$ANY_CHANGES" -gt "0"]; then
               echo "Changes have been made in report folder"
               
               echo "Building report"
