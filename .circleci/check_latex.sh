@@ -1,4 +1,4 @@
-# https://gist.github.com/naesheim/18d0c0a58ee61f4674353a2f4cf71475
+# With inspiration from: https://gist.github.com/naesheim/18d0c0a58ee61f4674353a2f4cf71475
 
 set -e
 
@@ -11,10 +11,11 @@ REPORT_COMMIT=$(git log -1 --format=format:%H --full-diff /report)
 if [ $REPORT_COMMIT = $LATEST_COMMIT ];
     then
         echo "files in Report has changed"
-        #   ./scripts/compile-latex-docker.sh main.tex
-        #   ./scripts/compile-latex-docker.bat main.tex
-        #   .circleci/do_something.sh
+        cd /report
+        ./scripts/compile-latex-docker.sh main.tex
+        # ./scripts/compile-latex-docker.bat main.tex
+        exit 0;
 else
-     echo "no folders of relevance has changed"
-     exit 0;
+     echo "no files in Report has changed"
+     exit 1;
 fi
