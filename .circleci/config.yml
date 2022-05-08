@@ -265,32 +265,40 @@ jobs:
   # https://support.circleci.com/hc/en-us/articles/360018860473-How-to-push-a-commit-back-to-the-same-repository-as-part-of-the-CircleCI-job
   # https://github.com/entria/entria-deploy
   # https://discuss.circleci.com/t/only-kicking-off-if-changes-are-to-a-specific-folder/9711
+
   build_latex:
-    docker:
-      - image: circleci/golang:1.17-buster  
-      
+    docker: 
+      - image: circleci/golang:1.17-buster
+
     steps:
       - checkout
 
       - setup_remote_docker:
           version: 20.10.11
           docker_layer_caching: true
-      
+
       - run:
-          name: "Check_Latex"
+          name: "check_latex"
           command: |
-            sh .circleci/check_latex.sh
-            RETURN_CODE=$?
-            if [ $RETURN_CODE = 0 ]; then
-              echo "Files in report changed, LaTeX document has been built"
+            CHANGES=$(git diff chore/report-setup -- report  -- chore/IntegrateLatexBuild/ -- report)
+            ANY_CHANGES=$(echo $CHANGES |awk '{print length}')
+            if ["$ANY_CHANGES -gt 0"]; then
+              echo "Changes have been made in report folder"
+              
+              echo "Building report"
+              cd ../report
+              sh ./scripts/compile-latex-docker.sh main.tex
+
+              echo "Commit and push changes to repo"
               git config credential.helper 'cache --timeout=120'
               git config user.name "CircleCI Bot"
               git add .
               git commit -m "[skip ci] build LaTeX" 
               git push -q https://${GITHUB_TOKEN}@github.com/CIRCLE_PROJECT_USERNAME/${CIRCLE_PROJECT_REPONAME}.git chore/IntegrateLatexBuild
-            fi
 
+            fi
         # git config user.email ""   
+    
 workflows:
   build_test_deploy:
     jobs:
