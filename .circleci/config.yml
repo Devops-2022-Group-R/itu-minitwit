@@ -286,7 +286,8 @@ jobs:
               echo "Changes have been made in report folder"
               
               echo "Building report"
-              cd ../report
+              echo grep | ls
+              cd report
               sh ./scripts/compile-latex-docker.sh main.tex
 
               echo "Commit and push changes to repo"
