@@ -279,7 +279,7 @@ jobs:
       - run:
           name: "Check_Latex"
           command: |
-            .circleci/check_latex.sh
+            - sh .circleci/check_latex.sh
             RETURN_CODE=$?
             if [ $RETURN_CODE = 0 ]; then
               echo "Files in report changed, LaTeX document has been built"
