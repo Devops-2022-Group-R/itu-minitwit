@@ -21,6 +21,22 @@ docker run ^
   -aux-directory=build ^
   %1
 
+docker run --rm -i --net=none -v T:\:/data kongborup/custom-latex:latest biber build/main.bcf
+
+docker run ^
+  --rm ^
+  -i ^
+  --net=none ^
+  -v T:\:/data ^
+  kongborup/custom-latex:latest ^
+  pdflatex ^
+  --shell-escape ^
+  -interaction=nonstopmode ^
+  -file-line-error ^
+  -output-directory=build ^
+  -aux-directory=build ^
+  %1
+
 @REM Save exit code of docker command
 SET exitcode=%ERRORLEVEL%
 
