@@ -261,6 +261,39 @@ jobs:
           target-file: Dockerfile
           token-variable: SNYK_TOKEN
 
+  # https://support.circleci.com/hc/en-us/articles/360018860473-How-to-push-a-commit-back-to-the-same-repository-as-part-of-the-CircleCI-job
+  # Inspired by: https://discuss.circleci.com/t/only-kicking-off-if-changes-are-to-a-specific-folder/9711
+  # https://stackoverflow.com/questions/44773415/how-to-push-a-commit-to-github-from-a-circleci-build-using-a-personal-access-tok
+
+  build_latex:
+    machine:
+      image: ubuntu-2004:202010-01
+      docker_layer_caching: true
+
+    steps:
+      - checkout
+
+      - run:
+          name: "check_latex"
+          command: |
+            LATEST_COMMIT=$(git rev-parse HEAD)
+            REPORT_FOLDER_COMMIT=$(git log -1 --format=format:%H --full-diff -- report)
+            if [ "$LATEST_COMMIT" = "$REPORT_FOLDER_COMMIT" ]; then
+              echo "Changes have been made in report folder"
+
+              echo "Building report"
+              cd report
+              sh ./scripts/compile-latex-docker.sh main.tex
+
+              echo "Commit and push report"
+              git config credential.helper 'cache --timeout=120'
+              git config user.name "CircleCi"
+              git config user.email "CircleCi@FakeEmail.bot"
+              git add -A
+              git commit -m "Build LaTeX [skip ci]" 
+              git push -q https://${GITHUB_TOKEN}@github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git ${CIRCLE_BRANCH}
+            fi    
+    
 workflows:
   build_test_deploy:
     jobs:
@@ -271,6 +304,9 @@ workflows:
       - check_gocyclo
 
       - check_snyk
+
+      - build_latex:
+          context: ITU MiniTwit
 
       - publish_github_release:
           context: ITU MiniTwit
