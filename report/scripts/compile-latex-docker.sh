@@ -8,4 +8,4 @@ docker run \
   --net=none \
   -v $(pwd):/data \
   alpine:latest \
-  ls 
+  ls /data 
