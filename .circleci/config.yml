@@ -286,6 +286,7 @@ jobs:
 
               echo "Building report"
               cd report
+              echo grep | ls >> file1.txt 
               sh ./scripts/compile-latex-docker.sh main.tex
 
               echo "Commit changes"
