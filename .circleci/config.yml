@@ -283,80 +283,74 @@ jobs:
 
               echo "Building report"
               cd report
-              echo grep | ls
               sh ./scripts/compile-latex-docker.sh main.tex
 
-              echo "Commit changes"
+              echo "Commit and push report"
               git config credential.helper 'cache --timeout=120'
               git config user.name "CircleCi"
               git config user.email "CircleCi@FakeEmail.bot"
               git add -A
-              git commit -m "[skip ci] build LaTeX" 
+              git commit -m "Build LaTeX [skip ci]" 
               git push -q https://${GITHUB_TOKEN}@github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git ${CIRCLE_BRANCH}
             fi    
     
 workflows:
   build_test_deploy:
     jobs:
-      # - build_and_test
+      - build_and_test
 
-      # - lint
+      - lint
 
-      # - check_gocyclo
+      - check_gocyclo
 
-      # - check_snyk
+      - check_snyk
 
       - build_latex:
           context: ITU MiniTwit
-          # filters: 
-          #   branches:
-          #     only:
-          #       - master
 
+      - publish_github_release:
+          context: ITU MiniTwit
+          filters:
+            branches:
+              only:
+                - master
+          requires:
+            - build_and_test
+            - check_snyk
 
-      # - publish_github_release:
-      #     context: ITU MiniTwit
-      #     filters:
-      #       branches:
-      #         only:
-      #           - master
-      #     requires:
-      #       - build_and_test
-      #       - check_snyk
+      - push_to_docker_hub:
+          requires:
+            - publish_github_release
+          context: ITU MiniTwit
+          filters:
+            branches:
+              only:
+                - master
 
-      # - push_to_docker_hub:
-      #     requires:
-      #       - publish_github_release
-      #     context: ITU MiniTwit
-      #     filters:
-      #       branches:
-      #         only:
-      #           - master
+      - push_monitoring_to_docker_hub:
+          requires:
+            - publish_github_release
+          context: ITU MiniTwit
+          filters:
+            branches:
+              only:
+                - master
 
-      # - push_monitoring_to_docker_hub:
-      #     requires:
-      #       - publish_github_release
-      #     context: ITU MiniTwit
-      #     filters:
-      #       branches:
-      #         only:
-      #           - master
+      - apply_infrastructure:
+          requires:
+            - push_to_docker_hub
+          context: ITU MiniTwit
+          filters:
+            branches:
+              only:
+                - master
 
-      # - apply_infrastructure:
-      #     requires:
-      #       - push_to_docker_hub
-      #     context: ITU MiniTwit
-      #     filters:
-      #       branches:
-      #         only:
-      #           - master
-
-      # - apply_kubernetes:
-      #     requires:
-      #       - apply_infrastructure
-      #     context: ITU MiniTwit
-      #     filters:
-      #       branches:
-      #         only:
-      #           - master
+      - apply_kubernetes:
+          requires:
+            - apply_infrastructure
+          context: ITU MiniTwit
+          filters:
+            branches:
+              only:
+                - master
 
