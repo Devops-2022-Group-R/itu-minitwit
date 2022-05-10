@@ -7,5 +7,4 @@ docker run \
   -i \
   --net=none \
   -v $(pwd):/data \
-  kongborup/custom-latex:latest \
   ls 

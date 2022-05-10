@@ -266,8 +266,8 @@ jobs:
   # https://stackoverflow.com/questions/44773415/how-to-push-a-commit-to-github-from-a-circleci-build-using-a-personal-access-tok
 
   build_latex:
-    docker: 
-      - image: circleci/golang:1.17-buster
+    machine:
+      image: ubuntu-2004:202010-01
 
     steps:
       - checkout
