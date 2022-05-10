@@ -1,0 +1,29 @@
+msf6 > notes
+
+Notes
+=====
+
+ Time                Host          Service  Port  Protocol  Type              Data
+ ----                ----          -------  ----  --------  ----              ----
+ 2022-04-17 16:40:1  80.71.143.84  https    443   tcp       http.vhost        {:name=>"Kubernetes Ingress Controller Fake Certificate"}
+
+ 1 UTC
+ 2022-04-17 16:40:1  80.71.143.84  https    443   tcp       ssl.certificate   {:cn=>"Kubernetes Ingress Controller Fake Certificate", :subje
+ 1 UTC                                                                        ct=>[["O", "Acme Co", 19], ["CN", "Kubernetes Ingress Controll
+                                                                              er Fake Certificate", 19]], :algorithm=>"sha256WithRSAEncrypti
+                                                                              on", :valid_from=>2022-04-17 10:59:33 UTC, :valid_after=>2023-
+                                                                              04-17 10:59:33 UTC, :key_size=>2048}
+ 2022-04-17 16:40:1  80.71.143.84  https    443   tcp       http.fingerprint  {:uri=>"/", :method=>"GET", :server_port=>443, :code=>"404", :
+ 1 UTC                                                                        message=>"Not Found", :signature=>"", :header_date=>"Tue, 19 A
+                                                                              pr 2022 08:43:55 GMT", :header_content_type=>"text/html", :hea
+                                                                              der_content_length=>"146", :header_connection=>"keep-alive", :
+                                                                              header_strict_transport_security=>"max-age=15724800; includeSu
+                                                                              bDomains", :content=>"<html>\r\n<head><title>404 Not Found</ti
+                                                                              tle></head>\r\n<body>\r\n<center><h1>404 Not Found</h1></cente
+                                                                              r>\r\n<hr><center>nginx</center>\r\n</body>\r\n</html>\r\n"}
+ 2022-04-17 16:40:1  80.71.143.84  https    443   tcp       http.scraper.443  "404 Not Found"
+
+ msf6 > wmap_vulns -l
+[*] + [80.71.143.84] (80.71.143.84): scraper /
+[*]     scraper Scraper
+[*]     GET 404 Not Found
