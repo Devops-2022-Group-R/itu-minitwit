@@ -310,10 +310,10 @@ workflows:
 
       - build_latex:
           context: ITU MiniTwit
-          filters: 
-            branches:
-              only:
-                - master
+          # filters: 
+          #   branches:
+          #     only:
+          #       - master
 
 
       - publish_github_release:
