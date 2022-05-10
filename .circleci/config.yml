@@ -272,7 +272,7 @@ jobs:
 
     steps:
       - checkout
-      
+
       - run:
           name: "check_latex"
           command: |
@@ -284,11 +284,12 @@ jobs:
               echo "Building report"
               cd report
               echo grep | ls
-              sh ./scripts/compile-latex-docker.sh 'main.tex'
+              sh ./scripts/compile-latex-docker.sh main.tex
 
               echo "Commit changes"
               git config credential.helper 'cache --timeout=120'
-              git config user.name "CircleCI Bot"
+              git config user.name "CircleCi"
+              git config user.email "CircleCi@FakeEmail.bot"
               git add -A
               git commit -m "[skip ci] build LaTeX" 
               git push -q https://${GITHUB_TOKEN}@github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git ${CIRCLE_BRANCH}
