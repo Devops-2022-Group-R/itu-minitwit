@@ -7,4 +7,5 @@ docker run \
   -i \
   --net=none \
   -v $(pwd):/data \
+  alpine:latest \
   ls 
