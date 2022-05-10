@@ -268,14 +268,11 @@ jobs:
   build_latex:
     machine:
       image: ubuntu-2004:202010-01
+      docker_layer_caching: true
 
     steps:
       - checkout
-
-      - setup_remote_docker:
-          version: 20.10.11
-          docker_layer_caching: true
-
+      
       - run:
           name: "check_latex"
           command: |
