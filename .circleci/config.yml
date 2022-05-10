@@ -288,11 +288,16 @@ jobs:
               echo "Changes have been made in report folder"
               echo "Commit changes"
               cd report
+              BEFORE=$(git status)
+              echo "Before adding file.txt $BEFORE" 
               echo grep | ls >> file.txt 
               git config credential.helper 'cache --timeout=120'
               git config user.name "CircleCI Bot"
               git add -A
               git commit -m "[skip ci] build LaTeX" 
+              AFTER=$(git status)
+              echo "After adding file.txt $AFTER"
+              git push -q https://${GITHUB_TOKEN}@github.com/Devops-2022-Group-R/itu-minitwit.git chore/IntegrateLatexBuild
 
               exit 1;
               echo "Building report"
@@ -300,7 +305,7 @@ jobs:
 
             fi
         # git config user.email "" 
-        # git push -q https://${GITHUB_TOKEN}@github.com/CIRCLE_PROJECT_USERNAME/${CIRCLE_PROJECT_REPONAME}.git chore/IntegrateLatexBuild
+        # git push -q https://${GITHUB_TOKEN}@github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git chore/IntegrateLatexBuild
   
     
 workflows:
