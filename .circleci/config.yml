@@ -298,14 +298,13 @@ jobs:
               AFTER=$(git status)
               echo "After adding file1.txt $AFTER"
               
-              exit 1;
-              echo "Building report"
-              sh ./scripts/compile-latex-docker.sh main.tex
-
             fi
         # git config user.email "" 
         # git push -q https://${GITHUB_TOKEN}@github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git chore/IntegrateLatexBuild
         # git push -q https://${GITHUB_TOKEN}@github.com/Devops-2022-Group-R/itu-minitwit.git chore/IntegrateLatexBuild
+        #  exit 1;
+        #       echo "Building report"
+        #       sh ./scripts/compile-latex-docker.sh main.tex
 
     
 workflows:
