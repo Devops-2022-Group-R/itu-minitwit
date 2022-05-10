@@ -20,7 +20,7 @@ spec:
         app: itu-minitwit-backend
     spec:
       nodeSelector:
-        "beta.kubernetes.io/os": linux
+        "kubernetes.io/os": linux
       containers:
       - name: itu-minitwit-backend
         image: kongborup/itu-minitwit-server 

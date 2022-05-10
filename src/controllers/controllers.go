@@ -38,15 +38,18 @@ func SetupRouter(openDatabase database.OpenDatabaseFunc) *gin.Engine {
 	r.POST("/register", RegisterController)
 	r.GET("/latest", LatestController)
 
-	r.PUT("/flag_tool/:msgid", FlagMessageById)
-	r.GET("/flag_tool/msgs", GetAllMessages)
-
 	authed := r.Group("/")
 	authed.Use(AuthRequired())
 	authed.GET("/login", LoginGet)
 	authed.GET("/feed", GetFeedMessages)
 	authed.POST("/fllws/:username", FollowPostController)
 	authed.POST("/msgs/:username", PostUserMessage)
+
+	authorized := r.Group("/")
+	authorized.Use(AuthRequired())
+	authorized.Use(AuthorizationRequired())
+	authorized.PUT("/flag_tool/:msgid", FlagMessageById)
+	authorized.GET("/flag_tool/msgs", GetAllMessages)
 
 	return r
 }
@@ -91,14 +94,14 @@ func LoggingMiddleware() gin.HandlerFunc {
 		comment := c.Errors.ByType(gin.ErrorTypePrivate).String()
 
 		// Log request
-		internal.Logger.Printf("[GIN][%3d][%13v][IP: %15s][%-7s][%s] %s\n",
-			statusCode,
-			latency,
-			clientIP,
-			method,
-			path,
-			comment,
-		)
+		internal.LogJson(internal.Info, map[string]interface{}{
+			"statusCode": statusCode,
+			"latency":    latency.String(),
+			"method":     method,
+			"ip":         clientIP,
+			"path":       path,
+			"msg":        comment,
+		})
 	}
 }
 

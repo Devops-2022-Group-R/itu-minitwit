@@ -23,10 +23,10 @@ func (UserDTO) TableName() string {
 }
 
 type FollowDTO struct {
-	WhoId int64   `gorm:"not null"`
+	WhoId int64   `gorm:"not null;index;index:who_id_whom_id"`
 	Who   UserDTO `gorm:"primaryKey;foreignkey:WhoId"`
 
-	WhomId int64   `gorm:"not null"`
+	WhomId int64   `gorm:"not null;index:who_id_whom_id"`
 	Whom   UserDTO `gorm:"primaryKey;foreignkey:WhomId"`
 }
 

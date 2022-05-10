@@ -8,7 +8,7 @@ import (
 type MessageDTO struct {
 	gorm.Model
 
-	AuthorId int     `gorm:"not null"`
+	AuthorId int     `gorm:"not null;index"`
 	Author   UserDTO `gorm:"foreignkey:AuthorId"`
 	Text     string  `gorm:"not null"`
 	PubDate  int64   `gorm:"not null;index:,sort:desc"`

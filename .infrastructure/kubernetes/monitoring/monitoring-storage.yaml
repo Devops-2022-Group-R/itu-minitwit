@@ -1,0 +1,13 @@
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: itu-minitwit-monitoring-grafana-pvc
+  namespace: itu-minitwit-monitoring-ns
+spec:
+  storageClassName: itu-minitwit-sc 
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+
