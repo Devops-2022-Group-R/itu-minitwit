@@ -1,0 +1,6 @@
+Dockerfile
+file.txt
+images
+main.tex
+scripts
+update-latex-image.sh
