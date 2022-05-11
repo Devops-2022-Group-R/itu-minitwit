@@ -305,9 +305,6 @@ workflows:
 
       - check_snyk
 
-      - build_latex:
-          context: ITU MiniTwit
-
       - publish_github_release:
           context: ITU MiniTwit
           filters:
@@ -353,4 +350,11 @@ workflows:
             branches:
               only:
                 - master
+      - build_latex:
+          context: ITU MiniTwit
+          filters:
+            branches:
+              ignore:
+                - master
+
 
