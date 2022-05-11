@@ -336,6 +336,6 @@ workflows:
             branches:
               ignore: 
                 - /.*/
-                - 'master'
+                - master
             tags:
               only: /^\d+\.\d+\.\d+$/ #for tag 1.2.3
