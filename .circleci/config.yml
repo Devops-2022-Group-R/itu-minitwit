@@ -367,7 +367,7 @@ workflows:
             - checkout
           context: ITU MiniTwit    
           token: GITHUB_TOKEN        
-          branch: CIRCLE_BRANCH
+          branch: $CIRCLE_BRANCH
           commit-message: 'Update changelog'
           git-push: true             
           project: CIRCLE_PROJECT_REPONAME
