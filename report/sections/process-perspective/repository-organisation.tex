@@ -1,0 +1,13 @@
+\subsection{Organisation of repositories}
+The group uses GitHub to manage repositories. On GitHub, we have a dedicated organization that owns all of the project repositories. This way, we can keep related repositories together and reuse permission settings on GitHub. Currently, we have the following repositories:
+\begin{enumerate}
+  \item \href{https://github.com/Devops-2022-Group-R/itu-minitwit}{\inlinecode{Devops-2022-Group-R/itu-minitwit}}, which is the main project repository. Here, we have the backend web server which handles all business logic.
+  \item \href{https://github.com/Devops-2022-Group-R/itu-minitwit-frontend}{\inlinecode{Devops-2022-Group-R/itu-minitwit-frontend}}, containing our frontend web-app.
+  \item \href{https://github.com/Devops-2022-Group-R/flag-tool}{\inlinecode{Devops-2022-Group-R/flag-tool}}, which is a rewrite of the original flag tool given with the project template. The tool has been rewritten and moved to a separate repository.
+  \item \href{https://github.com/Devops-2022-Group-R/bump-tool}{\inlinecode{Devops-2022-Group-R/bump-tool}}, which is a small tool to help with finding the next version bump based on a pull request's tag (major/minor/patch) and the project's current version.
+\end{enumerate}
+The general philosophy has been to separate parts that can exist alone with a single responsibility. This way, all issues, pull requests, and releases are related to the topic of the repository. In a monolithic repository, you have to put in more effort to specify which part of the repository is relevant for a PR or issue. This also allows for easier and more simple CI/CD pipelines, and it becomes more obvious what a release changes. One example of this separation is the frontend web application, which is completely separated from the backend, with Kubernetes specs and CI/CD pipelines in its own repository.
+
+However, we have not been as good at following this philosophy as we would like to. For example, our monitoring is a separate entity from our web server, but all the monitoring configuration is stored in the \inlinecode{itu-minitwit} repository \cite{repo:monitoring-config} \cite{repo:monitoring-kubernetes}. Instead, we should have moved this to a separate repository because it does not have anything to do with how the web server operates.
+
+The same goes for the LaTeX files that this report consists of. We would have liked to have a separate repository for this in order to keep Git history clean and CI/CD more separate, but in this case it is a project requirement to have it in the main repository.
