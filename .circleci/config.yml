@@ -4,6 +4,7 @@ orbs:
   snyk: snyk/snyk@1.1.2
   azure-aks: circleci/azure-aks@0.2.1
   kubernetes: circleci/kubernetes@0.4.0
+  changelog: onimur/github-changelog-generator@2.1.9
 
 defaults: &defaults
   working_directory: /tmp/workdir
@@ -259,7 +260,8 @@ jobs:
           project: '${CIRCLE_PROJECT_REPONAME}/${CIRCLE_BRANCH}-container'
           severity-threshold: medium
           target-file: Dockerfile
-          token-variable: SNYK_TOKEN
+          token-variable: SNYK_TOKEN        
+          
 
   # https://support.circleci.com/hc/en-us/articles/360018860473-How-to-push-a-commit-back-to-the-same-repository-as-part-of-the-CircleCI-job
   # Inspired by: https://discuss.circleci.com/t/only-kicking-off-if-changes-are-to-a-specific-folder/9711
@@ -303,8 +305,8 @@ workflows:
 
       - check_gocyclo
 
-      - check_snyk
-
+      - check_snyk 
+          
       - publish_github_release:
           context: ITU MiniTwit
           filters:
@@ -350,11 +352,30 @@ workflows:
             branches:
               only:
                 - master
+
       - build_latex:
           context: ITU MiniTwit
           filters:
             branches:
               ignore:
                 - master
-
+                
+  generate_changelog:
+    jobs:
+      - changelog/changelog-default:
+          pre-steps:
+            - checkout
+          context: ITU MiniTwit    
+          token: GITHUB_TOKEN        
+          branch: 'master'
+          commit-message: 'Update changelog'
+          git-push: true             
+          project: CIRCLE_PROJECT_REPONAME
+          user: CIRCLE_PROJECT_USERNAME                 
+          filters: 
+            branches:
+              only: 'master'
+              ignore: /.*/
+            tags:
+              only: /^\d+\.\d+\.\d+$/ #for tag 1.2.3
 
