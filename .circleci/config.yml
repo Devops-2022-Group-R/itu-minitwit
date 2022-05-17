@@ -327,14 +327,15 @@ workflows:
             - checkout
           context: ITU MiniTwit    
           token: GITHUB_TOKEN        
-          branch: 'master'
+          branch: CIRCLE_BRANCH
           commit-message: 'Update changelog'
           git-push: true             
           project: CIRCLE_PROJECT_REPONAME
           user: CIRCLE_PROJECT_USERNAME                 
           filters: 
             branches:
-              only: 'master'
-              ignore: /.*/
+              ignore: 
+                - /.*/
+                - master
             tags:
               only: /^\d+\.\d+\.\d+$/ #for tag 1.2.3
