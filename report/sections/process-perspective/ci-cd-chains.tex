@@ -1,0 +1,18 @@
+\subsection{CI/CD chains}
+
+We use CircleCI as a continous integration and continous delivery platform, and have configured a workflow with jobs to build, test, and deploy our service, as well as generate a changelog \cite{workflow:circleci}.
+
+
+\subsubsection{Building and testing}
+
+This job quite simply installs the dependencies, and then builds and tests the project. Additionally it runs some static code analysis checks using a Go linters runner \texttt{golangci-lint}
+
+
+\subsubsection{Deploying our service}
+
+
+
+
+\subsubsection{Generating a changelog}
+
+
