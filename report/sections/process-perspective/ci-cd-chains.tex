@@ -1,6 +1,6 @@
 \subsection{CI/CD chains}
 
-We use CircleCI as a continous integration and continous delivery platform, and have configured a workflow \cite{workflow:circleci} with jobs to build, test, and deploy our service, generate a changelog, as well as building our \LaTeX\ project. See appendix \ref{appendix:workflow} for a full CI/CD workflow diagram.
+We use CircleCI as a continous integration and continous delivery platform, and have configured a workflow \cite{workflow:circleci} with jobs to build, test, and deploy our service, generate a changelog, as well as building our \LaTeX\ project. See \appendixref{appendix:workflow} for a full CI/CD workflow diagram.
 
 
 \subsubsection{Building, testing, and static analysis}
@@ -10,12 +10,18 @@ This part of the workflow quite simply installs the dependencies, and then build
     \item A Go linters runner: \texttt{golangci-lint}, which runs dozens of linters in parallel.
     \item A cyclomatic complexity calculator: \texttt{gocyclo}, to ensure that the code has low complexity. Otherwise, the job will exit with code 1 until we've refactored the functions in question.
     \item A developer security platform, \texttt{Snyk}, to find and fix security vulnerabilities in code, dependencies, and containers.
-\end{itemize} 
+\end{itemize}
 
 
 \subsubsection{Deploying our service}
 
-
+CircleCI will also:
+\begin{itemize}
+    \item Publish a GitHub release
+    \item Push our changes to the four images in Docker Hub (the server, front-end, Prometheus, and Grafana)
+    \item Deploy to their respective images in the managed Kubernetes service in the remote Azure server
+    \item Apply infrastructure via Terraform
+\end{itemize}
 
 
 \subsubsection{Generating a changelog, and building the \LaTeX\ project}
