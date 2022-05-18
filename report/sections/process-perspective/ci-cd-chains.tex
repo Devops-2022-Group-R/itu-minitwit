@@ -1,8 +1,7 @@
 \subsection{CI/CD chains}
-\makebox[\textwidth][c]{\includegraphics[width=0.87\paperwidth]{workflow.pdf}}%
 
+We use CircleCI as a continous integration and continous delivery platform, and have configured a workflow \cite{workflow:circleci} with jobs to build, test, and deploy our service, generate a changelog, as well as building our \LaTeX\ project. See appendix \ref{appendix:workflow} for a full CI/CD workflow diagram.
 
-We use CircleCI as a continous integration and continous delivery platform, and have configured a workflow with jobs to build, test, and deploy our service, as well as generate a changelog \cite{workflow:circleci}.
 
 
 \subsubsection{Building and testing}
@@ -15,6 +14,6 @@ This job quite simply installs the dependencies, and then builds and tests the p
 
 
 
-\subsubsection{Generating a changelog}
+\subsubsection{Generating a changelog, and building the \LaTeX\ project}
 
 
