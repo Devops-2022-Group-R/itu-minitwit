@@ -6,7 +6,7 @@
 \usepackage[a4paper]{geometry} % Layout (margins, page size)
 \usepackage{inconsolata} % Monospace font
 \usepackage{charter} % Font family
-\usepackage{minted} % Code highlight
+\usepackage[outputdir=build]{minted} % Code highlight
 \usepackage{booktabs} % beautiful tables
 \usepackage{float} % force positioning of figures
 \usepackage[labelfont=bf, textfont=it]{caption} % control figure and table captions
@@ -60,6 +60,7 @@
     \egroup
     \newpage
 
+    \input{sections/system-perspective/system-perspective}
     \input{sections/process-perspective/process-perspective}
 
     \nocite{*}
