@@ -1,7 +1,7 @@
 \subsection{Logging}
 To manage logging in our systems, we use the EFK stack (Elasticsearch, Fluentd, and Kibana). It works like this:
 \begin{enumerate}
-  \item A pod in the cluster is logging to stdout.
+  \item A pod in the cluster is logging to stdout
   \item The stdout is sent to log files by Kubernetes
   \item Fluentd picks up on logs in these files and sends them to Elasticsearch
   \item Kibana is used to visualize the logs
