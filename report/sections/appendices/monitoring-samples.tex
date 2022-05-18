@@ -1,0 +1,17 @@
+\section{Monitoring example: High CPU usage}
+\label{appendix:monitoring-samples}
+\autoref{fig:grafana-dashboard-cpu} and \autoref{fig:azure-dashboard-cpu} show the status of our system in Grafana and Azure when we tried to implement logging. The initial implementation used up high amounts of our CPU resources, which is reflected in the response times and CPU recording metrics.
+\begin{figure}[H]
+    \begin{center}
+        \includegraphics[width=1\textwidth]{grafana-dashboard-cpu.png}
+    \end{center}
+    \caption{A snapshot of our Grafana monitoring dashboard.}
+    \label{fig:grafana-dashboard-cpu}
+\end{figure}
+\begin{figure}[H]
+    \begin{center}
+        \includegraphics[width=1\textwidth]{azure-dashboard-cpu.png}
+    \end{center}
+    \caption{A graph from Azure's monitoring showing the CPU usage of our cluster.}
+    \label{fig:azure-dashboard-cpu}
+\end{figure}
