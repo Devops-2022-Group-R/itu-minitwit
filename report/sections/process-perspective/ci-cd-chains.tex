@@ -3,10 +3,14 @@
 We use CircleCI as a continous integration and continous delivery platform, and have configured a workflow \cite{workflow:circleci} with jobs to build, test, and deploy our service, generate a changelog, as well as building our \LaTeX\ project. See appendix \ref{appendix:workflow} for a full CI/CD workflow diagram.
 
 
+\subsubsection{Building, testing, and static analysis}
 
-\subsubsection{Building and testing}
-
-This job quite simply installs the dependencies, and then builds and tests the project. Additionally it runs some static code analysis checks using a Go linters runner \texttt{golangci-lint}
+This part of the workflow quite simply installs the dependencies, and then builds and tests the project. Additionally it runs the following three static code analysis jobs:
+\begin{itemize}
+    \item A Go linters runner: \texttt{golangci-lint}, which runs dozens of linters in parallel.
+    \item A cyclomatic complexity calculator: \texttt{gocyclo}, to ensure that the code has low complexity. Otherwise, the job will exit with code 1 until we've refactored the functions in question.
+    \item A developer security platform, \texttt{Snyk}, to find and fix security vulnerabilities in code, dependencies, and containers.
+\end{itemize} 
 
 
 \subsubsection{Deploying our service}
