@@ -26,4 +26,6 @@ CircleCI will also:
 
 \subsubsection{Generating a changelog, and building the \LaTeX\ project}
 
+We use CircleCI Github Changelog Generator \cite{repo:changelog-generator} to generate a changelog based on our tags, issues, labels and pull requests on GitHub.
 
+In order to include a build of the \LaTeX\ project in the CircleCI workflow, we've written a script to let CircleCI run a custom Docker image, build a PDF, and then commit it to the branch.
