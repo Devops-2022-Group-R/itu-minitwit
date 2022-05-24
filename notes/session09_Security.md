@@ -24,7 +24,7 @@
 - Attacker performs SQL Injection to copy, delete or ransom all data from the Database layer
 - Attacker abuses security flaw of a vulnerable component and gains access to unwanted parts of the program
 - Attacker gains access to Azure credentials, have complete control over the service, change subscribtion, database, resource group, redirect CI/CD pipeline
-- Attack gains Access to CircleCi credentials, edit environment variables, stop the pipeline CI/CD
+- Attacker gains Access to CircleCi credentials, edit environment variables, stop the pipeline CI/CD
 
 ## B. Risk Analysis
 
