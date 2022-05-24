@@ -4,27 +4,40 @@
 % That is, list and briefly describe all technologies and tools you applied and depend on.
 % 
 % insert list of dependencies here maybe as a table 
-\makebox[0.75\paperwidth][c]{
-    \begin{tabular}{|l|c|c|c|}
+\makebox[\textwidth][c]{
+    
+    \begin{tabular}{| p{0.235\linewidth} | p{0.375\linewidth} | p{0.575\linewidth}|}
         \hline
         \textbf{Development stages} & \textbf{Tools and technologies} & \textbf{Description} \\
         \hline
 
+        % maybe seperate into different sections with \hline?
         \textbf{Version control} & \textbf{Git, GitHub} & ?? \\
-        \textbf{Pipeline CI/CD} & \textbf{CircleCi} & ?? \\
+        \textbf{Pipeline CI/CD} & \textbf{CircleCi} & Run workflows, automate tests, deploying, releases and changelog  \\
         \textbf{Containerization} & \textbf{Docker and DockerHub} & For development and deployment to DockerHub \\
-        \textbf{Database} & \textbf{SQL Server, SQLite} & To store data \\
+     
+        % \hline
+        \textbf{Infrastructure} & \textbf{Terraform} & IaC, Make it easier to swap host, automate tasks for releases  \\
         \textbf{Service Provider} & \textbf{Azure, own server} & Hosting our app \\
-        \textbf{Infrastructure} & \textbf{Terraform} & IaC, to easily swap host, automating tasks  \\
-        \textbf{Service management} & \textbf{Kubernetes} & orchestra containers, scaling up / down  \\
-        \textbf{Logging} & \textbf{Elasticsearch, Fluentd and Kibana} & Gather, filter, and search through a centralized log  \\
-        \textbf{Monitoring} & \textbf{Grafana and Prometheus} & Alerts, performance, response time, represented visualy \\
-        \textbf{Security} & \textbf{Snyk} & Notify about Security issues and updates to dependencies \\
-        \textbf{Languages and frameworks} & \textbf{Golang, gin-gonic, Gorm, testify, JavaScript, VueJS} \\
-        \textbf{Documentation?(report)} & \textbf{LaTeX, Markdown} & ? \\
-        \textbf{Code analysis} & \textbf{SonarCloud, lint, cyclomatic} & reduce code smell \\
+        \textbf{Service management} & \textbf{Kubernetes} & Orchestrate containers, scaling up / down, load balancing  \\
+        
+        % \hline
+        \textbf{Logging} & \textbf{Elasticsearch, Fluentd and Kibana} & To gather logs into a centralized log and sort, filter, search the centralized log    \\
+        \textbf{Monitoring} & \textbf{Grafana and Prometheus} & Gather and organize data points from our system, based on those create alerts and a visual representation  \\
+        
+        % \hline
+        \textbf{Languages} & \textbf{Golang, JavaScript} & Backend and frontend \\ 
+        \textbf{Frameworks} & \textbf{gorm, testify, gin-gonic, VueJS} & ORM, Testing, HTTP Framework, Frontend SPA \\
+        \textbf{Database} & \textbf{SQL Server, SQLite} & To store data \\
+
+        % \hline
+        \textbf{Documentation} & \textbf{LaTeX, Markdown} & Report, notes, changelog, instructions \\
+        \textbf{Code analysis} & \textbf{SonarCloud, lint, cyclomatic} & Reduce code smell / Motivate clean code \\
+        \textbf{Security} & \textbf{Snyk, OWASP Zap, Metasploit WMAP} & Notify about Security issues and updates to dependencies and scan for vulnerabilities \\
 
 
         \hline
     \end{tabular}
+    % \caption{System dependencies}
+    % \label{fig:System dependencies}
 }
