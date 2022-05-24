@@ -29,11 +29,10 @@ These metrics provide an overview over the system health and allows us to diagno
 \subsubsection{Logging}
 For more detailed diagnostics we have a logging subsystem. It's built with Fluentd \cite{tool:fluentd}, Elasticsearch \cite{tool:elasticsearch}, and Kibana \cite{tool:kibana}.
 Fluentd reads the logs from the Kubernetes host, and parses them according to the configured log format.
-It then tags them and sends them to Elasticsearch. Which indexes and stores them, such that they are easily searchable.
+It then tags them and sends them to Elasticsearch, which indexes and stores them, such that they are easily searchable.
 Kibana provides a web interface to search, read and display the logs in a structured way.\\
 
-Having this logging system allows us to diagnose what happened when something goes wrong.
-As we can easily find and read the info, warnings and errors that our system outputs.
+Having this logging system allows us to diagnose what happened when something goes wrong, as we can easily find and read the info, warnings and errors that our system outputs.
 
 \subsubsection{Kubernetes and Azure}
 To deploy this system we use Kubernetes \cite{tool:kubernetes} deployed on Azure \cite{tool:azure} through AKS \cite{tool:aks}.
