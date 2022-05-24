@@ -12,3 +12,24 @@ In the same spirit as above, we've used GORM \cite{gorm} for object-relational m
 \subsubsection{Separate frontend}
 We moved the frontend code to a separate project \cite{repo:frontend}. This way, the Go server has only a single responsibility. This also serves as a way of using the bridge pattern to add another layer of abstraction, because the frontend is now only dependent on the API and not the Go implementation. This would also allow for different frontends to be implemented, like you obtain with MVC.
 
+\subsubsection{Program modules}
+In order to improve the single-responsibility aspect of our code, we've used modules to separate code into units of single responsibility as shown in \autoref{table:gomodules}.
+\begin{table}[H]
+  \centering
+  \begin{tabular}{ll}
+    \toprule
+    \textbf{Module} & \textbf{Responsibility} \\
+    \midrule
+    \inlinecode{controllers} & Managing the API routes and implementing the controllers \\
+    \inlinecode{database} & Communicate with the database \\
+    \inlinecode{internal} & Logging output destination and format --- and error handling \\
+    \inlinecode{models} & Model definitions \\
+    \inlinecode{monitoring} & Managing Prometheus and monitoring \\
+    \inlinecode{password} & Password hashing and validation \\
+    \inlinecode{test/controllers} & Integration and unit tests for all controllers \\
+    \inlinecode{main} & Starting the application \\
+    \bottomrule
+  \end{tabular}
+  \caption{The modules in our Go server and their responsibilities.}
+  \label{table:gomodules}
+\end{table}
