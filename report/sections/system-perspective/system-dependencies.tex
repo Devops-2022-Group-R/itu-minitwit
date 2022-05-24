@@ -1,6 +1,32 @@
-\subsection{system dependencies}
+\subsection{System dependencies}
 %
 % All dependencies of your ITU-MiniTwit systems on all levels of abstraction and development stages.
 % That is, list and briefly describe all technologies and tools you applied and depend on.
 % 
 % insert list of dependencies here maybe as a table 
+\makebox[0.75\paperwidth][c]{
+    \begin{tabular}{|l|c|c|c|}
+        \hline
+        \textbf{Development stages} & \textbf{Tools and technologies} & \textbf{Description} \\
+        \hline
+
+        \textbf{Version control} & \textbf{GitHub} & ?? \\
+        \textbf{Pipeline CI/CD} & \textbf{CircleCi} & ?? \\
+        \textbf{Containerization} & \textbf{Docker and DockerHub} & For development and deployment to DockerHub \\
+        \textbf{Database} & \textbf{MySQL} & To store data \\
+        \textbf{Service Provider} & \textbf{Azure} & Hosting our app \\
+        \textbf{Infrastructure} & \textbf{Terraform} & IaC, to easily swap host, automating tasks  \\
+        \textbf{Service} & \textbf{Kubernetes} & orchestra containers, scaling up / down  \\
+        \textbf{Logging} & \textbf{Elasticsearch, Fluentd and Kibana} & Gather, filter, and search through a centralized log  \\
+        \textbf{Monitoring} & \textbf{Grafana and Prometheus} & Alerts, performance, response time, represented visualy \\
+        \textbf{Security} & \textbf{Snyk} & Notify about Security issues and updates to dependencies \\
+        \textbf{Source code} & \textbf{Golang} & Gorm \\
+        \textbf{Testing} & \textbf{stretch/testify} & Testing Golang \\
+        \textbf{Web framework} & \textbf{gin-gonic} & Golang HTTP web framework \\
+        \textbf{Documentation?(report)} & \textbf{LaTeX} & ?? \\
+        \textbf{Code analysis} & \textbf{SonarCloud, lint, cyclomatic} & reduce code smell \\
+        
+
+        \hline
+    \end{tabular}
+}
