@@ -15,7 +15,7 @@ After having identified risks, we used this information during Risk analysis to 
 Some of the threats like SQL Injection and vulnerable or outdated dependencies were resolved by using an ORM \cite{gorm} as middleware for the database to clean user input and static analysis tools integrated with our pipepline like Snyk \cite{snyk} checking for vulnerable dependencies.
 
 After risk analysis we used two vulnerability scanners OWASP ZAP \cite{owasp-zap} and Metasploit \cite{metasploit} WMAP \cite{metasploit-wmap} to test our system for vulnerabilities targeting our root endpoint \cite{minitwit-root-endpoint}.
-We tried to add an extra middleware beside our CORS middleware to handle vulnerabilities flagged by the scanners, but we did not want to invest alot of time and resources into it as we investigated the potential risks and realised they were just warnings and did not apply in our case.
-We dealt with one of our risk scenarios regarding monitoring, by ensuring changes to the dashboard only was accessible through code.
+We tried to add an extra middleware beside our CORS middleware to handle vulnerabilities flagged by the scanners, but we did not want to invest a lot of time and resources into it as we investigated the potential risks and realised they were just warnings and did not apply in our case.
+We dealt with one of our risk scenarios regarding monitoring, by ensuring changes to the dashboard were only accessible through code.
 
 Read more in our security session notes \cite{repo:security-session-notes}.
