@@ -11,15 +11,17 @@ This part of the workflow quite simply installs the dependencies, and then build
     \item A developer security platform, \texttt{Snyk}, to find and fix security vulnerabilities in code, dependencies, and containers.
 \end{itemize}
 
+% TODO: add sources
+Besides this, we have set up SonarCloud and Better Code Hub, which provide us with more general static code analysis. For the overall results of these two and some examples of warnings, see \appendixref{appendix:static-code-analysis-results}.
 
 \subsubsection{Deploying our service}
 
 CircleCI will also:
 \begin{itemize}
-    \item Publish a GitHub release
-    \item Push our changes to the four images in Docker Hub (the server, front-end, Prometheus, and Grafana)
-    \item Deploy to their respective images in the managed Kubernetes service in the remote Azure server
-    \item Apply infrastructure via Terraform
+    \item Publish a GitHub release when merging to the master branch
+    \item Push our changes to the four images in Docker Hub (the server, frontend, Prometheus, and Grafana)
+    \item Deploy by performing a rolling-update to the aforementioned services in Kubernetes
+    \item Apply infrastructure changes via Terraform
 \end{itemize}
 
 
