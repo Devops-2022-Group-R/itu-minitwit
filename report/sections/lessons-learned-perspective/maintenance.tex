@@ -4,3 +4,13 @@
 
 We've switched from SQLite to PostgreSQL, and then later to SQL Server. This could be done almost seamlessly due to the abstraction of our repository controllers, as described in section \ref{section:system-design}.
 In particular, to see how little change was required to switch to PostgreSQL, see PR \#34, particularly the changes to \texttt{main.go}, and how it interacts with \texttt{database/database.go} in commit b483145 \cite{commit:switching-to-psql}.
+
+
+\subsubsection{Switching hosts with Kubernetes}
+
+At some point, we had issues with subscriptions on Azure due to missing credits, so we temporarily stopped hosting on Azure, and instead switched to a local computer. Thanks to Kubernetes, this process of switching hosts was very easy.
+
+
+\subsubsection{Infrastructure as Code}
+
+Using Terraform as an IaC software tool, has made it simple to deal with student credits running out, as well switching subscriptions on Azure. We can simply just rebuild all the infrastructure, on a new subscription, with a few commands.
