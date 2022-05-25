@@ -6,37 +6,38 @@
 % insert list of dependencies here maybe as a table 
 \makebox[\textwidth][c]{
     
-    \begin{tabular}{| p{0.235\linewidth} | p{0.375\linewidth} | p{0.575\linewidth}|}
+    \begin{tabular}{| p{0.235\linewidth} | p{0.365\linewidth} | p{0.565\linewidth}|}
         \hline
         \textbf{Development stages} & \textbf{Tools and technologies} & \textbf{Description} \\
         \hline
 
         % maybe seperate into different sections with \hline?
-        \textbf{Version control} & \textbf{Git, GitHub} & ?? \\
-        \textbf{Pipeline CI/CD} & \textbf{CircleCi} & Run workflows, automate tests, deploying, releases and changelog  \\
-        \textbf{Containerization} & \textbf{Docker and DockerHub} & For development and deployment to DockerHub \\
+        \textbf{Version control} & \textbf{Git, GitHub} & Source code accessible for all developers, tracking issues, creating notes and tasks.    \\
+        \textbf{Pipeline CI/CD} & \textbf{CircleCi} & Automate task such as; testing, building, deploying, releasing, generating changelog.  \\
+        \textbf{Containerization} & \textbf{Docker and DockerHub} & Ensure same development environment and deployment to DockerHub. \\
      
         % \hline
-        \textbf{Infrastructure} & \textbf{Terraform} & IaC, Make it easier to swap host, automate tasks for releases  \\
-        \textbf{Service Provider} & \textbf{Azure, own server} & Hosting our app \\
-        \textbf{Service management} & \textbf{Kubernetes} & Orchestrate containers, scaling up / down, load balancing  \\
-        
-        % \hline
-        \textbf{Logging} & \textbf{Elasticsearch, Fluentd and Kibana} & To gather logs into a centralized log and sort, filter, search the centralized log    \\
-        \textbf{Monitoring} & \textbf{Grafana and Prometheus} & Gather and organize data points from our system, based on those create alerts and a visual representation  \\
-        
-        % \hline
-        \textbf{Languages} & \textbf{Golang, TypeScript} & Backend and frontend \\ 
-        \textbf{Frameworks} & \textbf{gorm, testify, gin-gonic, VueJS} & ORM, Testing, HTTP Framework, Frontend SPA \\
-        \textbf{Database} & \textbf{SQL Server, SQLite} & To store data \\
+        \textbf{Infrastructure} & \textbf{Terraform} & IaC, Make it easier to swap host, automate tasks for releases.  \\
+        \textbf{Service Provider} & \textbf{Azure, own server} & Hosting our app. \\
+        \textbf{Service management} & \textbf{Kubernetes} & Orchestrate containers, scaling up / down, load balancing.  \\
+        \textbf{Database} & \textbf{SQL Server, SQLite} & To store user data. \\
 
         % \hline
-        \textbf{Documentation} & \textbf{LaTeX, Markdown} & Report, notes, changelog, instructions \\
-        \textbf{Code analysis} & \textbf{SonarCloud, lint, cyclomatic} & Reduce code smell / Motivate clean code \\
-        \textbf{Security} & \textbf{Snyk, OWASP Zap, Metasploit WMAP} & Notify about Security issues and updates to dependencies and scan for vulnerabilities \\
+        \textbf{Logging} & \textbf{Elasticsearch, Fluentd and Kibana} & To gather logs into a centralized log and sort, filter, search the centralized log.    \\
+        \textbf{Monitoring} & \textbf{Grafana and Prometheus} & Gather and organize metrics from our system, based on those create alerts and a visual representation.  \\
+        
+        % \hline
+        \textbf{Languages} & \textbf{Golang(insert cite), TypeScript(insert cite)} & Backend and frontend. \\ 
+        \textbf{Frameworks} & \textbf{gorm(insert cite), testify\cite{tool:testify}, gin-gonic, VueJS} & ORM, Testing, HTTP Framework, Frontend SPA. \\
+        \textbf{Code analysis} & \textbf{SonarCloud, lint, cyclomatic} & Reduce code smell / Motivate clean code. \\
+        \textbf{Security} & \textbf{Snyk, OWASP Zap, Metasploit WMAP} & Notify about Security issues and updates to dependencies and scan for vulnerabilities. \\
+
+        % \hline
+        \textbf{Documentation} & \textbf{LaTeX, Markdown} & Report, notes, changelog, instructions. \\
 
 
         \hline
+
     \end{tabular}
     % \caption{System dependencies}
     % \label{fig:System dependencies}
