@@ -1,7 +1,7 @@
 \subsection{CI/CD chains}
 \label{sec:ci-cd-chains}
 
-We use CircleCI as a continous integration and continous delivery platform, and have configured a workflow \cite{workflow:circleci} with jobs to build, test, and deploy our service, generate a changelog, as well as building our \LaTeX\ project. At the end of this section, there is a diagram (\autoref{fig:ci-cd-diagram}) showing our full CI/CD flow.
+We use CircleCI as a continous integration and continous delivery platform, and have configured a workflow \cite{workflow:circleci} with jobs to build, test, and deploy our service, generate a changelog, as well as building our LaTeX project. At the end of this section, there is a diagram (\autoref{fig:ci-cd-diagram}) showing our full CI/CD flow.
 
 \subsubsection{Building, testing, and static analysis}
 
@@ -25,14 +25,14 @@ CircleCI will also:
 \end{itemize}
 
 
-\subsubsection{Generating a changelog, and building the \LaTeX\ project}
+\subsubsection{Generating a changelog, and building the LaTeX project}
 
 We use CircleCI Github Changelog Generator \cite{tool:changelog-generator} to generate a changelog based on our tags, issues, labels and pull requests on GitHub.
 
-In order to include a build of the \LaTeX\ project in the CircleCI workflow, we've written a script to let CircleCI run a custom Docker image, build a PDF, and then commit it to the branch.
+In order to include a build of the LaTeX project in the CircleCI workflow, we've written a script to let CircleCI run a custom Docker image, build a PDF, and then commit it to the branch.
 
 \begin{figure}[H]
-    \makebox[\textwidth][c]{\includegraphics[width=0.85\paperwidth]{workflow}}%
+    \makebox[\textwidth][c]{\includegraphics[width=0.85\paperwidth]{/ci-cd-workflow.pdf}}
     \caption{A diagram showing our CI/CD flow.}
     \label{fig:ci-cd-diagram}
 \end{figure}
