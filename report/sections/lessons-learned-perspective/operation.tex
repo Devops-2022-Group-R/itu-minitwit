@@ -1,0 +1,21 @@
+\subsection{Operation}
+
+\subsubsection{Uptime}
+
+We aimed for 100\% uptime, as is the spirit of DevOps. Unfortunately, we did not quite live up to this DevOps spirit during the Easter break, where the service was down for several days, because we ran out of student credits on Azure. Most of us were busy, so we knowingly let the problem remain until the week after, which is not the DevOps mindset.
+
+
+\subsubsection{Service-level agreement}
+
+We have provided a service-level agreement \cite{sla:itu-minitwit} for our API, in order to establish an agreement between us and the customer, clearly defining what we can provide to the customer, and which rights they have.
+
+
+\subsubsection{Backwards compatibility in migrating URLs}
+
+When we moved to Kubernetes, we found out that we couldn't test Ingress on the \texttt{swuwu} domain, so we moved the name servers.
+However, in order to keep the simulator working, we would need to submit a pull request to the lecture\_notes repo, and wait for someome to merge it. This takes time, requires coordination between us and the repo owners, and so on. Therefore, to instead ensure backwards compatibility, we've made sure that every link that we've used at some point still works.
+For instance, both of these domains point to the same place:
+\begin{itemize}
+    \item \url{https://rhododevdron.dk/}
+    \item \url{https://rhododevdron.swuwu.dk/}
+\end{itemize}
