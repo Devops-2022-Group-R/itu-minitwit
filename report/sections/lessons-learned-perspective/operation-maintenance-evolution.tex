@@ -1,0 +1,29 @@
+\subsection{Operation, maintenance and evolution}
+
+\subsubsection{Initial refactoring}
+
+At the start of the project, we hosted a large collaborative session, using Live Share \cite{tool:live-share} to let everyone see the same context of the workspace of one developer, allowing us to co-edit and co-debug the same code.
+In retrospect, perhaps it would have been better to commit a basic boilerplate Gin app, and then have each developer slowly commit more changes.
+
+Having attempted a 1:1-translation, we ended up with one large file. This is where we started separating responsibilites, moving them to smaller files, as well as moving the front-end to a separate repo.
+
+
+\subsubsection{Replacing database management systems}
+
+At some point, we switched from SQLite to SQL Server. This could be done almost seamlessly due to the abstraction of our repository controllers, as described in section \ref{section:system-design}.
+This abstraction was introduced in PR \#21, particularly \href{https://github.com/Devops-2022-Group-R/itu-minitwit/pull/21/commits/96d0ea601453ff9d3efe52c30b2435c6308f120b}{\color{blue}this commit}.
+
+
+\subsubsection{Uptime}
+
+Naturally, we aimed for 100\% uptime, as is the spirit of DevOps. Unfortunately, we did not quite live up to this spirit during the Easter break, where the service was down for several days, without any of us putting in the effort to get it running again.
+
+
+\subsubsection{Backwards compatibility in migrating URLs}
+
+When we moved to Kubernetes, we found out that we couldn't test Ingress on the \texttt{swuwu} domain, so we moved the name servers. To ensure backwards compatibility, every link we've used at some point still works.
+Both of these root domains point to the same place:
+\begin{itemize}
+    \item \url{https://api.rhododevdron.dk/}
+    \item \url{https://api.rhododevdron.swuwu.dk/}
+\end{itemize}
