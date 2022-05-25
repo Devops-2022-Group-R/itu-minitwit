@@ -1,4 +1,5 @@
 \subsection{CI/CD chains}
+\label{sec:ci-cd-chains}
 
 We use CircleCI as a continous integration and continous delivery platform, and have configured a workflow \cite{workflow:circleci} with jobs to build, test, and deploy our service, generate a changelog, as well as building our \LaTeX\ project. At the end of this section, there is a diagram (\autoref{fig:ci-cd-diagram}) showing our full CI/CD flow.
 
@@ -11,7 +12,6 @@ This part of the workflow quite simply installs the dependencies, and then build
     \item A developer security platform, \texttt{Snyk}, to find and fix security vulnerabilities in code, dependencies, and containers.
 \end{itemize}
 
-% TODO: add sources
 Besides this, we have set up SonarCloud and Better Code Hub, which provide us with more general static code analysis. For the overall results of these two and some examples of warnings, see \appendixref{appendix:static-code-analysis-results}.
 
 \subsubsection{Deploying our service}
