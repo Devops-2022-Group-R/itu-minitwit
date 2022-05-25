@@ -1,48 +1,36 @@
 \subsection{System dependencies}
-%
-% All dependencies of your ITU-MiniTwit systems on all levels of abstraction and development stages.
-% That is, list and briefly describe all technologies and tools you applied and depend on.
-% 
-% insert list of dependencies here maybe as a table 
-\begin{table}
+\autoref{table:system-dependencies} shows most of the major tools, libraries, and other technologies our systems depend on.
+\begin{table}[H]
     \makebox[\textwidth][c]{
-        
-        \begin{tabular}{| p{0.235\linewidth} | p{0.375\linewidth} | p{0.565\linewidth}|}
-            \hline
-            \textbf{Development stages} & \textbf{Tools and technologies} & \textbf{Description} \\
-            \hline
+        \bgroup
+        \renewcommand{\arraystretch}{1.2}
+        \begin{tabular}{p{0.235\linewidth} | p{0.375\linewidth} | p{0.5\linewidth}}
+            \toprule
+            \textbf{Category} & \textbf{Tools and technologies} & \textbf{Description} \\
+            \midrule
 
-            % maybe seperate into different sections with \hline?
             \textbf{Version control} & Git~\cite{tool:git}, GitHub~\cite{tool:github} & Source code accessible for all developers, tracking issues, creating notes and tasks. \\
             \textbf{Pipeline CI/CD} & CircleCi~\cite{tool:circleci} & Automate task such as; testing, building, deploying, releasing, generating changelog. \\
-            \textbf{Containerization} & Docker~\cite{tool:docker} and DockerHub~\cite{tool:docker-hub} & Ensure same development environment and deployment to DockerHub. \\
-        
-            % \hline
+            \textbf{Containerization} & Docker~\cite{tool:docker}, DockerHub~\cite{tool:docker-hub} & Ensure same development environment and deployment to DockerHub. \\
+
             \textbf{Infrastructure} & Terraform~\cite{tool:terraform} & IaC, Make it easier to swap host, automate tasks for releases. \\
-            \textbf{Service Provider} & Azure~\cite{tool:azure}, own server~\cite{tool:kubeadm} & Hosting our app. \\
+            \textbf{Service provider} & Azure~\cite{tool:azure}, own server~\cite{tool:kubeadm} & Hosting our app. \\
             \textbf{Service management} & Kubernetes~\cite{tool:kubernetes} & Orchestrate containers, scaling up / down, load balancing. \\
             \textbf{Database} & SQL Server~\cite{tool:microsoft-sql-server}, SQLite~\cite{tool:sql-lite} & To store user data. \\
 
-            % \hline
-            \textbf{Logging} & Elasticsearch~\cite{tool:elasticsearch}, Fluentd~\cite{tool:fluentd} and Kibana~\cite{tool:kibana} & To gather logs into a centralized log and sort, filter, search the centralized log. \\
-            \textbf{Monitoring} & Grafana~\cite{tool:grafana} and Prometheus~\cite{tool:prometheus} & Gather and organize metrics from our system, based on those create alerts and a visual representation. \\
-            
-            % \hline
+            \textbf{Logging} & Elasticsearch~\cite{tool:elasticsearch}, Fluentd~\cite{tool:fluentd}, Kibana~\cite{tool:kibana} & To gather logs into a centralized log and sort, filter, search the centralized log. \\
+            \textbf{Monitoring} & Grafana~\cite{tool:grafana}, Prometheus~\cite{tool:prometheus} & Gather and organize metrics from our system, based on those create alerts and a visual representation. \\
+
             \textbf{Languages} & Golang~\cite{tool:go}, TypeScript~\cite{tool:typescript} & Backend and frontend. \\ 
-            \textbf{Frameworks} & gorm~\cite{gorm}, testify~\cite{tool:testify}, gin-gonic~\cite{tool:gin}, VueJS~\cite{tool:vue} & ORM, Testing, HTTP Framework, Frontend SPA. \\
+            \textbf{Frameworks} & GORM~\cite{gorm}, testify~\cite{tool:testify}, gin-gonic~\cite{tool:gin}, VueJS~\cite{tool:vue} & ORM, Testing, HTTP Framework, Frontend SPA. \\
             \textbf{Code analysis} & SonarCloud~\cite{tool:sonarcloud}, lint~\cite{tool:golang-lint} cyclomatic~\cite{tool:go-cyclo} & Increase code quality and motivate clean code. \\
             \textbf{Security} & Snyk~\cite{snyk}, OWASP Zap~\cite{tool:owasp-zap}, Metasploit~\cite{metasploit} WMAP~\cite{metasploit-wmap} & Notify about Security issues and updates to dependencies and scan for vulnerabilities. \\
 
-            % \hline
             \textbf{Documentation} & LaTeX~\cite{tool:latex}, Markdown~\cite{tool:markdown} & Report, notes, changelog, instructions. \\
-
-
-            \hline
-
-        
-        \end{tabular}    
+            \bottomrule
+        \end{tabular}
+        \egroup
     }
-
-    \caption{System dependencies}
-    \label{fig:System dependencies}
+    \caption{The tools and technologies that our system depends on.}
+    \label{table:system-dependencies}
 \end{table}
