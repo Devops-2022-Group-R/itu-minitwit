@@ -2,7 +2,7 @@
 
 \subsubsection{Replacing database management systems}
 
-We've switched from SQLite to PostgreSQL, and then later to SQL Server. This could be done almost seamlessly due to the abstraction of our repository controllers, as described in section \ref{section:system-design}.
+We've switched from SQLite to PostgreSQL, and then later to SQL Server. This could be done almost seamlessly due to our database abstraction layers, as described in section \ref{section:system-design}.
 In particular, to see how little change was required to switch to PostgreSQL, see \href{https://github.com/Devops-2022-Group-R/itu-minitwit/pull/34}{pull request \#34}, particularly the changes to \texttt{main.go}, and how it interacts with \texttt{database/database.go} in \href{https://github.com/Devops-2022-Group-R/itu-minitwit/pull/34/commits/b4831458ae940e9b4c42dd929fe9be73143580d4#diff-9e185f29fa355d7dd8fdd9c9ff1d0723b85206aa7d37c4eec93997005dc291eb}{commit b483145} \cite{commit:switching-to-psql}.
 
 
