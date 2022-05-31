@@ -22,17 +22,24 @@ It makes use of the public API that the backend exposes, and therefore provides 
 The subsystem is built in small components that can be reused when expanding the project. We had a focus on the visual elements being mostly identical to the original frontend, to ensure user familiarity.
 
 \subsubsection{Monitoring}
-To keep track of the health of our system, its performance, usage and other metrics, we use Prometheus \cite{tool:prometheus} to collect metrics and Grafana \cite{tool:grafana} to view said metrics.
+To keep track of the health of our system, its performance, usage and other metrics, we use Prometheus \cite{tool:prometheus} to collect metrics and Grafana \cite{tool:grafana} to visualize said metrics.
 Our metrics include: CPU usage, memory usage, number of requests per endpoint, average request latency and amount of registered users.
-These metrics provide an overview over the system health and allows us to diagnose issues faster, by locating when something happened, at which endpoint and if it had an effect on system resources.
+We explain how we use these metrics in section \ref{section:process-monitoring}.
 
 \subsubsection{Logging}
 For more detailed diagnostics we have a logging subsystem. It's built with Fluentd \cite{tool:fluentd}, Elasticsearch \cite{tool:elasticsearch}, and Kibana \cite{tool:kibana}.
-Fluentd reads the logs from the Kubernetes host, and parses them according to the configured log format.
-It then tags them and sends them to Elasticsearch, which indexes and stores them, such that they are easily searchable.
-Kibana provides a web interface to search, read and display the logs in a structured way.\\
-
+It works like this:
+\begin{enumerate}
+  \item A pod in the cluster is logging to stdout
+  \item The stdout is sent to log files by Kubernetes
+  \item Fluentd reads the logs from the Kubernetes host and parses them according to the configured log format
+  \item Fluentd tags them and sends them to Elasticsearch
+  \item Elasticsearch indexes them, such that they are easily searchable, and stores them
+  \item Kibana provides a web interface to search, read and display the logs in a structured way
+\end{enumerate}
 Having this logging system allows us to diagnose what happened when something goes wrong, as we can easily find and read the info, warnings and errors that our system outputs.
+
+We explain how we use these logs in section \ref{section:process-logging}.
 
 \subsubsection{Kubernetes and Azure}
 To deploy this system we use Kubernetes \cite{tool:kubernetes} deployed on Azure \cite{tool:azure} through AKS \cite{tool:aks}.

@@ -1,11 +1,5 @@
 \subsection{Logging}
-To manage logging in our systems, we use the EFK stack (Elasticsearch, Fluentd, and Kibana). It works like this:
-\begin{enumerate}
-  \item A pod in the cluster is logging to stdout
-  \item The stdout is sent to log files by Kubernetes
-  \item Fluentd picks up on logs in these files and sends them to Elasticsearch
-  \item Kibana is used to visualize the logs
-\end{enumerate}
+\label{section:process-logging}
 We log using JSON, which allows us to select specific fields to display in Kibana, making the logs easy to read, filter, and sort by. \autoref{fig:logs-example} shows how we display logs in an easy-to-read format.
 \begin{figure}[H]
   \makebox[\textwidth][c]{
