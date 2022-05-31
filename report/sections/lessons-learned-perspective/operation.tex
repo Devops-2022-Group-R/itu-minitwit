@@ -7,13 +7,13 @@ We aimed for 100\% uptime, as is the spirit of DevOps. Unfortunately, we did not
 
 \subsubsection{Service-level agreement}
 
-We have provided a service-level agreement \cite{sla:itu-minitwit} for our API, in order to establish an agreement between us and the customer, clearly defining what we can provide to the customer, and which rights they have.
+We've provided a service-level agreement \cite{sla:itu-minitwit} for our API, to establish an agreement between us and the customer, clearly defining what we can provide to the customer, and which rights they have.
 
 
 \subsubsection{Backwards compatibility in migrating URLs}
 
 When we moved to Kubernetes, we found out that we couldn't test Ingress on the \texttt{swuwu} domain, so we moved the name servers.
-However, in order to keep the simulator working, we would need to submit a pull request to the lecture\_notes repo, and wait for someome to merge it. This takes time, requires coordination between us and the repo owners, and so on. Therefore, to instead ensure backwards compatibility, we've made sure that every link that we've used at some point still works.
+However, to keep the simulator working, we would need to submit a pull request to the lecture\_notes repo, and wait for someone to merge it. This takes time, requires coordination between us and the repo owners, and so on. Therefore, to instead ensure backward compatibility, we've made sure that every link that we've used at some point still works.
 For instance, both of these domains point to the same place:
 \begin{itemize}
     \item \url{https://rhododevdron.dk/}

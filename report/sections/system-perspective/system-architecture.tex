@@ -1,5 +1,5 @@
 \subsection{System architecture}
-We've built our system twice, according to 2 specifications. The first was a, mostly, one to one rewrite of the original project into Go \cite{tool:go}.
+We've built our system twice, according to 2 specifications. The first was a, mostly, one-to-one rewrite of the original project into Go \cite{tool:go}.
 While the second, and current iteration, was according to the API specification \cite{spec:api}. 
 This iteration consists of 4 subsystems and supporting infrastructure. The subsystems we'll go through below are: backend, frontend, monitoring, and logging.
 The overview and interaction between these systems are modelled in figure \ref{fig:architecture}.
@@ -15,9 +15,9 @@ The core system of the project is the backend. It is responsible for the actual 
 It's built with Go \cite{tool:go}, runs in a Docker container, and uses Microsoft SQL server \cite{tool:microsoft-sql-server} as the database. We deep dive into this component in the ``System Design'' section - section \ref{section:system-design}.
 
 \subsubsection{Frontend}
-As the backend changed from server rendered website to a REST API, we decided to move the frontend into its own subsystem.
+As the backend changed from a server rendered website to a REST API, we decided to move the frontend into its own subsystem.
 The frontend is built with Vue.js \cite{tool:vue} and is written in TypeScript \cite{tool:typescript}.
-It makes use of the public API that the backend exposes, and therefore provides a more user friendly access layer to our service.
+It uses the public API that the backend exposes and therefore provides a more user-friendly access layer to our service.
 The subsystem is built in small components that can be reused when expanding the project. We had a focus on the visual elements being mostly identical to the original frontend, to ensure user familiarity.
 
 \subsubsection{Monitoring}
