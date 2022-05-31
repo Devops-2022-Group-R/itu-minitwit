@@ -1,15 +1,14 @@
 \subsection{System architecture}
-\begin{figure}[h]
+We've built our system twice, according to 2 specifications. The first was a, mostly, one to one rewrite of the original project into Go \cite{tool:go}.
+While the second, and current iteration, was according to the API specification \cite{spec:api}. 
+This iteration consists of 4 subsystems and supporting infrastructure. The subsystems we'll go through below are: backend, frontend, monitoring and logging.
+The overview and interaction between these systems are modelled in figure \ref{fig:architecture}.
+\begin{figure}[H]
     \centering
     \includegraphics[width=0.8\textwidth]{infrastructure/infrastructure.pdf}
     \caption{System architecture and its components}
     \label{fig:architecture}
 \end{figure}
-
-We've built our system twice, according to 2 specifications. The first was a, mostly, one to one rewrite of the original project into Go \cite{tool:go}.
-While the second, and current iteration, was according to the API specification \cite{spec:api}. 
-This iteration consists of 4 subsystems and supporting infrastructure. The subsystems we'll go through below are: backend, frontend, monitoring and logging.
-The overview and interaction between these systems are modelled in figure \ref{fig:architecture}.
 
 \subsubsection{Backend}
 The core system of the project is the backend. It is responsible for the actual computations and controlling of the database.
