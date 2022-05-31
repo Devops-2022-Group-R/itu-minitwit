@@ -1,5 +1,5 @@
 \subsection{Strategy for scaling and load balancing}
-We have deployed all of our components with Kubernetes deployments \cite{docs:kubernetes-deployment}, and configured them to run behind Kubernetes services \cite{docs:kubernetes-service}, this ensures component level load balancing.
-Using deployments also allows us to manually scale the number of instances of each component. While deployments do have the ability to autoscale, after some configuration, we have decided against it due to cost issues and because our monitoring indicated that the system was not getting enough load to justify scaling.
+We've deployed all of our components with Kubernetes deployments \cite{docs:kubernetes-deployment}, and configured them to run behind Kubernetes services \cite{docs:kubernetes-service}, this ensures component level load balancing.
+Using deployments also allows us to manually scale the number of instances of each component. While deployments do have the ability to autoscale, after some configuration, we've decided against it due to cost issues and because our monitoring indicated that the system was not getting enough load to justify scaling.
 
-Deployments also support zero downtime updates. This is achieved by changing settings on the deployment, such as the image to be used, then Kubernetes creates a new pod, and then kills an old pod when the new is ready, repeating the process until all pods have the new configuration.
+Deployments also support zero-downtime updates. This is achieved by changing settings on the deployment, such as the image to be used, Kubernetes then creates a new pod, and kills an old pod when the new one is ready, repeating the process until all pods have the new configuration.
