@@ -18,7 +18,7 @@ az storage container create -n terraformstate --account-name minitwitterraformst
 ## Setup secrets
 Deploy [sealed secrets](https://github.com/bitnami-labs/sealed-secrets) controller
 ```
-kubectl apply -f https://github.com/bitnami-labs/sealed-secrets/releases/download/v0.17.4/controller.yaml 
+kubectl apply -f https://github.com/bitnami-labs/sealed-secrets/releases/download/v0.18.0/controller.yaml  
 ```
 
 ### To create new secrets, using mssql server as an example
@@ -122,6 +122,7 @@ helm install nginx-ingress ingress-nginx/ingress-nginx --namespace ingress-nginx
 ```
 
 ### Setup dns zones
+#### Azure
 ```bash
 az ad sp create-for-rbac -n ExternalDnsServicePrincipal
 
@@ -158,6 +159,13 @@ Create a file, called `external-dns-secret.json` that looks like this, with the 
 Then run
 ```
 kubectl create secret generic external-dns-config-file --from-file=/path/to/external-dns-secret.json
+kubectl apply -f external-dns-deployment.yaml
+```
+
+#### Digitalocean
+```
+TOKEN=""
+kubectl create secret generic digitalocean-token-secret --from-literal=token=$TOKEN
 kubectl apply -f external-dns-deployment.yaml
 ```
 

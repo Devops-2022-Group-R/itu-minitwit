@@ -2,7 +2,8 @@ apiVersion: storage.k8s.io/v1
 kind: StorageClass
 metadata:
   name: itu-minitwit-sc
-provisioner: disk.csi.azure.com
+# provisioner: disk.csi.azure.com
+provisioner: dobs.csi.digitalocean.com
 parameters:
   skuName: Standard_LRS
   location: northeurope
