@@ -33,6 +33,14 @@ spec:
           initialDelaySeconds: 5
           periodSeconds: 2
           successThreshold: 1
+        volumeMounts:
+          - name: prometheus-config-volume
+            mountPath: /etc/prometheus
+      volumes:
+        - name: prometheus-config-volume
+          configMap:
+            defaultMode: 420
+            name: prometheus-conf
 ---
 apiVersion: v1
 kind: Service
